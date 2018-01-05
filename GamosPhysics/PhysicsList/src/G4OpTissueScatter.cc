@@ -294,7 +294,7 @@ void G4OpTissueScatter::ReadData()
 	
 		G4String fileName = theFileNamePrefix+"."+aMaterial->GetName() + ".txt";
 	    G4String path( getenv( "GAMOS_SEARCH_PATH" ) );
-	    fileName = FileInPath( path, fileName);
+	    fileName = GmGenUtils::FileInPath( path, fileName);
 	    GmFileIn fin = GmFileIn::GetInstance(fileName);   
 
 	    std::vector<G4double> values;
@@ -318,7 +318,7 @@ void G4OpTissueScatter::ReadData()
 			G4double cmax=0.0;
 		  	G4double cmin=0.0;
 			for( unsigned int ii = 1; ii < wl.size(); ii++ ) {
-				ctnew = GetValue(wl[ii]);
+				ctnew = GmGenUtils::GetValue(wl[ii]);
 				if(ctprev >= ctnew){
 	  				G4Exception((theFileNamePrefix+"_G4OpTissueScatter::ReadData").c_str(),
 			      		"Error in cos(theta) definition.",
@@ -362,7 +362,7 @@ void G4OpTissueScatter::ReadData()
 				G4double wlprev=DBL_MAX;
 				G4double wlnew=0.;
 				for( unsigned int ii = 1; ii < wl.size(); ii++ ) {
-		  			wlnew = GetValue(wl[ii]);
+		  			wlnew = GmGenUtils::GetValue(wl[ii]);
 		  			if(wlprev <= wlnew){
 		  				G4Exception((theFileNamePrefix+"_G4OpTissueScatter::ReadData").c_str(),
 				      		"Error in wavelengh definition.",
@@ -384,7 +384,7 @@ void G4OpTissueScatter::ReadData()
 			      	"No line starting with ':COSTHETA' or with ':WAVELENGTH' found before line with probability values");
 			}
 			for( unsigned int ii = 0; ii < wl.size(); ii++ ) {
-		  		G4double val = GetValue(wl[ii]);
+		  		G4double val = GmGenUtils::GetValue(wl[ii]);
 		  		values.push_back(val);
 			}
 			rows = rows+1;
@@ -397,7 +397,7 @@ void G4OpTissueScatter::ReadData()
 		G4Exception((theFileNamePrefix+"_G4OpTissueScatter::ReadData").c_str(),
 	      "Error in number of words in line",
 	      FatalErrorInArgument,
-	    (G4String("Matrix is not transposed correctly or is the wrong size. The size of P[wavelength,cos(theta)] is ") + itoa(rows) + " x " + itoa(cols) + " but it should be " + itoa(waveLengths.size()) + " x " + itoa(cosThetas.size()) + ".").c_str());
+	    (G4String("Matrix is not transposed correctly or is the wrong size. The size of P[wavelength,cos(theta)] is ") + GmGenUtils::itoa(rows) + " x " + GmGenUtils::itoa(cols) + " but it should be " + GmGenUtils::itoa(waveLengths.size()) + " x " + GmGenUtils::itoa(cosThetas.size()) + ".").c_str());
 	}
 	
 	G4cout << rows << G4endl;
@@ -409,7 +409,7 @@ void G4OpTissueScatter::ReadData()
 			G4Exception((theFileNamePrefix+"_G4OpTissueScatter::ReadData").c_str(),
 		      "Error in number of words in line",
 		      FatalErrorInArgument,
-		    (G4String("Number of probability values = ") + itoa(values.size()) + " is not equal to number of costheta entries = " + itoa(cosThetas.size()) + " X number of wavelength = " + itoa(waveLengths.size()) + ". Please check that the probability entries are correct AND that the supplied .txt file ends with the tag :ENDFILE.").c_str());
+		    (G4String("Number of probability values = ") + GmGenUtils::itoa(values.size()) + " is not equal to number of costheta entries = " + GmGenUtils::itoa(cosThetas.size()) + " X number of wavelength = " + GmGenUtils::itoa(waveLengths.size()) + ". Please check that the probability entries are correct AND that the supplied .txt file ends with the tag :ENDFILE.").c_str());
 	  }
 
 		G4cout << "Calculating cumulative probability distributions..." << G4endl; 
