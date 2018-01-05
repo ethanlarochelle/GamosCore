@@ -1,0 +1,26 @@
+# - Define standard directories for GEANT4
+
+# Installation directories
+#
+if(NOT DEFINED G4INSTALL)
+  set(G4INSTALL "/home/arce/gamos/external/geant4/geant4_9_6_p02_gamos" CACHE PATH "")
+endif()
+
+if(NOT DEFINED GEANT4_LIBS)
+  set(G4INSTALL "/home/arce/gamos/external/geant4/geant4_9_6_p02_gamos" CACHE PATH "")
+endif()
+
+
+#-----------------------------------------------------------------------------
+
+mark_as_advanced(
+  CMAKE_INSTALL_BINDIR
+  CMAKE_INSTALL_LIBDIR
+  CMAKE_INSTALL_INCLUDEDIR
+  CMAKE_INSTALL_DATAROOTDIR
+  CMAKE_INSTALL_DATADIR
+  CMAKE_INSTALL_MANDIR
+  CMAKE_INSTALL_DOCDIR
+  )
+
+

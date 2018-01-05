@@ -1,0 +1,7 @@
+1 crystal nevents 10 0 5
+1. 0. 0. 10.*mm 0. 1. 0. 10*deg 
+2 crystal nevents 10 50 5
+10.*mm 0. 1. 0.  20*deg 1. 0. 0. 
+10.*mm 0. 0. 1.   0*deg 0. 0. 0. 
+
+'rotate/displace' VOLUME_NAME VALUE AXIS_X AXIS_Y AXIS_Z NEVENTS_INTERVAL OFFSET NUMBER_OF_INTERVALS").c_str());

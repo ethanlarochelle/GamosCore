@@ -1,0 +1,9 @@
+mv Geant4Config.cmake.in GamosConfig.cmake.in
+mv Geant4ConfigVersion.cmake.in GamosConfigVersion.cmake.in
+mv UseGeant4.cmake UseGamos.cmake
+mv UseGeant4_internal.cmake UseGamos_internal.cmake
+mv geant4-config.in gamos-config.in
+mv geant4-env-skeleton.in gamos-env-skeleton.in
+mv geant4_validate_sources.cmake.in gamos_validate_sources.cmake.in
+mv geant4make-skeleton.in gamosmake-skeleton.in
+mv kk kk

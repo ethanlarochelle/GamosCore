@@ -1,0 +1,230 @@
+//
+// ********************************************************************
+// * License and Disclaimer                                           *
+// *                                                                  *
+// * The  GAMOS software  is  copyright of the Copyright  Holders  of *
+// * the GAMOS Collaboration.  It is provided  under  the  terms  and *
+// * conditions of the GAMOS Software License,  included in the  file *
+// * LICENSE and available at  http://fismed.ciemat.es/GAMOS/license .*
+// * These include a list of copyright holders.                       *
+// *                                                                  *
+// * Neither the authors of this software system, nor their employing *
+// * institutes,nor the agencies providing financial support for this *
+// * work  make  any representation or  warranty, express or implied, *
+// * regarding  this  software system or assume any liability for its *
+// * use.  Please see the license in the file  LICENSE  and URL above *
+// * for the full disclaimer and the limitation of liability.         *
+// *                                                                  *
+// * This  code  implementation is the result of  the  scientific and *
+// * technical work of the GAMOS collaboration.                       *
+// * By using,  copying,  modifying or  distributing the software (or *
+// * any work based  on the software)  you  agree  to acknowledge its *
+// * use  in  resulting  scientific  publications,  and indicate your *
+// * acceptance of all terms of the GAMOS Software license.           *
+// ********************************************************************
+//
+#include "GmModuleJaws.hh"
+#include "G4tgrUtils.hh"
+#include "G4UIcommand.hh"
+
+//------------------------------------------------------------------------
+GmModuleJaws::GmModuleJaws( const std::vector<G4String>& par ) : GmVModule(par)
+{
+  G4tgrUtils::CheckWLsize( par, 10, WLSIZE_EQ,
+                           "GmModuleJaws::GmModuleJaws");
+
+}
+
+//------------------------------------------------------------------------
+void GmModuleJaws::BuildObjects()
+{
+  G4int ip = 0;
+  theWords["RMAX"] = theParams[ip++];
+  theWords["TITLE"] = theParams[ip++];
+  theWords["ISCM_MAX"] = theParams[ip++];
+  G4int ISCM_MAX = G4tgrUtils::GmGenUtils::GetInt( theWords["ISCM_MAX"] );
+
+  for( G4int ii = 0; ii < ISCM_MAX; ii++ ){
+    theWords["XY_CHOICE"+G4UIcommand::ConvertToString(ii)] = theParams[ip++];
+    theWords["ZMIN"+G4UIcommand::ConvertToString(ii)] = theParams[ip++];
+    theWords["ZMAX"+G4UIcommand::ConvertToString(ii)] = theParams[ip++];
+    theWords["XFP"+G4UIcommand::ConvertToString(ii)] = theParams[ip++];
+    theWords["XBP"+G4UIcommand::ConvertToString(ii)] = theParams[ip++];
+    theWords["XFN"+G4UIcommand::ConvertToString(ii)] = theParams[ip++];
+    theWords["XBN"+G4UIcommand::ConvertToString(ii)] = theParams[ip++];
+  }
+
+  theWords["ECUT"] = theParams[ip++];
+  theWords["PCUT"] = theParams[ip++];
+  theWords["DOSE_ZONE"] = theParams[ip++];
+  theWords["IREGION_TO_BIT"] = theParams[ip++];
+
+  for( G4int ii = 0; ii < ISCM_MAX; ii++ ){
+    theWords["ECUT"+G4UIcommand::ConvertToString(ii)] = theParams[ip++];
+    theWords["PCUT"+G4UIcommand::ConvertToString(ii)] = theParams[ip++];
+    theWords["DOSE_ZONE"+G4UIcommand::ConvertToString(ii)] = theParams[ip++];
+    theWords["IREGION_TO_BIT"+G4UIcommand::ConvertToString(ii)] = theParams[ip++];
+    theWords["MED_IN"+G4UIcommand::ConvertToString(ii)] = theParams[ip++];
+  }
+
+	
+  //	cout << " Printing JAWs on GAMOS format" << endl;
+  //  check2print_rotation_matrix_GAMOS(file_name);
+  
+  std::ostringstream fout;
+  fout << ":P RMAX " << theWords["RMAX"] << "*cm"<< G4endl;
+  BuildObject( fout );
+
+  fout << ":PS TITLE \"" << theWords["TITLE"] << " \"" << G4endl;
+  fout << ":P ISCM_MAX " <<  theWords["ISCM_MAX"] << G4endl << G4endl;
+  BuildObject( fout );
+
+  /*
+  fout << ":P ECUT " << in_transport.ECUT << endl;
+  fout << ":P PCUT " << in_transport.PCUT << endl;
+  fout << ":P DOSE_ZONE " << in_transport.DOSE_ZONE << endl;
+  fout << ":P IREGION_TO_BIT " << in_transport.IREGION_TO_BIT << endl << \
+    endl;
+
+  for (int i=0; i<ISCM_MAX; i++){
+    fout << "//# JAWs Module " << endl;
+    
+    fout << ":PS XY_CHOICE[" << i << "] " << all_jaws_data[i].XY_CHOICE << endl;
+    fout << ":P ZMIN[" << i << "] "    <<   all_jaws_data[i].ZMIN << "*cm"<< endl;
+    fout << ":P ZMAX[" << i << "] "    <<   all_jaws_data[i].ZMAX << "*cm"<< endl;
+    fout << ":P XFP["  << i << "] "     <<   all_jaws_data[i].XFP  << "*cm"<< endl;
+    fout << ":P XBP["  << i << "] "     <<   all_jaws_data[i].XBP  << "*cm"<< endl;
+    fout << ":P XFN["  << i << "] "     <<   all_jaws_data[i].XFN  << "*cm"<< endl;
+    fout << ":P XBN["  << i << "] "     <<   all_jaws_data[i].XBN  << "*cm"<< endl ;
+    
+    fout << ":P ECUT[" << i << "] "           <<  all_transport[i].ECUT           << endl;
+    fout << ":P PCUT[" << i << "] "           <<  all_transport[i].PCUT           << endl;
+    fout << ":P DOSE_ZONE[" << i << "] "      <<  all_transport[i].DOSE_ZONE      << endl;
+    fout << ":P IREGION_TO_BIT[" << i << "] " <<  all_transport[i].IREGION_TO_BIT << endl;
+    
+    };
+    fout << "// # VOLUME DEFINITION " << endl;
+	string aux_sing="";
+		
+	string L="";
+	string b="";
+	string C="";
+	string D="";
+	for (int i=0; i<ISCM_MAX; i++){
+		///// THE FIRST PART OF JAW-RIGHT OR POSITIVE /////
+		fout << endl << ":VOLU \"" << name << "_" << 2*i << "\" TRAP " ;
+		fout << "2.0*$RMAX " ; 
+		fout << "$ZMAX["<< i << "]-$ZMIN["<<i<<"] " ;
+		if ( (all_jaws_data[i].XFP)<(all_jaws_data[i].XBP) ){ // Normal work position for JAWs
+			fout << "$RMAX-$XFP[" << i << "] " ; 
+			fout << "$RMAX-$XBP[" << i << "] " ; 
+			fout <<  all_transport[i].MED_IN << endl ;
+			fout << ":COLOR \"" << name << "_" << 2*i << "\"  " 
+			     << material.Get_String_Color(all_transport[i].MED_IN) << endl;  
+			fout << "// RIGHT NORMAL" << endl;
+			fout << ":PLACE \"" << name << "_" << 2*i << "\" 1 expHall " ;
+			b="($XBP["+num2string(i)+"]-$XFP["+num2string(i)+"]+0)";
+			L="($RMAX-$XFP["+num2string(i)+"]+0)";
+			C="(3*"+b+"*"+b+"/(8*"+L+"+0)+"+b+"+"+L+"/2+0)/(1+"+b+"/(2*"+L+"+0)+0)";
+			//if (all_jaws_data[i].XFP>0){
+			//D="$RMAX-"+C;
+			D="$RMAX+"+b+"-"+C;
+			//   } else {
+			//        D="$RMAX+"+b+"+"+C;           
+			//   };
+			if (all_jaws_data[i].XY_CHOICE=="X" || all_jaws_data[i].XY_CHOICE=="x"  ) {  // X axis moving 
+				fout << "R_xp " ;
+				fout << D << " 0.0 $ZMIN["<<i<<"]+($ZMAX["<< i << "]-$ZMIN["<<i<<"]+0.0)/2.0  " << endl;
+				fout << " // JAW X " << endl << endl;
+			} else {  // Y axis moving 
+				fout << "R_yp " <<  " 0.0 ";
+				fout << D << " $ZMIN["<<i<<"]+($ZMAX["<< i << "]-$ZMIN["<<i<<"]+0.0)/2.0 " << endl ;    
+				fout << " // JAW Y " << endl << endl;
+			};
+			/////////////////////////////////////////////////////////////////////////////   
+		}else{  
+			// Inverse JAWs orientation, the JAWs are over its focusing.
+			fout << "$RMAX-$XBP[" << i << "] " ; 
+			fout << "$RMAX-$XFP[" << i << "] " ; 
+			fout <<  all_transport[i].MED_IN << endl ;
+			fout << "// RIGHT INVERSE" << endl;
+			fout << ":PLACE \"" << name << "_" << 2*i << "\" 1 expHall " ;
+			b="($XFP["+num2string(i)+"]-$XBP["+num2string(i)+"]+0)";
+			L="($RMAX-$XBP["+num2string(i)+"]+0)";
+			C="(3*"+b+"*"+b+"/(8*"+L+"+0)+"+b+"+"+L+"/2+0)/(1+"+b+"/(2*"+L+"+0)+0)";
+			//if (all_jaws_data[i].XFP>0){
+			//D="$RMAX-"+C;
+			D="$RMAX+"+b+"-"+C;
+			//   } else {
+			//        D="$RMAX+"+b+"+"+C;
+			//   };
+			if (all_jaws_data[i].XY_CHOICE=="X" || all_jaws_data[i].XY_CHOICE=="x" ) {  // X axis moving 
+				fout << "R_xpI " ;
+				fout << D << " 0.0 $ZMIN["<<i<<"]+($ZMAX["<< i << "]-$ZMIN["<<i<<"]+0.0)/2.0  " << endl;
+				fout << " // JAW X " << endl << endl;
+			} else {  // Y axis moving 
+				fout << "R_ypI " <<  " 0.0 ";
+				fout << D << " $ZMIN["<<i<<"]+($ZMAX["<< i << "]-$ZMIN["<<i<<"]+0.0)/2.0 " << endl ; 
+				fout << " // JAW Y " << endl << endl;
+			};
+		};
+			
+		//// THE SECOND PART OF JAWS PART OR NEGATIVE ///////
+			
+		fout << endl << ":VOLU \"" << name << "_" << 2*i+1 << "\" TRAP " ;
+		fout << "2.0*$RMAX " ;
+		fout << "$ZMAX["<< i << "]-$ZMIN["<<i<<"] " ;
+		//cout << "DECIDO ";
+		if ( (all_jaws_data[i].XFN)>(all_jaws_data[i].XBN) ){ 
+			fout << "$RMAX+$XFN[" << i << "] " ; 
+			fout << "$RMAX+$XBN[" << i << "] " ;
+			fout <<  all_transport[i].MED_IN << endl ;
+			fout << ":COLOR \"" << name << "_" << 2*i+1 << "\"  " 
+			     << material.Get_String_Color(all_transport[i].MED_IN) << endl;  
+			fout << "// LEFT NORMAL" << endl;
+			fout << ":PLACE \"" << name << "_" << 2*i+1 << "\" 1 expHall " ;
+			b="($XFN["+num2string(i)+"]-$XBN["+num2string(i)+"]+0)";
+			L="($RMAX+$XBN["+num2string(i)+"]+0)";
+			C="(3*"+b+"*"+b+"/(8*"+L+"+0)+"+b+"+"+L+"/2+0)/(1+"+b+"/(2*"+L+"+0)+0)";
+			D="$XFN["+num2string(i)+"]-"+C;
+			if (all_jaws_data[i].XY_CHOICE=="X" || all_jaws_data[i].XY_CHOICE=="x" ) { 
+				fout << "R_xn " ;
+				fout << D <<" 0.0 $ZMIN["<<i<<"]+($ZMAX["<< i << "]-$ZMIN["<<i<<"]+0.0)/2.0 " << endl; ;
+				fout << " // JAW X " << endl<< endl;
+			} else {
+				fout << "R_yn " << " 0.0 ";
+				fout << D << " $ZMIN["<<i<<"]+($ZMAX["<< i << "]-$ZMIN["<<i<<"]+0.0)/2.0 " << endl ;    
+				fout << " // JAW Y "<< endl << endl;
+			};
+		}else{    
+			fout << "$RMAX+$XBN[" << i << "] " ; 
+			fout << "$RMAX+$XFN[" << i << "] " ; 
+			fout <<  all_transport[i].MED_IN << endl ;
+			fout << ":COLOR \"" << name << "_" << 2*i+1 << "\"  " 
+			     << material.Get_String_Color(all_transport[i].MED_IN) << endl;  
+			fout << "// LEFT INVERSE " << endl;
+			fout << ":PLACE \"" << name << "_" << 2*i+1 << "\" 1 expHall " ;
+			b="($XBN["+num2string(i)+"]-$XFN["+num2string(i)+"]+0)";
+			L="($RMAX+$XFN["+num2string(i)+"]+0)";
+			C="(3*"+b+"*"+b+"/(8*"+L+"+0)+"+b+"+"+L+"/2+0)/(1+"+b+"/(2*"+L+"+0)+0)";
+			D="$XBN["+num2string(i)+"]-"+C;
+			if (all_jaws_data[i].XY_CHOICE=="X" || all_jaws_data[i].XY_CHOICE=="x" ) { 
+				fout << "R_xnI " ;
+				fout << D <<" 0.0 $ZMIN["<<i<<"]+($ZMAX["<< i << "]-$ZMIN["<<i<<"]+0.0)/2.0 " << endl; ;
+				fout << " // JAW X " << endl<< endl;
+			} else {
+				fout << "R_ynI " << " 0.0 ";
+				fout << D << " $ZMIN["<<i<<"]+($ZMAX["<< i << "]-$ZMIN["<<i<<"]+0.0)/2.0 " << endl << endl;    
+				fout << " // JAW Y " << endl<< endl;
+			};
+		};
+	};
+
+	fout.close();
+  */
+}
+
+//------------------------------------------------------------------------
+GmModuleJaws::~GmModuleJaws()
+{
+}

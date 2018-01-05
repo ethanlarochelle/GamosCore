@@ -1,0 +1,86 @@
+//
+// ********************************************************************
+// * License and Disclaimer                                           *
+// *                                                                  *
+// * The  GAMOS software  is  copyright of the Copyright  Holders  of *
+// * the GAMOS Collaboration.  It is provided  under  the  terms  and *
+// * conditions of the GAMOS Software License,  included in the  file *
+// * LICENSE and available at  http://fismed.ciemat.es/GAMOS/license .*
+// * These include a list of copyright holders.                       *
+// *                                                                  *
+// * Neither the authors of this software system, nor their employing *
+// * institutes,nor the agencies providing financial support for this *
+// * work  make  any representation or  warranty, express or implied, *
+// * regarding  this  software system or assume any liability for its *
+// * use.  Please see the license in the file  LICENSE  and URL above *
+// * for the full disclaimer and the limitation of liability.         *
+// *                                                                  *
+// * This  code  implementation is the result of  the  scientific and *
+// * technical work of the GAMOS collaboration.                       *
+// * By using,  copying,  modifying or  distributing the software (or *
+// * any work based  on the software)  you  agree  to acknowledge its *
+// * use  in  resulting  scientific  publications,  and indicate your *
+// * acceptance of all terms of the GAMOS Software license.           *
+// ********************************************************************
+//
+// Description:
+///////////////////////////////////////////////////////////////////////////////
+#include "GmSaveStepUA.hh"
+#include "G4Track.hh"
+#include "G4Run.hh"
+#include "G4Event.hh"
+#include "G4Step.hh"
+#include "G4ProcessManager.hh"
+#include "G4ParticleTable.hh"
+//#define DEBUG
+
+//-----------------------------------------------------------------
+GmSaveStepUA::GmSaveStepUA()
+{
+}
+
+
+//-----------------------------------------------------------------
+GmSaveStepUA::~GmSaveStepUA() 
+{
+}
+
+
+//-----------------------------------------------------------------
+void GmSaveStepUA::UserSteppingAction(const G4Step* aStep )
+{
+
+  G4StepPoint* preSP = aStep->GetPreStepPoint();
+  G4StepPoint* postSP = aStep->GetPostStepPoint();
+
+  thePreStepPoint = new G4StepPoint(*preSP);
+  thePostStepPoint = new G4StepPoint(*postSP);
+
+SetPreStepPoint
+SetPostStepPoint
+-
+SetStepLength
+SetTotalEnergyDeposit
+SetNonIonizingEnergyDeposit
+SetControlFlag
+SetSecondary
+SetFirstStepFlag
+SetLastStepFlag 
+IsFirstStepInVolume
+
+save secondary tracks
+
+  Save track, but only : track ID , definition
+}
+
+
+
+//-----------------------------------------------------------------
+void GmSaveStepUA::PreUserTrackingAction(const G4Track* aTrack);
+
+//-----------------------------------------------------------------
+void GmSaveStepUA::PostUserTrackingAction(const G4Track* aTrack);
+
+
+//-----------------------------------------------------------------
+void GmSaveStepUA::EndOfEventAction(const G4Run* );

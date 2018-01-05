@@ -1,0 +1,325 @@
+# - Define standard directories for GEANT4
+
+# Installation directories
+#
+#set(G4INSTALL "/home/arce/gamos/external/geant4/geant4_9_6_p02" CACHE PATH "")
+#set(G4INSTALL "/home/arce/gamos/external/geant4/geant4.9.6.p02.gamos" CACHE PATH "")
+set(G4INSTALL "d:/gamos/external/geant4/geant4.9.6.p02.gamos" CACHE PATH "")
+
+# List external includes needed.
+#tinclude_directories(${CLHEP_INCLUDE_DIRS})
+include_directories(${G4INSTALL}/source/externals/clhep/include)
+
+# List internal includes needed.
+include_directories(${G4INSTALL}/source/digits_hits/detector/include)
+include_directories(${G4INSTALL}/source/digits_hits/digits/include)
+include_directories(${G4INSTALL}/source/digits_hits/hits/include)
+include_directories(${G4INSTALL}/source/digits_hits/scorer/include)
+include_directories(${G4INSTALL}/source/digits_hits/utils/include)
+include_directories(${G4INSTALL}/source/error_propagation/include)
+include_directories(${G4INSTALL}/source/event/include)
+include_directories(${G4INSTALL}/source/g3tog4/include)
+include_directories(${G4INSTALL}/source/geometry/biasing/include)
+include_directories(${G4INSTALL}/source/geometry/divisions/include)
+include_directories(${G4INSTALL}/source/geometry/magneticfield/include)
+include_directories(${G4INSTALL}/source/geometry/management/include)
+include_directories(${G4INSTALL}/source/geometry/navigation/include)
+include_directories(${G4INSTALL}/source/geometry/solids/CSG/include)
+include_directories(${G4INSTALL}/source/geometry/solids/specific/include)
+include_directories(${G4INSTALL}/source/geometry/solids/BREPS/include)
+include_directories(${G4INSTALL}/source/geometry/solids/Boolean/include)
+include_directories(${G4INSTALL}/source/geometry/volumes/include)
+include_directories(${G4INSTALL}/source/global/management/include)
+include_directories(${G4INSTALL}/source/global/HEPGeometry/include)
+include_directories(${G4INSTALL}/source/global/HEPRandom/include)
+include_directories(${G4INSTALL}/source/global/HEPNumerics/include)
+include_directories(${G4INSTALL}/source/graphics_reps/include)
+include_directories(${G4INSTALL}/source/intercoms/include)
+include_directories(${G4INSTALL}/source/interfaces/basic/include)
+include_directories(${G4INSTALL}/source/interfaces/common/include)
+include_directories(${G4INSTALL}/source/interfaces/GAG/include)
+include_directories(${G4INSTALL}/source/materials/include)
+include_directories(${G4INSTALL}/source/parameterisations/gflash/include)
+include_directories(${G4INSTALL}/source/particles/adjoint/include)
+include_directories(${G4INSTALL}/source/particles/bosons/include)
+include_directories(${G4INSTALL}/source/particles/hadrons/barions/include)
+include_directories(${G4INSTALL}/source/particles/hadrons/ions/include)
+include_directories(${G4INSTALL}/source/particles/hadrons/mesons/include)
+include_directories(${G4INSTALL}/source/particles/leptons/include)
+include_directories(${G4INSTALL}/source/particles/management/include)
+include_directories(${G4INSTALL}/source/particles/shortlived/include)
+include_directories(${G4INSTALL}/source/particles/utils/include)
+include_directories(${G4INSTALL}/source/persistency/ascii/include)
+include_directories(${G4INSTALL}/source/persistency/gdml/include)
+include_directories(${G4INSTALL}/source/persistency/mctruth/include)
+include_directories(${G4INSTALL}/source/physics_lists/lists/include)
+include_directories(${G4INSTALL}/source/physics_lists/builders/include)
+include_directories(${G4INSTALL}/source/processes/cuts/include)
+include_directories(${G4INSTALL}/source/processes/management/include)
+include_directories(${G4INSTALL}/source/processes/transportation/include)
+include_directories(${G4INSTALL}/source/processes/electromagnetic/muons/include)
+include_directories(${G4INSTALL}/source/processes/electromagnetic/standard/include)
+include_directories(${G4INSTALL}/source/processes/electromagnetic/pii/include)
+include_directories(${G4INSTALL}/source/processes/electromagnetic/xrays/include)
+include_directories(${G4INSTALL}/source/processes/electromagnetic/lowenergy/include)
+include_directories(${G4INSTALL}/source/processes/electromagnetic/highenergy/include)
+include_directories(${G4INSTALL}/source/processes/electromagnetic/polarisation/include)
+include_directories(${G4INSTALL}/source/processes/electromagnetic/adjoint/include)
+include_directories(${G4INSTALL}/source/processes/electromagnetic/utils/include)
+include_directories(${G4INSTALL}/source/processes/electromagnetic/dna/processes/include)
+include_directories(${G4INSTALL}/source/processes/electromagnetic/dna/management/include)
+include_directories(${G4INSTALL}/source/processes/electromagnetic/dna/utils/include)
+include_directories(${G4INSTALL}/source/processes/electromagnetic/dna/models/include)
+include_directories(${G4INSTALL}/source/processes/electromagnetic/dna/molecules/types/include)
+include_directories(${G4INSTALL}/source/processes/electromagnetic/dna/molecules/management/include)
+include_directories(${G4INSTALL}/source/processes/optical/include)
+include_directories(${G4INSTALL}/source/processes/biasing/include)
+include_directories(${G4INSTALL}/source/processes/decay/include)
+include_directories(${G4INSTALL}/source/processes/hadronic/processes/include)
+include_directories(${G4INSTALL}/source/processes/hadronic/management/include)
+include_directories(${G4INSTALL}/source/processes/hadronic/cross_sections/include)
+include_directories(${G4INSTALL}/source/processes/hadronic/util/include)
+include_directories(${G4INSTALL}/source/processes/hadronic/stopping/include)
+include_directories(${G4INSTALL}/source/processes/hadronic/models/inclxx/utils/include)
+include_directories(${G4INSTALL}/source/processes/hadronic/models/inclxx/incl_physics/include)
+include_directories(${G4INSTALL}/source/processes/hadronic/models/inclxx/interface/include)
+include_directories(${G4INSTALL}/source/processes/hadronic/models/low_energy/include)
+include_directories(${G4INSTALL}/source/processes/hadronic/models/management/include)
+include_directories(${G4INSTALL}/source/processes/hadronic/models/radioactive_decay/include)
+include_directories(${G4INSTALL}/source/processes/hadronic/models/de_excitation/management/include)
+include_directories(${G4INSTALL}/source/processes/hadronic/models/de_excitation/fermi_breakup/include)
+include_directories(${G4INSTALL}/source/processes/hadronic/models/de_excitation/handler/include)
+include_directories(${G4INSTALL}/source/processes/hadronic/models/de_excitation/photon_evaporation/include)
+include_directories(${G4INSTALL}/source/processes/hadronic/models/de_excitation/util/include)
+include_directories(${G4INSTALL}/source/processes/hadronic/models/de_excitation/ablation/include)
+include_directories(${G4INSTALL}/source/processes/hadronic/models/de_excitation/fission/include)
+include_directories(${G4INSTALL}/source/processes/hadronic/models/de_excitation/evaporation/include)
+include_directories(${G4INSTALL}/source/processes/hadronic/models/de_excitation/multifragmentation/include)
+include_directories(${G4INSTALL}/source/processes/hadronic/models/de_excitation/gem_evaporation/include)
+include_directories(${G4INSTALL}/source/processes/hadronic/models/qmd/include)
+include_directories(${G4INSTALL}/source/processes/hadronic/models/pre_equilibrium/exciton_model/include)
+include_directories(${G4INSTALL}/source/processes/hadronic/models/parton_string/management/include)
+include_directories(${G4INSTALL}/source/processes/hadronic/models/parton_string/qgsm/include)
+include_directories(${G4INSTALL}/source/processes/hadronic/models/parton_string/hadronization/include)
+include_directories(${G4INSTALL}/source/processes/hadronic/models/parton_string/diffraction/include)
+include_directories(${G4INSTALL}/source/processes/hadronic/models/chiral_inv_phase_space/processes/include)
+include_directories(${G4INSTALL}/source/processes/hadronic/models/chiral_inv_phase_space/fragmentation/include)
+include_directories(${G4INSTALL}/source/processes/hadronic/models/chiral_inv_phase_space/cross_sections/include)
+include_directories(${G4INSTALL}/source/processes/hadronic/models/chiral_inv_phase_space/body/include)
+include_directories(${G4INSTALL}/source/processes/hadronic/models/chiral_inv_phase_space/interface/include)
+include_directories(${G4INSTALL}/source/processes/hadronic/models/util/include)
+include_directories(${G4INSTALL}/source/processes/hadronic/models/high_energy/include)
+include_directories(${G4INSTALL}/source/processes/hadronic/models/cascade/cascade/include)
+include_directories(${G4INSTALL}/source/processes/hadronic/models/cascade/utils/include)
+include_directories(${G4INSTALL}/source/processes/hadronic/models/cascade/evaporation/include)
+include_directories(${G4INSTALL}/source/processes/hadronic/models/lepto_nuclear/include)
+include_directories(${G4INSTALL}/source/processes/hadronic/models/lll_fission/include)
+include_directories(${G4INSTALL}/source/processes/hadronic/models/lend/include)
+include_directories(${G4INSTALL}/source/processes/hadronic/models/theo_high_energy/include)
+include_directories(${G4INSTALL}/source/processes/hadronic/models/abla/include)
+include_directories(${G4INSTALL}/source/processes/hadronic/models/binary_cascade/include)
+include_directories(${G4INSTALL}/source/processes/hadronic/models/im_r_matrix/include)
+include_directories(${G4INSTALL}/source/processes/hadronic/models/quasi_elastic/include)
+include_directories(${G4INSTALL}/source/processes/hadronic/models/rpg/include)
+include_directories(${G4INSTALL}/source/processes/hadronic/models/abrasion/include)
+include_directories(${G4INSTALL}/source/processes/hadronic/models/coherent_elastic/include)
+include_directories(${G4INSTALL}/source/processes/hadronic/models/neutron_hp/include)
+include_directories(${G4INSTALL}/source/processes/hadronic/models/particle_hp/include)
+include_directories(${G4INSTALL}/source/processes/hadronic/models/em_dissociation/include)
+include_directories(${G4INSTALL}/source/processes/hadronic/models/isotope_production/include)
+include_directories(${G4INSTALL}/source/processes/parameterisation/include)
+include_directories(${G4INSTALL}/source/processes/scoring/include)
+include_directories(${G4INSTALL}/source/readout/include)
+include_directories(${G4INSTALL}/source/run/include)
+include_directories(${G4INSTALL}/source/track/include)
+include_directories(${G4INSTALL}/source/tracking/include)
+include_directories(${G4INSTALL}/source/visualization/management/include)
+include_directories(${G4INSTALL}/source/visualization/RayTracer/include)
+include_directories(${G4INSTALL}/source/visualization/gMocren/include)
+include_directories(${G4INSTALL}/source/visualization/XXX/include)
+include_directories(${G4INSTALL}/source/visualization/OpenGL/include)
+include_directories(${G4INSTALL}/source/visualization/OpenInventor/include)
+include_directories(${G4INSTALL}/source/visualization/modeling/include)
+include_directories(${G4INSTALL}/source/visualization/HepRep/include)
+include_directories(${G4INSTALL}/source/visualization/FukuiRenderer/include)
+include_directories(${G4INSTALL}/source/visualization/Tree/include)
+include_directories(${G4INSTALL}/source/visualization/VRML/include)
+include_directories(${G4INSTALL}/source/visualization/externals/gl2ps/include)
+include_directories(${G4INSTALL}/source/visualization/externals/zlib/include)
+
+#-----------------------------------------------------------------------------
+
+
+# -L${G4INSTALL}lib/Linux-g++/ 
+set(Geant4_GLOBAL_LIBRARIES
+ -L${G4INSTALL}/build/lib64/ 
+   -lG4interfaces 
+   -lG4persistency
+   -lG4analysis
+   -lG4error_propagation
+   -lG4readout
+   -lG4physicslists
+   -lG4run
+   -lG4event
+   -lG4tracking
+   -lG4parmodels
+   -lG4processes
+   -lG4digits_hits
+   -lG4track
+   -lG4particles
+   -lG4geometry
+   -lG4materials
+   -lG4graphics_reps
+   -lG4intercoms
+   -lG4global
+   -lG4FR
+   -lG4GMocren
+   -lG4OpenGL
+   -lG4RayTracer
+   -lG4Tree
+   -lG4VRML
+   -lG4clhep
+   -lG4gl2ps
+   -lG4visHepRep
+   -lG4visXXX
+   -lG4vis_management
+   -lG4modeling
+   -lG4zlib
+)
+
+set(Geant4_GRANULAR_LIBRARIES
+ -L${G4INSTALL}/build/lib64/ 
+  -lG4FR
+  -lG4GMocren
+  -lG4OpenGL
+  -lG4RayTracer
+  -lG4Tree
+  -lG4UIGAG
+  -lG4UIbasic
+  -lG4UIcommon
+  -lG4VRML
+  -lG4analysis
+  -lG4baryons
+  -lG4biasing
+  -lG4bosons
+  -lG4brep
+  -lG4clhep
+  -lG4csg
+  -lG4cuts
+  -lG4decay
+  -lG4detector
+  -lG4detscorer
+  -lG4detutils
+  -lG4digits
+  -lG4emadjoint
+  -lG4emdna-man
+  -lG4emdna-models
+  -lG4emdna-molman
+  -lG4emdna-moltypes
+  -lG4emdna-processes
+  -lG4emdna-utils
+  -lG4emhighenergy
+  -lG4emlowenergy
+  -lG4empii
+  -lG4empolar
+  -lG4emstandard
+  -lG4emutils
+  -lG4error_propagation
+  -lG4event
+  -lG4geomBoolean
+  -lG4geombias
+  -lG4geomdivision
+  -lG4geometrymng
+  -lG4geomtext
+  -lG4gflash
+  -lG4gl2ps
+  -lG4globman
+  -lG4graphics_reps
+  -lG4had_im_r_matrix
+  -lG4had_lend
+  -lG4had_lept_nuclear
+  -lG4had_lll_fis
+  -lG4had_mod_man
+  -lG4had_mod_util
+  -lG4had_neu_hp
+  -lG4had_preequ_exciton
+  -lG4had_string_diff
+  -lG4had_string_frag
+  -lG4had_string_man
+  -lG4had_theo_max
+  -lG4hadronic_HE
+  -lG4hadronic_LE
+  -lG4hadronic_RPG
+  -lG4hadronic_ablation
+  -lG4hadronic_abrasion
+  -lG4hadronic_bert_cascade
+  -lG4hadronic_binary
+  -lG4hadronic_body_ci
+  -lG4hadronic_coherent_elastic
+  -lG4hadronic_crosec_ci
+  -lG4hadronic_deex_evaporation
+  -lG4hadronic_deex_fermi_breakup
+  -lG4hadronic_deex_fission
+  -lG4hadronic_deex_gem_evaporation
+  -lG4hadronic_deex_handler
+  -lG4hadronic_deex_management
+  -lG4hadronic_deex_multifragmentation
+  -lG4hadronic_deex_photon_evaporation
+  -lG4hadronic_deex_util
+  -lG4hadronic_em_dissociation
+  -lG4hadronic_fragm_ci
+  -lG4hadronic_hetcpp_evaporation
+  -lG4hadronic_hetcpp_utils
+  -lG4hadronic_inclxx_interface
+  -lG4hadronic_inclxx_physics
+  -lG4hadronic_inclxx_utils
+  -lG4hadronic_interface_ci
+  -lG4hadronic_iso
+  -lG4hadronic_mgt
+  -lG4hadronic_proc
+  -lG4hadronic_proc_ci
+  -lG4hadronic_qgstring
+  -lG4hadronic_qmd
+  -lG4hadronic_quasi_elastic
+  -lG4hadronic_radioactivedecay
+  -lG4hadronic_stop
+  -lG4hadronic_util
+  -lG4hadronic_xsect
+  -lG4hepnumerics
+  -lG4hits
+  -lG4intercoms
+  -lG4ions
+  -lG4leptons
+  -lG4magneticfield
+  -lG4materials
+  -lG4mctruth
+  -lG4mesons
+  -lG4modeling
+  -lG4muons
+  -lG4navigation
+  -lG4optical
+  -lG4parameterisation
+  -lG4partadj
+  -lG4partman
+  -lG4partutils
+  -lG4phys_builders
+  -lG4phys_lists
+  -lG4procman
+  -lG4readout
+  -lG4run
+  -lG4scoring
+  -lG4shortlived
+  -lG4specsolids
+  -lG4track
+  -lG4tracking
+  -lG4transportation
+  -lG4visHepRep
+  -lG4visXXX
+  -lG4vis_management
+  -lG4volumes
+  -lG4xrays
+  -lG4zlib
+ )
+
+#set(Geant4_LIBRARIES ${Geant4_GRANULAR_LIBRARIES}/33 )
+set(Geant4_LIBRARIES ${Geant4_GLOBAL_LIBRARIES} )
