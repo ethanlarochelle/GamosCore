@@ -44,6 +44,8 @@
 #include "GamosCore/GamosUtils/include/GmFileIn.hh"
 #include "GamosCore/GamosUtils/include/GmGenUtils.hh"
 #include "GamosCore/GamosBase/Base/include/GmParameterMgr.hh"
+#include "G4PhysicalConstants.hh"
+#include "G4SystemOfUnits.hh"
 
 GmGenerDistWavelengthFromFile::GmGenerDistWavelengthFromFile()
 {
