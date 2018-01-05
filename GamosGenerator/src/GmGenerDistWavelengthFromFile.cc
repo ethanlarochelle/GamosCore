@@ -56,7 +56,7 @@ void GmGenerDistWavelengthFromFile::ReadWavelengthDist()
 {
   // Read energy - probability  pairs
   G4String path( getenv( "GAMOS_SEARCH_PATH" ) );
-  theFileName = FileInPath( path, theFileName );
+  theFileName = GmGenUtils::FileInPath( path, theFileName );
 
   GmFileIn fin = GmFileIn::GetInstance(theFileName);
 
@@ -70,7 +70,7 @@ void GmGenerDistWavelengthFromFile::ReadWavelengthDist()
 		  "Error in number of words in line",
 		  FatalErrorInArgument,
 		  G4String("Reading file " + theFileName 
-			   + ", line number " + itoa(ii) 
+			   + ", line number " + GmGenUtils::itoa(ii) 
 			   + " All lines must have two words: WAVELENGTH PROBABILITY").c_str());
     } 
 
@@ -84,8 +84,8 @@ void GmGenerDistWavelengthFromFile::ReadWavelengthDist()
 	    {
 		str_new=str;
 		str_new.erase(pos1+1,2);
-		value=GetValue(str_new);
-		enerprob[ GetValue( str_new )] = GetValue( wl[1] );
+		value=GmGenUtils::GetValue(str_new);
+		enerprob[ GmGenUtils::GetValue( str_new )] = GmGenUtils::GetValue( wl[1] );
 	    }
 		else
 		{
@@ -111,7 +111,7 @@ void GmGenerDistWavelengthFromFile::ReadWavelengthDist()
 	 	  G4Exception("GmGenerDistWavelengthFromFile::ReadWavelengthDist",
 	 		      "Asking for histogram type, and energy bin is not fixed",
 	 		      FatalErrorInArgument,
-	 		      G4String("Previous bin = " + ftoa(theHBin) + " new bin = " + ftoa(hbinn) + " difference= " + ftoa(hbinn-theHBin) ).c_str());
+	 		      G4String("Previous bin = " + GmGenUtils::ftoa(theHBin) + " new bin = " + GmGenUtils::ftoa(hbinn) + " difference= " + GmGenUtils::ftoa(hbinn-theHBin) ).c_str());
 	 	}
       }
     }
@@ -217,7 +217,7 @@ void GmGenerDistWavelengthFromFile::SetParams( const std::vector<G4String>& para
     G4Exception("GmGenerDistWavelengthFromFile::SetParams",
 		  "Wrong number of parameters", 
 		  FatalErrorInArgument,
-		G4String("There should be 1, 2 or 3 parameters: FILE_NAME CALCULATION_TYPE UNIT, there are " + itoa(nParams)).c_str());
+		G4String("There should be 1, 2 or 3 parameters: FILE_NAME CALCULATION_TYPE UNIT, there are " + GmGenUtils::itoa(nParams)).c_str());
   }
 
   if( calcType == "fixed" ) {

@@ -76,6 +76,7 @@
 #include "GamosCore/GamosUtils/include/GmGenUtils.hh"
 #include "G4OpScintillation.hh"
 
+
 /////////////////////////
 // Class Implementation
 /////////////////////////
