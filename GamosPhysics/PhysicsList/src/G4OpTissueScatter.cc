@@ -234,18 +234,18 @@ G4double cosTheta = 0.;
 
 if( std::abs(wL.front() - 1239.84187/waveLength/1000000.) < 1.E-10 ){
  	costProb1 = wlMap[0];
-	cosTheta = costProb1->(GmGenUtils::GetValue(r, isOutRange));
+	cosTheta = costProb1->GetValue(r, isOutRange);
 }
 else if ( std::abs(wL.back() - 1239.84187/waveLength/1000000.) < 1.E-10 ){
 	costProb1 = wlMap[wL.size()-1];
-	cosTheta = costProb1->(GmGenUtils::GetValue(r, isOutRange));
+	cosTheta = costProb1->GetValue(r, isOutRange);
 }
 else {
 	costProb1 = wlMap[indLow];
 	costProb2 = wlMap[indUp];
 
-	G4double cosTheta1 = costProb1->(GmGenUtils::GetValue(r, isOutRange));
-	G4double cosTheta2 = costProb2->(GmGenUtils::GetValue(r, isOutRange);
+	G4double cosTheta1 = costProb1->GetValue(r, isOutRange);
+	G4double cosTheta2 = costProb2->GetValue(r, isOutRange);
 
 	G4double wl1 = waveLengths[indLow];
 	G4double wl2 = waveLengths[indUp];
