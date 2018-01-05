@@ -77,7 +77,7 @@ void GmGenerDistWavelengthRandomFlat::SetParams( const std::vector<G4String>& pa
 	    {
 		str_new1=str1;
 		str_new1.erase(pos1+1,2);
-		theEnergyMin=GetValue(str_new1);
+		theEnergyMin=GmGenUtils::GetValue(str_new1);
 	    }
 		else
 		{
@@ -91,7 +91,7 @@ void GmGenerDistWavelengthRandomFlat::SetParams( const std::vector<G4String>& pa
 	    {
 		str_new2=str2;
 		str_new2.erase(pos2+1,2);
-		theEnergyMax=GetValue(str_new2);
+		theEnergyMax=GmGenUtils::GetValue(str_new2);
 	    }
 		else
 		{
