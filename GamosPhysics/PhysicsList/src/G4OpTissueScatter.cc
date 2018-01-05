@@ -49,7 +49,7 @@
 #include "GamosCore/GamosUtils/include/GmFileIn.hh"
 #include "GamosCore/GamosUtils/include/GmGenUtils.hh"
 #include "GamosCore/GamosBase/Base/include/GmParameterMgr.hh"
-#include "GamosCore/GamosGenerator/include/GmGenerVerbosityMgr.hh"
+#include "GamosCore/GamosGenerator/include/GmGenerVerbosity.hh"
 #include <functional>
 #include <iostream>
 

@@ -39,7 +39,7 @@
 ////////////////////////////////////////////////////////////////////////
 
 #include "GmGenerDistWavelengthFromFile.hh"
-#include "GmGenerVerbosityMgr.hh"
+#include "GmGenerVerbosity.hh"
 #include "CLHEP/Random/RandFlat.h"
 #include "GamosCore/GamosUtils/include/GmFileIn.hh"
 #include "GamosCore/GamosUtils/include/GmGenUtils.hh"

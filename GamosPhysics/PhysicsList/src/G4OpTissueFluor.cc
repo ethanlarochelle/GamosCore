@@ -49,7 +49,7 @@
 #include "G4WLSTimeGeneratorProfileExponential.hh"
 #include "CLHEP/Random/RandFlat.h"
 #include "GamosCore/GamosUtils/include/GmGenUtils.hh"
-#include "GamosCore/GamosGenerator/include/GmGenerVerbosityMgr.hh"
+#include "GamosCore/GamosGenerator/include/GmGenerVerbosity.hh"
 
 G4OpTissueFluor::G4OpTissueFluor(const G4String& processName, G4ProcessType type)
   : G4VDiscreteProcess(processName, type)

@@ -39,7 +39,7 @@
 ////////////////////////////////////////////////////////////////////////
 
 #include "GmGenerDistWavelengthRandomFlat.hh"
-#include "GmGenerVerbosityMgr.hh"
+#include "GmGenerVerbosity.hh"
 #include "GamosCore/GamosGenerator/include/GmParticleSource.hh"
 #include "GamosCore/GamosUtils/include/GmGenUtils.hh"
 #include "CLHEP/Random/RandFlat.h"
