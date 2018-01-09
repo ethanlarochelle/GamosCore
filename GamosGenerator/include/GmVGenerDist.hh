@@ -28,6 +28,7 @@
 
 #include "globals.hh"
 #include <vector>
+#include <map>
 class GmParticleSource;
 
 class GmVGenerDist
@@ -51,12 +52,9 @@ public:
   void SetParticleSource( GmParticleSource* src ) {
     theParticleSource = src; }
 
-
 protected:
   G4String theName;
-
   std::vector<G4String> theParams;
-
   GmParticleSource* theParticleSource;
 };
 

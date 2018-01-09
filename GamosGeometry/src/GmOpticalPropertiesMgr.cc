@@ -127,6 +127,13 @@ void GmOpticalPropertiesMgr::AddPropertyToTable( const std::vector<G4String> wl 
 
       // get first vector
       std::map<G4String,std::vector<G4double> >* firstProp = (*itep).second;
+      // check that the energy or wavelength vector is not defined twice
+    if (wl[2]==(*(firstProp->begin())).first) {
+    G4Exception(" GmOpticalPropertiesMgr::AddPropertyToTable",
+          " Trying to add the wavelength or energy vector twice.",
+      FatalErrorInArgument,
+          G4String("Table: " + wl[1] ));  
+    }
       std::vector<G4double> firstPropV = (*(firstProp->begin())).second;
       if( wl.size()-3 != firstPropV.size() ) {
 	G4Exception(" GmOpticalPropertiesMgr::AddPropertyToTable",
@@ -412,13 +419,33 @@ void GmOpticalPropertiesMgr::BuildG4()
   msmsvd::const_iterator itep;
   for( itep = theMPTProperties.begin(); itep != theMPTProperties.end(); itep++ ){
     std::map<G4String,std::vector<G4double> >* prop = (*itep).second;
-    std::map<G4String,std::vector<G4double> >::const_iterator itevE = prop->find("ENERGIES");
-    if( itevE == prop->end() ){
-      G4Exception( "GmOpticalPropertiesMgr::BuildG4 ",
-		   "Trying to add a property to a G4MaterialPropertiesTable wihtout having defined an energy vector",
-		   FatalErrorInArgument,
-		   G4String("Table: "+(*itep).first));
+    std::map<G4String,std::vector<G4double> >::const_iterator itevE1 = prop->find("ENERGIES");
+    std::map<G4String,std::vector<G4double> >::const_iterator itevE2 = prop->find("WAVELENGTHS");
+    std::map<G4String,std::vector<G4double> >::const_iterator itevE;
+    if( itevE1 == prop->end() ){
+      if( itevE2 == prop->end() ){
+        G4Exception( "GmOpticalPropertiesMgr::BuildG4 ",
+		    "Trying to add a property to a G4MaterialPropertiesTable wihtout having defined an energy vector",
+		    FatalErrorInArgument,
+		    G4String("Table: "+(*itep).first));
+      }
+      else{
+        itevE = itevE2;
+      }
     }
+    else if (itevE1 != prop->end() ){
+      if ( itevE2 != prop->end() ){
+           G4Exception( "GmOpticalPropertiesMgr::BuildG4 ",
+        "Trying to add a property to a G4MaterialPropertiesTable with both an energy and wavelength vector.",
+        FatalErrorInArgument,
+        G4String("Table: "+(*itep).first));
+      }
+      else{
+        itevE = itevE1;
+      }
+    }
+  else{
+  }
 
     G4MaterialPropertiesTable* mpt = (*(theMatPropTables.find( (*itep).first ))).second;
     G4int nVal = (*itevE).second.size();
