@@ -51,10 +51,11 @@ GEANT4_DEFINE_MODULE(NAME GamosCore_GamosScoring_Scorers
        GmG4PSNofSecondary.hh
        GmG4PSMinKinEAtGeneration.hh
        GmG4PSEnergyDeposit.hh
+       GmPSTrackLengthFluence.hh
 
    SOURCES
-       GmScoringSurfaceSphere.cc
        plugin.cc
+       GmScoringSurfaceSphere.cc
        GmG4PSData.cc
        GmG4PSNofSecondary.cc
        GmVScoringSurfaceSolid.cc
