@@ -54,8 +54,8 @@ GEANT4_DEFINE_MODULE(NAME GamosCore_GamosScoring_Scorers
        GmPSTrackLengthFluence.hh
 
    SOURCES
-       plugin.cc
        GmScoringSurfaceSphere.cc
+       plugin.cc
        GmG4PSData.cc
        GmG4PSNofSecondary.cc
        GmVScoringSurfaceSolid.cc
@@ -89,6 +89,7 @@ GEANT4_DEFINE_MODULE(NAME GamosCore_GamosScoring_Scorers
        GmG4PSPassageCellFlux.cc
        GmG4PSTrackLength.cc
        GmG4PSTermination.cc
+       GmPSTrackLengthFluence.cc
  
    GRANULAR_DEPENDENCIES
 

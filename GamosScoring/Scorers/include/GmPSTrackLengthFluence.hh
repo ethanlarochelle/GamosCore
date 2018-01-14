@@ -46,6 +46,7 @@
 
 class GmPSTrackLengthFluence : public GmVPrimitiveScorer
 {
+
  public: // with description
   GmPSTrackLengthFluence(G4String name);
   virtual ~GmPSTrackLengthFluence();
@@ -57,8 +58,6 @@ public:
   virtual void EndOfEvent(G4HCofThisEvent*);
   virtual void DrawAll();
   virtual void PrintAll();
-
- private:
 };
 
 
