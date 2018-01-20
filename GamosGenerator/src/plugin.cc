@@ -41,6 +41,8 @@ PLUGINSVC_FACTORY (GmGeneratorChangeEnergyAndMaterial,G4VUserPrimaryGeneratorAct
 #include "GmGenerDistEnergyRandomFlat.hh"
 #include "GmGenerDistEnergyGaussian.hh"
 #include "GmGenerDistEnergyFromFile.hh"
+#include "GmGenerDistWavelengthFromFile.hh"
+#include "GmGenerDistTimeConstant.hh"
 #include "GmGenerDistTimeConstant.hh"
 #include "GmGenerDistTimeDecay.hh"
 #include "GmGenerDistTimeConstantChange.hh"
@@ -73,6 +75,7 @@ PLUGINSVC_FACTORY(GmGenerDistEnergyConstantIsotopeDecay,GmVGenerDistEnergy*())
 PLUGINSVC_FACTORY(GmGenerDistEnergyRandomFlat,GmVGenerDistEnergy*())
 PLUGINSVC_FACTORY(GmGenerDistEnergyGaussian,GmVGenerDistEnergy*())
 PLUGINSVC_FACTORY(GmGenerDistEnergyFromFile,GmVGenerDistEnergy*())
+PLUGINSVC_FACTORY(GmGenerDistWavelengthFromFile,GmVGenerDistEnergy*())
 PLUGINSVC_FACTORY(GmGenerDistEnergyIsolethargical,GmVGenerDistEnergy*())
 PLUGINSVC_FACTORY(GmGenerDistEnergyMCNPisolethargical,GmVGenerDistEnergy*())
 
