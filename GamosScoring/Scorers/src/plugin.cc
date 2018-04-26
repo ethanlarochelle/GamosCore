@@ -47,7 +47,7 @@
 #include "GmG4PSPopulation.hh"
 #include "GmG4PSTrackCounter.hh"
 #include "GmG4PSTrackLength.hh"
-#include "GmG4PSTrackLengthFluence.hh"
+#include "GmPSTrackLengthFluence.hh"
 #include "GmG4PSKerma.hh"
 
 #include "GmG4PSData.hh"
@@ -82,7 +82,7 @@ PLUGINSVC_FACTORY(GmPSSphericalDoseDeposit,GmVPrimitiveScorer*(G4String))
 PLUGINSVC_FACTORY(GmPSCylindricalRZDoseDeposit,GmVPrimitiveScorer*(G4String))
 PLUGINSVC_FACTORY(GmPSCylindricalRPhiDoseDeposit,GmVPrimitiveScorer*(G4String))
 PLUGINSVC_FACTORY(GmPSCylindricalZPhiDoseDeposit,GmVPrimitiveScorer*(G4String))
-PLUGINSVC_FACTORY(GmG4PSTrackLengthFluence, GmVPrimitiveScorer*(G4String))
+PLUGINSVC_FACTORY(GmPSTrackLengthFluence, GmVPrimitiveScorer*(G4String))
 
 #include "GmPSLET.hh"
 #include "GmPSEdep_LET.hh"

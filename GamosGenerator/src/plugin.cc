@@ -43,7 +43,7 @@ PLUGINSVC_FACTORY (GmGeneratorScanVis,G4VUserPrimaryGeneratorAction*())
 #include "GmGenerDistEnergyRandomFlat.hh"
 #include "GmGenerDistEnergyGaussian.hh"
 #include "GmGenerDistEnergyFromFile.hh"
-#include "GmGenerDistWavelengthFromFile.h"
+#include "GmGenerDistWavelengthFromFile.hh"
 #include "GmGenerDistWavelengthRandomFlat.hh"
 #include "GmGenerDistTimeConstant.hh"
 #include "GmGenerDistTimeDecay.hh"

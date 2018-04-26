@@ -91,7 +91,6 @@
 #include "G4PhysicsOrderedFreeVector.hh"
 #include "G4PhysicalConstants.hh"
 #include "G4SystemOfUnits.hh"
-
 #include "G4EmSaturation.hh"
 
 // Class Description:
