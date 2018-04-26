@@ -96,6 +96,23 @@ void GmOpticalPropertiesMgr::AddEnergiesToTable( std::vector<G4String> wl )
 
 }
 
+//-----------------------------------------------------------------------
+void GmOpticalPropertiesMgr::AddWavelengthsToTable( std::vector<G4String> wl )
+{
+  std::vector<G4String>::iterator ite = wl.begin();
+  ite++; ite++;
+  wl.insert(ite, "WAVELENGTHS" );
+#ifndef GAMOS_NO_VERBOSE
+  if( GeomVerb(debugVerb) ) {
+    for( unsigned int ii = 0; ii < wl.size() ; ii++ ) {
+      G4cout << "GmOpticalPropertiesMgr::AddWavelengthsToTable ENER " << wl[ii] << G4endl;
+    }
+  }
+#endif
+  AddPropertyToTable( wl );
+
+}
+
 
 //-----------------------------------------------------------------------
 void GmOpticalPropertiesMgr::AddPropertyToTable( const std::vector<G4String> wl )
@@ -110,6 +127,13 @@ void GmOpticalPropertiesMgr::AddPropertyToTable( const std::vector<G4String> wl 
 
       // get first vector
       std::map<G4String,std::vector<G4double> >* firstProp = (*itep).second;
+      // check that energy or wavelength vector is not defined twice
+      if (wl[2]==(*(firstProp->begin())).first) {
+        G4Exception(" GmOpticalPropertiesMgr::AddPropertyToTable",
+          " Trying to add the wavelength or energy vector twice.",
+          FatalErrorInArgument,
+            G4String("Table: " + wl[1]));
+      }
       std::vector<G4double> firstPropV = (*(firstProp->begin())).second;
       if( wl.size()-3 != firstPropV.size() ) {
 	G4Exception(" GmOpticalPropertiesMgr::AddPropertyToTable",
@@ -395,12 +419,30 @@ void GmOpticalPropertiesMgr::BuildG4()
   msmsvd::const_iterator itep;
   for( itep = theMPTProperties.begin(); itep != theMPTProperties.end(); itep++ ){
     std::map<G4String,std::vector<G4double> >* prop = (*itep).second;
-    std::map<G4String,std::vector<G4double> >::const_iterator itevE = prop->find("ENERGIES");
-    if( itevE == prop->end() ){
-      G4Exception( "GmOpticalPropertiesMgr::BuildG4 ",
-		   "Trying to add a property to a G4MaterialPropertiesTable wihtout having defined an energy vector",
-		   FatalErrorInArgument,
-		   G4String("Table: "+(*itep).first));
+    std::map<G4String,std::vector<G4double> >::const_iterator itevE1 = prop->find("ENERGIES");
+    std::map<G4String,std::vector<G4double> >::const_iterator itevE2 = prop->find("WAVELENGTHS");
+    std::map<G4String,std::vector<G4double> >::const_iterator itevE;
+    if( itevE1 == prop->end() ){
+      if( itevE2 == prop->end() ){
+        G4Exception( "G4OpticalPropertiesMgr::BuildG4 ",
+          "Trying to add a property to a G4MaterialPropertiesTable without having defined energy vector",
+          FatalErrorInArgument,
+          G4String("Table: "+(*itep).first));
+      }
+      else{
+        itevE = itevE2;
+      }
+    }
+    else if (itevE1 != prop->end() ){
+      if ( itevE2 != prop->end() ){
+        G4Exception( "G4OpticalPropertiesMgr::BuildG4 ",
+          "Trying to add a property to a G4MaterialPropertiesTable with both an energy and wavelength vector.",
+          FatalErrorInArgument,
+          G4String("Table: "+(*itep).first));
+      }
+      else{
+        itevE = itevE1;
+      }
     }
 
     G4MaterialPropertiesTable* mpt = (*(theMatPropTables.find( (*itep).first ))).second;

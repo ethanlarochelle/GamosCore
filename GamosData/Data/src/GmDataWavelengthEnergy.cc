@@ -23,45 +23,53 @@
 // * acceptance of all terms of the GAMOS Software license.           *
 // ********************************************************************
 //
-#ifndef GmVGenerDist_HH
-#define GmVGenerDist_HH
+////////////////////////////////////////////////////////////////////////
+// Optical Photon Wavelength Data Type
+////////////////////////////////////////////////////////////////////////
+//
+// File GmDataWavelengthEnergy.cc
+// Description: Wavelength data type.
+// Created: 2013-02-22
+// Author: Adam Glaser
+//
+// Creates wavelength data type for optical photons.
+//
+// mail:  adam.k.glaser@dartmouth.edu
+//
+////////////////////////////////////////////////////////////////////////
 
-#include "globals.hh"
-#include <vector>
-#include <map>
-class GmParticleSource;
+#include "GmDataWavelengthEnergy.hh"
+#include "G4tgrUtils.hh"
+#include "G4Step.hh"
+#include "G4Track.hh"
 
-enum EFFCalcType { EFFCT_Fixed, EFFCT_Histogram, EFFCT_Interpolate, EFFCT_InterpolateLog };
-
-class GmVGenerDist
+//----------------------------------------------------------------
+GmDataWavelengthEnergy::GmDataWavelengthEnergy()
 {
-public:
-  GmVGenerDist(){};
-  virtual ~GmVGenerDist(){};
+  bInitial = false;
+  theHMax = 1.;
+  theExcludedTypes.insert(DTSeco);
+  theExcludedTypes.insert(DTEvent);
+}
 
-  virtual void SetParams( const std::vector<G4String>& wl ){
-    theOrigParams = wl; }; 
-
-  virtual void ResetParams(); // if not implemented it will call method above
-
-  void CopyParams( std::vector<G4String> params ) {
-    theOrigParams = params; }
-
-  G4String GetName() const { 
-    return theName; }
-
-  GmParticleSource* GetParticleSource() const {
-    return theParticleSource; }
-  void SetParticleSource( GmParticleSource* src ) {
-    theParticleSource = src; }
+//----------------------------------------------------------------
+GmDataWavelengthEnergy::~GmDataWavelengthEnergy()
+{
+}
 
 
-protected:
-  G4String theName;
+//----------------------------------------------------------------
+G4double GmDataWavelengthEnergy::GetValueFromStep( const G4Step* aStep, G4int )
+{
+  G4double energy=aStep->GetPostStepPoint()->GetKineticEnergy()+aStep->GetTrack()->GetDefinition()->GetPDGMass(); 
 
-  std::vector<G4String> theOrigParams;
+ return 1239.84187/energy;
+}
 
-  GmParticleSource* theParticleSource;
-};
+//----------------------------------------------------------------
+G4double GmDataWavelengthEnergy::GetValueFromTrack( const G4Track* aTrack, G4int )
+{
+  G4double energy=aTrack->GetKineticEnergy()+aTrack->GetDefinition()->GetPDGMass();
 
-#endif
+ return 1239.84187/energy;
+}

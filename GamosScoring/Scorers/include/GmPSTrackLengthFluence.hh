@@ -23,45 +23,43 @@
 // * acceptance of all terms of the GAMOS Software license.           *
 // ********************************************************************
 //
-#ifndef GmVGenerDist_HH
-#define GmVGenerDist_HH
+////////////////////////////////////////////////////////////////////////
+// Optical Photon Tracklength Fluence Implementation
+////////////////////////////////////////////////////////////////////////
+//
+// File G4PSTrackLengthFluence.hh
+// Description: Scores the tracklength fluence.
+// Created: 2013-02-22
+// Author: Adam Glaser
+//
+// This subroutine will perform record the fluence in voxelised geometry.
+//
+// mail:  adam.k.glaser@dartmouth.edu
+//
+////////////////////////////////////////////////////////////////////////
 
-#include "globals.hh"
-#include <vector>
-#include <map>
-class GmParticleSource;
+#ifndef GmPSTrackLengthFluence_h
+#define GmPSTrackLengthFluence_h 1
 
-enum EFFCalcType { EFFCT_Fixed, EFFCT_Histogram, EFFCT_Interpolate, EFFCT_InterpolateLog };
+#include "GamosCore/GamosScoring/Management/include/GmVPrimitiveScorer.hh"
+#include "G4THitsMap.hh"
 
-class GmVGenerDist
+class GmPSTrackLengthFluence : public GmVPrimitiveScorer
 {
-public:
-  GmVGenerDist(){};
-  virtual ~GmVGenerDist(){};
 
-  virtual void SetParams( const std::vector<G4String>& wl ){
-    theOrigParams = wl; }; 
-
-  virtual void ResetParams(); // if not implemented it will call method above
-
-  void CopyParams( std::vector<G4String> params ) {
-    theOrigParams = params; }
-
-  G4String GetName() const { 
-    return theName; }
-
-  GmParticleSource* GetParticleSource() const {
-    return theParticleSource; }
-  void SetParticleSource( GmParticleSource* src ) {
-    theParticleSource = src; }
-
-
-protected:
-  G4String theName;
-
-  std::vector<G4String> theOrigParams;
-
-  GmParticleSource* theParticleSource;
+ public: // with description
+  GmPSTrackLengthFluence(G4String name);
+  virtual ~GmPSTrackLengthFluence();
+  
+protected: // with description
+  virtual G4bool ProcessHits(G4Step*,G4TouchableHistory*);
+  
+public: 
+  virtual void EndOfEvent(G4HCofThisEvent*);
+  virtual void DrawAll();
+  virtual void PrintAll();
 };
 
+
 #endif
+

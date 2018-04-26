@@ -23,45 +23,34 @@
 // * acceptance of all terms of the GAMOS Software license.           *
 // ********************************************************************
 //
-#ifndef GmVGenerDist_HH
-#define GmVGenerDist_HH
+////////////////////////////////////////////////////////////////////////
+// Optical Photon Wavelength Data Type
+////////////////////////////////////////////////////////////////////////
+//
+// File GmDataWavelengthEnergy.hh
+// Description: Wavelength data type.
+// Created: 2013-02-22
+// Author: Adam Glaser
+//
+// Creates wavelength data type for optical photons.
+//
+// mail:  adam.k.glaser@dartmouth.edu
+//
+////////////////////////////////////////////////////////////////////////
 
-#include "globals.hh"
-#include <vector>
-#include <map>
-class GmParticleSource;
+#ifndef GmDataWavelengthEnergy_hh
+#define GmDataWavelengthEnergy_hh
 
-enum EFFCalcType { EFFCT_Fixed, EFFCT_Histogram, EFFCT_Interpolate, EFFCT_InterpolateLog };
+#include "GamosCore/GamosData/Management/include/GmVData.hh"
 
-class GmVGenerDist
+class GmDataWavelengthEnergy : public GmVData
 {
 public:
-  GmVGenerDist(){};
-  virtual ~GmVGenerDist(){};
+  GmDataWavelengthEnergy();
+  ~GmDataWavelengthEnergy();
 
-  virtual void SetParams( const std::vector<G4String>& wl ){
-    theOrigParams = wl; }; 
+  virtual G4double GetValueFromStep( const G4Step* aStep, G4int index = 0 );
+  virtual G4double GetValueFromTrack( const G4Track* aTrack, G4int index = 0 );
 
-  virtual void ResetParams(); // if not implemented it will call method above
-
-  void CopyParams( std::vector<G4String> params ) {
-    theOrigParams = params; }
-
-  G4String GetName() const { 
-    return theName; }
-
-  GmParticleSource* GetParticleSource() const {
-    return theParticleSource; }
-  void SetParticleSource( GmParticleSource* src ) {
-    theParticleSource = src; }
-
-
-protected:
-  G4String theName;
-
-  std::vector<G4String> theOrigParams;
-
-  GmParticleSource* theParticleSource;
 };
-
 #endif

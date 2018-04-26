@@ -23,45 +23,62 @@
 // * acceptance of all terms of the GAMOS Software license.           *
 // ********************************************************************
 //
-#ifndef GmVGenerDist_HH
-#define GmVGenerDist_HH
+////////////////////////////////////////////////////////////////////////
+// Optical Photon User-Defined Wavelength Distribution
+////////////////////////////////////////////////////////////////////////
+//
+// File G4GenerDistWavelengthFromFile.hh
+// Description: Generates optical photons from a user-defined spectrum.
+// Created: 2013-02-22
+// Author: Adam Glaser
+//
+// This subroutine will generate a user-defined whitelight spectrum.
+//
+// mail:  adam.k.glaser@dartmouth.edu
+//
+////////////////////////////////////////////////////////////////////////
 
+#ifndef GmGenerDistWavelengthFromFile_h
+#define GmGenerDistWavelengthFromFile_h 1
+
+#include "G4VUserPrimaryGeneratorAction.hh"
 #include "globals.hh"
-#include <vector>
+#include "G4ThreeVector.hh"
+
+class G4ParticleGun;
+class G4Event;
+class GmAnalysisMgr;
 #include <map>
+
+#include "GamosCore/GamosGenerator/include/GmVGenerDistEnergy.hh"
 class GmParticleSource;
+enum EFFCalcType2 { EFFCT_Fixed2, EFFCT_Histogram2, EFFCT_Interpolate2, EFFCT_InterpolateLog2 };
 
-enum EFFCalcType { EFFCT_Fixed, EFFCT_Histogram, EFFCT_Interpolate, EFFCT_InterpolateLog };
-
-class GmVGenerDist
+class GmGenerDistWavelengthFromFile : public GmVGenerDistEnergy
 {
 public:
-  GmVGenerDist(){};
-  virtual ~GmVGenerDist(){};
+  GmGenerDistWavelengthFromFile();
+  virtual ~GmGenerDistWavelengthFromFile(){};
 
-  virtual void SetParams( const std::vector<G4String>& wl ){
-    theOrigParams = wl; }; 
+  virtual G4double GenerateEnergy( const GmParticleSource* source );
 
-  virtual void ResetParams(); // if not implemented it will call method above
+  virtual void SetParams( const std::vector<G4String>& params );
 
-  void CopyParams( std::vector<G4String> params ) {
-    theOrigParams = params; }
+private:
+  G4String theFileName;
+  
+  void ReadWavelengthDist();
 
-  G4String GetName() const { 
-    return theName; }
+  G4double theEnergyUnit;
 
-  GmParticleSource* GetParticleSource() const {
-    return theParticleSource; }
-  void SetParticleSource( GmParticleSource* src ) {
-    theParticleSource = src; }
+  std::map<G4double,G4double> theProbEner; // map <added up probability, energy>
 
+  G4double theHBin;
 
-protected:
-  G4String theName;
+  EFFCalcType2 theCalculationType2;
 
-  std::vector<G4String> theOrigParams;
+  G4double theUnit;
 
-  GmParticleSource* theParticleSource;
 };
 
 #endif

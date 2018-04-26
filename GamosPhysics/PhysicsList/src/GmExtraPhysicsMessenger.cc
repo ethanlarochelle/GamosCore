@@ -38,6 +38,7 @@
 #include "GmPhysicsGammaNuclear.hh"
 #include "GmPhysicsCerenkov.hh"
 #include "GmPhysicsCoulombScattering.hh"
+#include "GmPhysicsTissueOptics.hh"
 
 #include "GamosCore/GamosUtils/include/GmGenUtils.hh"
 #include "GamosCore/GamosUtils/include/GmG4Utils.hh"
@@ -116,7 +117,7 @@ GmExtraPhysicsMessenger::GmExtraPhysicsMessenger()
   
   // add new physics
   theAddPhysicsCmd = new GmUIcmdWithAString("/gamos/physics/addPhysics",this);  
-  theAddPhysicsCmd->SetGuidance("Add new physics: decay, radioactiveDecay, opticalphoton, cerenkov, gamma-nuclear, electron-nuclear, positron-nuclear, xray-refraction, coulombScattering");
+  theAddPhysicsCmd->SetGuidance("Add new physics: decay, radioactiveDecay, opticalphoton, cerenkov, gamma-nuclear, electron-nuclear, positron-nuclear, xray-refraction, coulombScattering, tissue-optics");
   theAddPhysicsCmd->AvailableForStates(G4State_Idle);
 
   // remove processes by type
@@ -244,6 +245,10 @@ void GmExtraPhysicsMessenger::AddPhysics(G4String newValue)
     GmPhysicsOpticalPhoton* optPhotPhys = new GmPhysicsOpticalPhoton;
     optPhotPhys->ConstructProcess();
 
+  } else if( newValue == "tissue-optics" ) {
+    GmPhysicsTissueOptics* tissOptPhys = new GmPhysicsTissueOptics;
+    tissOptPhys->ConstructProcess();
+
   } else if( newValue == "gamma-nuclear" ) {
     GmPhysicsGammaNuclear* gammaPhys = new GmPhysicsGammaNuclear();
     gammaPhys->ConstructProcess();
@@ -272,7 +277,7 @@ void GmExtraPhysicsMessenger::AddPhysics(G4String newValue)
     G4Exception("GmExtraPhysicsMessenger::AddPhysics",
 		"Wrong argument",
 		FatalErrorInArgument,
-		G4String("ARGUMENT is = " + newValue + " .It may be: decay, radioactiveDecay, opticalphoton, cerenkov, gamma-nuclear, electron-nuclear, positron-nuclear, xray-refraction").c_str());
+		G4String("ARGUMENT is = " + newValue + " .It may be: decay, radioactiveDecay, opticalphoton, tissue-optics, cerenkov, gamma-nuclear, electron-nuclear, positron-nuclear, xray-refraction").c_str());
   }
   
 }

@@ -23,45 +23,39 @@
 // * acceptance of all terms of the GAMOS Software license.           *
 // ********************************************************************
 //
-#ifndef GmVGenerDist_HH
-#define GmVGenerDist_HH
+////////////////////////////////////////////////////////////////////////
+// Optical Photon User-Defined Wavelength Distribution
+////////////////////////////////////////////////////////////////////////
+//
+// File G4GenerDistWavelengthRandomFlat.hh
+// Description: Generates optical photons uniformly in a waveband.
+// Created: 2013-02-22
+// Author: Adam Glaser
+//
+// This subroutine will generate a uniform whitelight spectrum.
+//
+// mail:  adam.k.glaser@dartmouth.edu
+//
+////////////////////////////////////////////////////////////////////////
 
-#include "globals.hh"
-#include <vector>
-#include <map>
+#ifndef GmGenerDistWavelengthRandomFlat_HH
+#define GmGenerDistWavelengthRandomFlat_HH
+
+#include "GamosCore/GamosGenerator/include/GmVGenerDistEnergy.hh"
 class GmParticleSource;
 
-enum EFFCalcType { EFFCT_Fixed, EFFCT_Histogram, EFFCT_Interpolate, EFFCT_InterpolateLog };
-
-class GmVGenerDist
+class GmGenerDistWavelengthRandomFlat : public GmVGenerDistEnergy
 {
 public:
-  GmVGenerDist(){};
-  virtual ~GmVGenerDist(){};
+  GmGenerDistWavelengthRandomFlat(){};
+  virtual ~GmGenerDistWavelengthRandomFlat(){};
 
-  virtual void SetParams( const std::vector<G4String>& wl ){
-    theOrigParams = wl; }; 
+  virtual G4double GenerateEnergy( const GmParticleSource* source );
 
-  virtual void ResetParams(); // if not implemented it will call method above
+  virtual void SetParams( const std::vector<G4String>& params );
 
-  void CopyParams( std::vector<G4String> params ) {
-    theOrigParams = params; }
-
-  G4String GetName() const { 
-    return theName; }
-
-  GmParticleSource* GetParticleSource() const {
-    return theParticleSource; }
-  void SetParticleSource( GmParticleSource* src ) {
-    theParticleSource = src; }
-
-
-protected:
-  G4String theName;
-
-  std::vector<G4String> theOrigParams;
-
-  GmParticleSource* theParticleSource;
+private:
+  G4double theEnergyMin, theEnergyMax;
 };
 
 #endif
