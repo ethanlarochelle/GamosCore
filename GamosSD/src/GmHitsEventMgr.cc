@@ -210,9 +210,12 @@ void GmHitsEventMgr::DigitizeAndReconstructHits()
       iterh = theRecHitBuilders.find( (*iteh).first );
       if( iterh != theRecHitBuilders.end() ) {
 	GmVRecHitBuilderFromDigits* rhitBuilder = dynamic_cast<GmVRecHitBuilderFromDigits*>((*iterh).second);
-	theRecHits[ (*iteh).first] = rhitBuilder->ReconstructDigits( &(theDigits[(*iteh).first]) );
-	rhitBuilder->SmearRecHitsEnergy();
-	rhitBuilder->SmearRecHitsTime();
+	std::vector<GmRecHit*> recHits = rhitBuilder->ReconstructDigits(&(theDigits[(*iteh).first]) );
+	rhitBuilder->CheckRecHitsMinEnergy(recHits);
+	rhitBuilder->SmearRecHitsEnergy(recHits);
+	rhitBuilder->SmearRecHitsTime(recHits);
+	rhitBuilder->CheckEnergyEfficiency(recHits);
+	theRecHits[ (*iteh).first] = recHits;
       }
       
       //----- If no digitizer found, reconstruct hits
@@ -225,12 +228,13 @@ void GmHitsEventMgr::DigitizeAndReconstructHits()
 	GmVRecHitBuilderFromHits* rhitBuilder = dynamic_cast<GmVRecHitBuilderFromHits*>((*iterh).second);
 	const std::vector<GmHit*>* hitsCompatible = hitlist->GetHitsCompatibleInTime();
 	if( hitsCompatible->size() != 0 ) {
-	  theRecHits[ (*iteh).first] = rhitBuilder->ReconstructHits( hitsCompatible );
+	  std::vector<GmRecHit*> recHits = rhitBuilder->ReconstructHits( hitsCompatible );
+	  rhitBuilder->CheckRecHitsMinEnergy(recHits);
+	  rhitBuilder->SmearRecHitsEnergy(recHits);
+	  rhitBuilder->SmearRecHitsTime(recHits);
+	  rhitBuilder->CheckEnergyEfficiency(recHits);
+	  theRecHits[ (*iteh).first] = recHits;
 	}
-	rhitBuilder->CheckRecHitsMinEnergy();
-	rhitBuilder->SmearRecHitsEnergy();
-	rhitBuilder->SmearRecHitsTime();
-	rhitBuilder->CheckEnergyEfficiency();
       }
     }
 
@@ -405,11 +409,6 @@ void GmHitsEventMgr::CleanDigitsAndRecHits()
   }
   theDigits.clear();
   
-  std::map< G4String, GmVRecHitBuilder* >::const_iterator iterh; 
-  for( iterh = theRecHitBuilders.begin(); iterh != theRecHitBuilders.end(); iterh++ ){
-    ((*iterh).second)->CleanRecHits();
-  }
-
   theRecHits.clear();
 }
 
@@ -459,8 +458,6 @@ void GmHitsEventMgr::DeleteHits( GmRecHit* rhit )
     theRecHits.erase( iterhToDelete[ii] );
   }
   
-  std::map< G4String, GmVRecHitBuilder* >::iterator iterhb = theRecHitBuilders.find( rhit->GetSDType() );
-  (*iterhb).second->DeleteHit( rhit );
 }
 
 

@@ -25,7 +25,6 @@
 //
 #include "GmTimeStudyMgr.hh"
 #include "GmTimeStudyUA.hh"
-#include "GmTimeStudyEventUA.hh"
 #include "G4SteppingVerbose.hh"
 #include "G4EventManager.hh"
 #include "G4TrackingManager.hh"

@@ -81,3 +81,38 @@ PLUGINSVC_FACTORY(GmPSSphericalDoseDeposit,GmVPrimitiveScorer*(G4String))
 PLUGINSVC_FACTORY(GmPSCylindricalRZDoseDeposit,GmVPrimitiveScorer*(G4String))
 PLUGINSVC_FACTORY(GmPSCylindricalRPhiDoseDeposit,GmVPrimitiveScorer*(G4String))
 PLUGINSVC_FACTORY(GmPSCylindricalZPhiDoseDeposit,GmVPrimitiveScorer*(G4String))
+
+#include "GmPSLET.hh"
+#include "GmPSEdep_LET.hh"
+#include "GmPSLETD.hh"
+#include "GmPSLETPhi.hh"
+
+#include "GmPSLETBydEdx.hh"
+#include "GmPSdx_LETBydEdx.hh"
+#include "GmPSEdep_LETBydEdx.hh"
+#include "GmPSLETBydEdxD.hh"
+#include "GmPSLETBydEdxPhi.hh"
+
+#include "GmPSLETByESpect.hh"
+#include "GmPSLET_LETByESpect.hh"
+#include "GmPSLETByESpectD.hh"
+#include "GmPSLETByESpectPhi.hh"
+
+PLUGINSVC_FACTORY(GmPSLET,GmVPrimitiveScorer*(G4String))
+PLUGINSVC_FACTORY(GmPSEdep_LET,GmVPrimitiveScorer*(G4String))
+PLUGINSVC_FACTORY(GmPSLETPhi,GmVPrimitiveScorer*(G4String))
+PLUGINSVC_FACTORY(GmPSLETD,GmVPrimitiveScorer*(G4String))
+
+PLUGINSVC_FACTORY(GmPSLETBydEdx,GmVPrimitiveScorer*(G4String))
+PLUGINSVC_FACTORY(GmPSdx_LETBydEdx,GmVPrimitiveScorer*(G4String))
+PLUGINSVC_FACTORY(GmPSEdep_LETBydEdx,GmVPrimitiveScorer*(G4String))
+PLUGINSVC_FACTORY(GmPSLETBydEdxD,GmVPrimitiveScorer*(G4String))
+PLUGINSVC_FACTORY(GmPSLETBydEdxPhi,GmVPrimitiveScorer*(G4String))
+
+PLUGINSVC_FACTORY(GmPSLETByESpect,GmVPrimitiveScorer*(G4String))
+PLUGINSVC_FACTORY(GmPSLET_LETByESpect,GmVPrimitiveScorer*(G4String))
+PLUGINSVC_FACTORY(GmPSLETByESpectD,GmVPrimitiveScorer*(G4String))
+PLUGINSVC_FACTORY(GmPSLETByESpectPhi,GmVPrimitiveScorer*(G4String))
+
+
+

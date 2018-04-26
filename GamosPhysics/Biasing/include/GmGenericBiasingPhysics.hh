@@ -49,7 +49,7 @@
 // ********************************************************************
 //
 //
-// $Id: GmGenericBiasingPhysics.hh,v 1.8 2016/11/16 09:59:13 arce Exp $
+// $Id: GmGenericBiasingPhysics.hh,v 1.3 2018/01/20 15:14:33 arce Exp $
 //
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
@@ -117,7 +117,9 @@ public:
   // each physics process will be instantiated and
   // registered to the process manager of each particle type
   virtual void ConstructProcess();
-  
+  void AddSplittingProcess( std::vector<G4String> params);
+  void CreateSplittingProcess( std::vector<G4String> params);
+
 private:
   
   // hide assignment operator
@@ -143,8 +145,8 @@ private:
   // -- Report:
   G4bool fVerbose;
 
-
-  
+  std::vector<G4String> theSplittingProcParams;
+   
 };
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......

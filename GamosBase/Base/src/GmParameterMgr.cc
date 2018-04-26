@@ -80,12 +80,12 @@ G4bool GmParameterMgr::AddParamOfDefinedType( const G4String& name, const std::v
   std::vector<G4int> values;
   std::vector<G4double> valuesd;
 
-  //  G4cout << " AddParamOfDefinedType  " << name << " = " << typ << G4endl;
+  //  G4cout << " AddParamOfDefinedType  " << name << " = " << typ << G4endl; //GDEB
 
   switch ( typ ){
   case PTdouble:
     bExists = theParametersDouble.AddParam( name, GmGenUtils::GetValue(wl[0]));
- //   G4cout <<  theParametersDouble.size() << " theParametersDouble.AddParam  name " << name << " GetVal " << GetVal(wl[0]) << G4endl;
+    //  G4cout <<  theParametersDouble.size() << " theParametersDouble.AddParam  name " << name << " GetVal " << GetVal(wl[0]) << G4endl;
     break;
   case PTstring:
     bExists = theParametersString.AddParam( name, wl[0]);
@@ -106,6 +106,7 @@ G4bool GmParameterMgr::AddParamOfDefinedType( const G4String& name, const std::v
     for( ite = wl.begin(); ite != wl.end(); ite++ ){
       if( !GmGenUtils::IsNumberWithUnit( *ite ) ){
 	noNumber = TRUE;
+	//	G4cout << " AddParamOfDefinedType  noNumber " << noNumber << " = " << typ << G4endl; //GDEB
       }	
     }
     typ = SetParamType( noNumber, wl.size() );
@@ -358,6 +359,9 @@ void GmParameterMgr::PrintParametersUsage( G4int iPrint, std::ostream& out, std:
 	  err << "PARAMETER: " << (*ites).first << std::endl;
 	}
       }
+      err << "%%%   PLEASE PUT THIS COMMAND AT THE END OF YOUR SCRIPT: " << G4endl;
+      err << "%%%   /gamos/base/printParametersUsage 2 " << G4endl;
+      err << "%%%   AND LOOK FOR A SIMILAR PARAMETER " << G4endl;
     }
   }
 

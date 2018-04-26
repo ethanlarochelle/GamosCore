@@ -55,9 +55,9 @@ GmVPhysicsElectron::~GmVPhysicsElectron()
 { }
 
 //----------------------------------------------------------------------
-void GmVPhysicsElectron::SelectBremssAngularDist(G4SeltzerBergerModel* bremsModel )
+void GmVPhysicsElectron::SelectBremssAngularDist(G4SeltzerBergerModel* bremsModel, G4String part )
 {
-  G4String angularDist = GmParameterMgr::GetInstance()->GetStringValue("GmPhysicsElectron:Bremsstrahlung:AngularDistribution","");
+  G4String angularDist = GmParameterMgr::GetInstance()->GetStringValue("GmPhysics"+part+":Bremsstrahlung:AngularDistribution","");
 
   if( angularDist == "dipBust" ) {
     bremsModel->SetAngularDistribution( new G4DipBustGenerator() );
@@ -74,13 +74,14 @@ void GmVPhysicsElectron::SelectBremssAngularDist(G4SeltzerBergerModel* bremsMode
 		FatalErrorInArgument,
 		G4String("Available distributions are dipBust / tsai / 2bn / 2bs , you have set it to "+angularDist).c_str());
   }
-  
+ 
+  G4cout << "  SelectBremssAngularDist " << angularDist << G4endl; //GDEB 
 }
 
 //----------------------------------------------------------------------
-void GmVPhysicsElectron::SelectBremssAngularDist(G4LivermoreBremsstrahlungModel* bremsModel )
+void GmVPhysicsElectron::SelectBremssAngularDist(G4LivermoreBremsstrahlungModel* bremsModel, G4String part  )
 {
-  G4String angularDist = GmParameterMgr::GetInstance()->GetStringValue("GmPhysicsElectron:Bremsstrahlung:AngularDistribution","");
+  G4String angularDist = GmParameterMgr::GetInstance()->GetStringValue("GmPhysics"+part+":Bremsstrahlung:AngularDistribution","");
   if( angularDist == "tsai" ) {
     bremsModel->SetAngularDistribution( new G4ModifiedTsai() );
   }else if( angularDist == "2bn" ) {

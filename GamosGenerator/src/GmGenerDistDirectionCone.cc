@@ -71,7 +71,7 @@ void GmGenerDistDirectionCone::SetParams( const std::vector<G4String>& params )
     G4Exception(" GmGenerDistDirectionCone::SetParam",
 		"Wrong argument",
 		FatalErrorInArgument,
-		"To set direction you have to add 3 parameters: DIR_X DIR_Y DIR_Z OPENING_ANGLE");  
+		"To set direction you have to add 4 parameters: DIR_X DIR_Y DIR_Z OPENING_ANGLE");  
   }
 
   theInitialDir = G4ThreeVector(GmGenUtils::GetValue( params[0] ), GmGenUtils::GetValue( params[1] ), GmGenUtils::GetValue( params[2] ) );

@@ -52,6 +52,9 @@ struct CompVpoints_Z{
   {return v1.z < v2.z;}
 };
 // Mcc
+class GmParameterMgr;
+class G4Navigator;
+class G4TouchableHistory;
 
 class GmPositionVolumePos : public GmVPositionObjectPos
 {
@@ -74,6 +77,10 @@ private:
 
   std::map< G4String, std::vector<TRIdata> > MapTRI;
 
+  GmParameterMgr* theParamMgr;
+  G4TouchableHistory* theTouchable;
+  G4Navigator* theNavigator;
+  
 };
 
 #endif

@@ -25,7 +25,7 @@
 //
 #include "GmDepositedEnergyFilter.hh"
 #include "GamosCore/GamosUtils/include/GmGenUtils.hh"
-#include "GamosCore/GamosBase/Base/include/GmBaseVerbosity.hh"
+#include "GamosCore/GamosBase/Filters/include/GmFilterVerbosity.hh"
 #include "G4Track.hh"
 #include "G4UnitsTable.hh"
 #include "G4EventManager.hh"
@@ -52,7 +52,7 @@ G4bool GmDepositedEnergyFilter::AcceptStep(const G4Step* aStep)
   theLastTrackID = trackID; 
   theLastEventID = eventID;
 #ifndef GAMOS_NO_VERBOSE
-  if( BaseVerb(debugVerb) ) G4cout << "  GmDepositedEnergyFilter::AcceptStep " << edepo << " lowE " << fLowEnergy << " high " << fHighEnergy << G4endl;
+  if( FilterVerb(debugVerb) ) G4cout << "  GmDepositedEnergyFilter::AcceptStep " << edepo << " lowE " << fLowEnergy << " high " << fHighEnergy << G4endl;
 #endif
   if ( edepo < fLowEnergy  ) return FALSE;
   if ( edepo > fHighEnergy ) return FALSE;
@@ -65,7 +65,7 @@ G4bool GmDepositedEnergyFilter::AcceptTrack(const G4Track* aTrack)
     return FALSE;
   }
 #ifndef GAMOS_NO_VERBOSE
-  if( BaseVerb(debugVerb) )  G4cout << "  GmDepositedEnergyFilter::AcceptTrack " << theTrackEdepo << " lowE " << fLowEnergy << " high " << fHighEnergy << G4endl;
+  if( FilterVerb(debugVerb) )  G4cout << "  GmDepositedEnergyFilter::AcceptTrack " << theTrackEdepo << " lowE " << fLowEnergy << " high " << fHighEnergy << G4endl;
 #endif
   if ( theTrackEdepo < fLowEnergy  ) return FALSE;
   if ( theTrackEdepo > fHighEnergy ) return FALSE;

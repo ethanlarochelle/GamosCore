@@ -24,7 +24,7 @@
 // ********************************************************************
 //
 #include "GmGeomConditionInMass.hh"
-#include "GamosCore/GamosBase/Base/include/GmBaseVerbosity.hh"
+#include "GamosCore/GamosBase/Filters/include/GmFilterVerbosity.hh"
 #include "G4VTouchable.hh"
 #include "G4Track.hh"
 #include "G4Step.hh"
@@ -43,7 +43,7 @@ GmGeomConditionInMass::GmGeomConditionInMass()
 const G4VTouchable* GmGeomConditionInMass::GetTouchableFromTrack(const G4Track* aTrack)
 {
 #ifndef GAMOS_NO_VERBOSE
-  if( BaseVerb(debugVerb) ) G4cout << " GmGeomConditionInMass::GetTouchableFromTrack return touchable " << G4endl;
+  if( FilterVerb(debugVerb) ) G4cout << " GmGeomConditionInMass::GetTouchableFromTrack return touchable " << G4endl;
 #endif
 //  return aTrack->GetTouchable();
 
@@ -59,7 +59,7 @@ const G4VTouchable* GmGeomConditionInMass::GetTouchableFromTrack(const G4Track* 
 const G4VTouchable* GmGeomConditionInMass::GetTouchableFromStep(const G4Step* aStep)
 {
 #ifndef GAMOS_NO_VERBOSE
-  if( BaseVerb(debugVerb) ) G4cout << " GmGeomConditionInMass::GetTouchableFromTrack return touchable " << G4endl;
+  if( FilterVerb(debugVerb) ) G4cout << " GmGeomConditionInMass::GetTouchableFromTrack return touchable " << G4endl;
 #endif
 
   if( !theNavigator ) {

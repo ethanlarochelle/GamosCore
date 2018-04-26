@@ -54,7 +54,7 @@ public: // with description
 
 public:
   inline G4String GetName() const {
-    return theName; }
+    return theFilterName; }
   inline G4String GetClass() const {
     return theClass; }
   inline void SetClass( G4String cl ) {
@@ -64,7 +64,7 @@ public:
   }
 
 protected:
-  G4String theName;
+  G4String theFilterName;
   G4String theClass;
   G4bool bFutureFilter;  
 };

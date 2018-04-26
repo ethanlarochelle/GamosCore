@@ -44,13 +44,15 @@ public:
   GmReadPhantomG4Geometry();
   ~GmReadPhantomG4Geometry();
 
-  virtual void ReadPS( GmFileIn& ){};
+  virtual void ReadPV( GmFileIn& ){};
 
 public:
   virtual void ReadPhantomData();
 
 private:
   std::pair<G4double,G4double> ReadVoxelDim( G4int nVoxel, std::ifstream& fin ); 
+
+  G4String thePatientPosition;
 };
 
 #endif

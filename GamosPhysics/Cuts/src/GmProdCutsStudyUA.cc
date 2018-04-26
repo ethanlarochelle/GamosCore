@@ -41,6 +41,7 @@ GmProdCutsStudyUA::GmProdCutsStudyUA()
 {
   theNAccepted = 0;
   theNAcceptedAncestors = 0;
+  theCurrentTrackInfo = 0;
 }
 
 //----------------------------------------------------------------
@@ -210,7 +211,7 @@ void GmProdCutsStudyUA::PreUserTrackingAction(const G4Track* aTrack )
 void GmProdCutsStudyUA::CreateTrackInfo(const G4Track* aTrack )
 {
   theCurrentTrackInfo = new GmCSTrackInfo( aTrack );
-  theCurrentTrackInfo->SetParent( GmCutsStudyMgr::GetInstance()->GetTrackInfo( aTrack->GetParentID() )); 
+  theCurrentTrackInfo->SetParent( GmCutsStudyMgr::GetInstance()->GetTrackInfo( aTrack->GetParentID() ));
 
   /*  GmCSTrackInfo* trkInfo = aTrack->GetUserInformation();
   if( trkInfo == 0 ) {
@@ -308,6 +309,7 @@ void GmProdCutsStudyUA::EndOfEventAction(const G4Event* )
   }
   
   csMgr->CleanTrackInfos();
+  theCurrentTrackInfo = 0;
 }
 
 //----------------------------------------------------------------

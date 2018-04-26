@@ -29,11 +29,13 @@
 #include "GmGeneratorFromTextFile.hh"
 #include "GmGeneratorFromBinFile.hh"
 #include "GmGeneratorChangeEnergyAndMaterial.hh"
+#include "GmGeneratorScanVis.hh"
 
 PLUGINSVC_FACTORY (GmGenerator,G4VUserPrimaryGeneratorAction*())
 PLUGINSVC_FACTORY (GmGeneratorFromTextFile,G4VUserPrimaryGeneratorAction*())
 PLUGINSVC_FACTORY (GmGeneratorFromBinFile,G4VUserPrimaryGeneratorAction*())
 PLUGINSVC_FACTORY (GmGeneratorChangeEnergyAndMaterial,G4VUserPrimaryGeneratorAction*())
+PLUGINSVC_FACTORY (GmGeneratorScanVis,G4VUserPrimaryGeneratorAction*())
 
 #include "GmGenerDistEnergyConstant.hh"
 #include "GmGenerDistEnergyBetaDecay.hh"
@@ -56,9 +58,11 @@ PLUGINSVC_FACTORY (GmGeneratorChangeEnergyAndMaterial,G4VUserPrimaryGeneratorAct
 #include "GmGenerDistPositionRectangle.hh"
 #include "GmGenerDistPositionDisc.hh"
 #include "GmGenerDistPositionDiscGaussian.hh"
+#include "GmGenerDistPositionDiscFromFile.hh"
 #include "GmGenerDistDirectionRandom.hh"
 #include "GmGenerDistDirectionConst.hh"
 #include "GmGenerDistDirectionCone.hh"
+#include "GmGenerDistDirectionCone2D.hh"
 #include "GmGenerDistDirectionGaussian.hh"
 #include "GmGenerDistPositionDirectionInVolumeSurface.hh"
 #include "GmGenerDistPositionVoxelPhantomMaterials.hh"
@@ -91,12 +95,14 @@ PLUGINSVC_FACTORY(GmGenerDistPositionSquare,GmVGenerDistPosition*())
 PLUGINSVC_FACTORY(GmGenerDistPositionRectangle,GmVGenerDistPosition*())
 PLUGINSVC_FACTORY(GmGenerDistPositionDisc,GmVGenerDistPosition*())
 PLUGINSVC_FACTORY(GmGenerDistPositionDiscGaussian,GmVGenerDistPosition*())
+PLUGINSVC_FACTORY(GmGenerDistPositionDiscFromFile,GmVGenerDistPosition*())
 PLUGINSVC_FACTORY(GmGenerDistPositionVoxelPhantomMaterials,GmVGenerDistPosition*())
 PLUGINSVC_FACTORY(GmGenerDistPositionInVoxelsFromFile,GmVGenerDistPosition*())
 
 PLUGINSVC_FACTORY(GmGenerDistDirectionRandom,GmVGenerDistDirection*())
 PLUGINSVC_FACTORY(GmGenerDistDirectionConst,GmVGenerDistDirection*())
 PLUGINSVC_FACTORY(GmGenerDistDirectionCone,GmVGenerDistDirection*())
+PLUGINSVC_FACTORY(GmGenerDistDirectionCone2D,GmVGenerDistDirection*())
 PLUGINSVC_FACTORY(GmGenerDistDirectionGaussian,GmVGenerDistDirection*())
 
 PLUGINSVC_FACTORY(GmGenerDistPositionDirectionInVolumeSurface,GmVGenerDistPosition*())
@@ -107,4 +113,3 @@ PLUGINSVC_FACTORY(GmGenerDistPositionDirectionTowardsBox,GmVGenerDistDirection*(
 
 #include "GmGenerVerbosity.hh"
 PLUGINSVC_FACTORY(GmGenerVerbosity,GmVVerbosity*())
-

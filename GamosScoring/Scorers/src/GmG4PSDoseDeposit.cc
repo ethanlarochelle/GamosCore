@@ -66,6 +66,7 @@ G4bool GmG4PSDoseDeposit::ProcessHits(G4Step* aStep,G4TouchableHistory*)
 
   G4double density = aStep->GetTrack()->GetMaterial()->GetDensity();
   G4double weight = aStep->GetPreStepPoint()->GetWeight(); 
+
 #ifndef GAMOS_NO_VERBOSE
   if( ScoringVerb(debugVerb) ) 
     G4cout << "GmG4PSDoseDeposit::ProcessHits edep " << edep 
@@ -74,6 +75,7 @@ G4bool GmG4PSDoseDeposit::ProcessHits(G4Step* aStep,G4TouchableHistory*)
 #endif
 
 #ifndef GAMOS_NO_VERBOSE
+  if( ScoringVerb(debugVerb) ) G4cout << "GmG4PSDoseDeposit::ProcessHits  EvtMap " << EvtMap << G4endl;
   if( ScoringVerb(debugVerb) ) G4cout << "GmG4PSDoseDeposit::ProcessHits  EvtMap Number of entries " << EvtMap->entries() << " tmp " << theSumV_tmp.size() << G4endl;
 #endif
 
@@ -107,31 +109,3 @@ G4double GmG4PSDoseDeposit::GetGeom2TrueStepLength( G4double kinEnergy )
   return g2tratio;
 }
 
-//--------------------------------------------------------------------
-void GmG4PSDoseDeposit::EndOfEvent(G4HCofThisEvent*)
-{
-}
-
-//--------------------------------------------------------------------
-void GmG4PSDoseDeposit::DrawAll()
-{;}
-
-//--------------------------------------------------------------------
-void GmG4PSDoseDeposit::PrintAll()
-{
-  G4cout <<" GmG4PSDoseDeposit::PrintAllDefault() " << G4endl;
-  G4cout << " MultiFunctionalDet  " << detector->GetName() << G4endl;
-  G4cout << " PrimitiveScorer " << GetName() << G4endl;
-  G4cout << " Number of entries " << EvtMap->entries() << G4endl;
-  std::map<G4int,G4double*>::iterator itr = EvtMap->GetMap()->begin();
-  for(; itr != EvtMap->GetMap()->end(); itr++) {
-    G4cout << "  copy no.: " << itr->first
-	   << "  dose deposit: " << G4BestUnit(*(itr->second),"Dose")
-	   << G4endl;
-  } 
-}
- #include "GamosCore/GamosBase/Base/include/GmVClassifier.hh" 
-G4int GmG4PSDoseDeposit::GetIndex(G4Step* aStep ) 
- { 
- return theClassifier->GetIndexFromStep( aStep ); 
-} 

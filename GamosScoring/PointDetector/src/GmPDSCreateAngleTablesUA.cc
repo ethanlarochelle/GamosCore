@@ -160,7 +160,7 @@ void GmPDSCreateAngleTablesUA::BookHistos(G4String energyName, G4String mateName
   theHistos.insert(energyName+mateName);
 
 #ifndef GAMOS_NO_VERBOSE
-      if( ScoringVerb(-debugVerb) ) G4cout << " GmPDSCreateAngleTablesUA::BookHistos " << energyName << " " << mateName << G4endl;
+      if( ScoringVerb(debugVerb) ) G4cout << " GmPDSCreateAngleTablesUA::BookHistos " << energyName << " " << mateName << G4endl;
 #endif
   std::string hnam,hnam0,hnam1;
   std::string procName;

@@ -35,6 +35,14 @@
 #include "geomdefs.hh"
 
 //---------------------------------------------------------------------
+GmGenerDistPositionDisc::GmGenerDistPositionDisc()
+{
+  theRadius = 0.;
+  theCentre = G4ThreeVector( 0., 0., 0. );
+  theRotation = G4RotationMatrix();
+}
+
+//---------------------------------------------------------------------
 G4ThreeVector GmGenerDistPositionDisc::GeneratePosition( const GmParticleSource* )
 {
   int iii=0;
@@ -63,7 +71,7 @@ G4ThreeVector GmGenerDistPositionDisc::GeneratePosition( const GmParticleSource*
 #endif
   */
 #ifndef GAMOS_NO_VERBOSE
-  if( GenerVerb(debugVerb) ) G4cout << " GmGenerDistPositionDisc::Generate pos before rotation " << pos << G4endl;
+  if( GenerVerb(debugVerb) ) G4cout << " GmGenerDistPositionDisc::Generate pos before rotation " << pos << " radius " << theRadius << G4endl;
 #endif
   pos = theRotation * pos;
 #ifndef GAMOS_NO_VERBOSE
@@ -82,7 +90,7 @@ G4ThreeVector GmGenerDistPositionDisc::GeneratePosition( const GmParticleSource*
 //---------------------------------------------------------------------
 void GmGenerDistPositionDisc::SetParams( const std::vector<G4String>& params )
 {
-
+  theRotation = G4RotationMatrix();
   if( params.size() != 1 && params.size() != 4 && params.size() != 7 ) {
     G4Exception(" GmGenerDistPositionDisc::SetParams",
 		"Wrong argument",
@@ -104,6 +112,9 @@ void GmGenerDistPositionDisc::SetParams( const std::vector<G4String>& params )
 		  G4String("direction cosines are normalized to one, they were " + GmGenUtils::ftoa(dir.mag())).c_str());
       dir /= dir.mag();
     } 
+#ifndef GAMOS_NO_VERBOSE 
+      if( GenerVerb(testVerb) ) G4cout << " GmGenerDistPositionDisc::SetParams dir " << dir << G4endl;
+#endif
     G4double angx = -asin(dir.y());
     // there are always two solutions angx, angy and PI-angx, PI+angy, choose first
     G4double angy;
@@ -112,11 +123,16 @@ void GmGenerDistPositionDisc::SetParams( const std::vector<G4String>& params )
     } else if( dir.y() == 0. ) {
       angy = 0.;
     } else {
-      angy = asin( dir.x()/sqrt(1-dir.y()*dir.y()) );
+      G4double ay =  dir.x()/sqrt(1-dir.y()*dir.y());
+      if( ay > 1. && ay < 1.000001 ) ay = 1.;
+      angy = asin( ay );
+      //      G4cout << ay-1. << " GmGenerDistPositionDisc::SetParams angy " << angy << "asin( " << dir.x()/sqrt(1.-dir.y()*dir.y()) << " " << dir.x() <<" / " << sqrt(1-dir.y()*dir.y()) << " /sqrt( " << 1-dir.y()*dir.y() << " / " << sqrt(1-dir.y()*dir.y()) <<  G4endl; //GDEB
     }
-
     // choose between  angy and PI-angy
     if( dir.z() * cos(angx)*cos(angy) < 0 ) angy = M_PI - angy;
+#ifndef GAMOS_NO_VERBOSE
+    if( GenerVerb(debugVerb) ) G4cout << " GmGenerDistPositionDisc::SetParams angx " << angx << " angy " << angy << G4endl;
+#endif
     theRotation.rotateX( angx );
     theRotation.rotateY( angy );
   }

@@ -64,6 +64,24 @@ GmSqdoseHeader::GmSqdoseHeader(const Gm3ddoseHeader& dh3d)
   theVoxelLimitsX = dh3d.GetVoxelLimitsX();
   theVoxelLimitsY = dh3d.GetVoxelLimitsY();
   theVoxelLimitsZ = dh3d.GetVoxelLimitsZ();
+  for( size_t ii = 0; ii < theNoVoxelX+1; ii++ ){
+    theVoxelLimitsX[ii] *= CLHEP::cm;
+  }
+  for( size_t ii = 0; ii < theNoVoxelY+1; ii++ ){
+    theVoxelLimitsY[ii] *= CLHEP::cm;
+  }
+  for( size_t ii = 0; ii < theNoVoxelZ+1; ii++ ){
+    theVoxelLimitsZ[ii] *= CLHEP::cm;
+  } 
+  G4cout << "GmSqdoseHeader(3ddose)  VoxelLimits " <<theVoxelLimitsX[1]-theVoxelLimitsX[0] << " " << theVoxelLimitsY[1]-theVoxelLimitsY[0] << " " << theVoxelLimitsZ[1]-theVoxelLimitsZ[0] << G4endl;
+  G4cout << "GmSqdoseHeader(3ddose)  VoxelLimits " << theVoxelLimitsZ[0] << " " << theVoxelLimitsZ[1] << " " << theVoxelLimitsZ[2] << G4endl;
+
+  // check first Z voxel
+  if( theVoxelLimitsZ[1]-theVoxelLimitsZ[0] != theVoxelLimitsZ[2]-theVoxelLimitsZ[1] ) {
+    G4cerr << "!! GmSqdoseHeader(const Gm3ddoseHeader) First Z voxel is different " << theVoxelLimitsZ[0] << " - " << theVoxelLimitsZ[1] << " " << theVoxelLimitsZ[2] << G4endl;
+    theVoxelLimitsZ[0] = theVoxelLimitsZ[1] - (theVoxelLimitsZ[2]-theVoxelLimitsZ[1]);
+    G4cout << "GmSqdoseHeader(3ddose) NEW VoxelLimits " << theVoxelLimitsZ[0] << " " << theVoxelLimitsZ[1] << " " << theVoxelLimitsZ[2] << G4endl;
+  }
 
 }
 //-----------------------------------------------------------------------
@@ -107,7 +125,7 @@ void GmSqdoseHeader::Read( FILE* fin )
 		  "Problem reading number of voxel limits X");
     }
     theVoxelLimitsX.push_back( vlim );
-    //    G4cout << ii << " READ theVoxelLimitsX " << vlim << G4endl;
+    //    G4cout << ii << " READ theVoxelLimitsX " << vlim << G4endl; //GDEB
   }
   for( size_t ii = 0; ii < theNoVoxelY+1; ii++ ){
     if( fread(&vlim, sizeof(float),  1, fin) != 1) {
@@ -117,7 +135,7 @@ void GmSqdoseHeader::Read( FILE* fin )
 		  "Problem reading number of voxel limits Y");
     }
     theVoxelLimitsY.push_back( vlim );
-    //    G4cout << ii << " READ theVoxelLimitsY " << vlim << G4endl;
+    //    G4cout << ii << " READ theVoxelLimitsY " << vlim << G4endl; //GDEB
   }
   for( size_t ii = 0; ii < theNoVoxelZ+1; ii++ ) {
     if( fread(&vlim, sizeof(float),  1, fin) != 1) {
@@ -127,8 +145,10 @@ void GmSqdoseHeader::Read( FILE* fin )
 		  "Problem reading number of voxel limits Z");
     }
     theVoxelLimitsZ.push_back( vlim );
-    //    G4cout << ii << " READ theVoxelLimitsZ " << vlim << G4endl;
+    //    G4cout << ii << " READ theVoxelLimitsZ " << vlim << G4endl; //GDEB
   }
+
+  G4cout << "GmSqdoseHeader::Read VoxelLimits " <<theVoxelLimitsX[1]-theVoxelLimitsX[0] << " " << theVoxelLimitsY[1]-theVoxelLimitsY[0] << " " << theVoxelLimitsZ[1]-theVoxelLimitsZ[0] << G4endl;
 
   float rotxx, rotxy, rotxz, rotyx, rotyy, rotyz, rotzx, rotzy, rotzz;
   if( fread(&rotxx, sizeof(float),  1, fin) != 1) {
@@ -226,7 +246,7 @@ void GmSqdoseHeader::Print( FILE* fout )
   float* vlimx = new float[theNoVoxelX+1];
   for( size_t ii = 0; ii < theNoVoxelX+1; ii++ ){
     vlimx[ii] = theVoxelLimitsX[ii];
-    //    G4cout << ii << " limx " << vlimx[ii] << " = " << theVoxelLimitsX[ii] << G4endl;
+    // G4cout << ii << " limx " << vlimx[ii] << " = " << theVoxelLimitsX[ii] << G4endl; //GDEB
   }
   if(fwrite(vlimx, sizeof(float),theNoVoxelX+1,fout)!=theNoVoxelX+1)
     printf("\n Error writing VoxelLimitsX. \n");
@@ -234,7 +254,7 @@ void GmSqdoseHeader::Print( FILE* fout )
   float* vlimy = new float[theNoVoxelY+1];
   for( size_t ii = 0; ii < theNoVoxelY+1; ii++ ){
     vlimy[ii] = theVoxelLimitsY[ii];
-    //    G4cout << ii << " limy " << vlimy[ii] << " = " << theVoxelLimitsY[ii] << G4endl;
+    //       G4cout << ii << " limy " << vlimy[ii] << " = " << theVoxelLimitsY[ii] << G4endl; //GDEB
   }
   if(fwrite(vlimy, sizeof(float),theNoVoxelY+1,fout)!=theNoVoxelY+1)
     printf("\n Error writing VoxelLimitsY. \n");
@@ -242,7 +262,7 @@ void GmSqdoseHeader::Print( FILE* fout )
   float* vlimz = new float[theNoVoxelZ+1];
   for( size_t ii = 0; ii < theNoVoxelZ+1; ii++ ){
     vlimz[ii] = theVoxelLimitsZ[ii];
-    //    G4cout << ii << " limz " << vlimz[ii] << " = " << theVoxelLimitsZ[ii] << G4endl;
+    //    G4cout << ii << " limz " << vlimz[ii] << " = " << theVoxelLimitsZ[ii] << G4endl; //GDEB
   }
   if(fwrite(vlimz, sizeof(float),theNoVoxelZ+1,fout)!=theNoVoxelZ+1)
     printf("\n Error writing VoxelLimitsZ. \n");

@@ -574,9 +574,6 @@ G4LogicalVolume* GmGeometryUtils::GetTopLV(G4bool bGeomInit)
 {
   G4LogicalVolume* topLV ;
   theTopPV = GetTopPV();
-#ifndef GAMOS_NO_VERBOSE
-  if( GeomVerb(debugVerb) ) G4cout << " topPV " << theTopPV << G4endl;
-#endif
   if( bGeomInit && theTopPV ) {
     topLV = theTopPV->GetLogicalVolume();
   } else {
@@ -799,15 +796,15 @@ std::vector<G4VPhysicalVolume*> GmGeometryUtils::GetPhysicalVolumes( const G4Str
   std::vector<G4VPhysicalVolume*>::iterator citepv;
   for( citepv = pvs->begin(); citepv != pvs->end(); citepv++ ) {
 #ifndef GAMOS_NO_VERBOSE
-      if( GeomVerb(debugVerb) ) G4cout << " GmGeometryUtils::GetPhysicalVolumes  volname " << volname << " copy " << volcopy << " TRY " << (*citepv)->GetName() << " " << (*citepv)->GetCopyNo() << 
-	" " <<   GmGenUtils::AreWordsEquivalent( volname, (*citepv)->GetName() )  << G4endl;
+      if( GeomVerb(debugVerb) ) G4cout << " GmGeometryUtils::GetPhysicalVolumes  volname " << volname << " copy " << volcopy << " TRY " << (*citepv)->GetName() << " copyN " << (*citepv)->GetCopyNo() << 
+	" OK? " <<   GmGenUtils::AreWordsEquivalent( volname, (*citepv)->GetName() )  << G4endl;
 #endif
     if( GmGenUtils::AreWordsEquivalent( volname, (*citepv)->GetName() ) 
 	&& ( (*citepv)->GetCopyNo() == volcopy || -1 == volcopy ) ){
-#ifndef GAMOS_NO_VERBOSE
-      if( GeomVerb(debugVerb) ) G4cout << " GmGeometryUtils::GetPhysicalVolumes  volname found " << G4endl;
-#endif
       vvolu.push_back( *citepv );
+#ifndef GAMOS_NO_VERBOSE
+      if( GeomVerb(debugVerb) ) G4cout << " GmGeometryUtils::GetPhysicalVolumes  volname found N= " <<  vvolu.size() << G4endl;
+#endif
     }
   }
 

@@ -74,7 +74,6 @@ public:
                                                         const G4Step*   ) 
   {return 0;}
 
-private:
 };
 
 #endif

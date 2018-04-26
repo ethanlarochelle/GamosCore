@@ -208,7 +208,7 @@ void GmPDSGeantinoProcess::SplitOriginalParticle( const G4Track& aTrack, const G
 
 	SetWeight(trk, gmtrki->GetDoubleValue("ParentWeight")/nSplit);
 #ifndef GAMOS_NO_VERBOSE
-	if( ScoringVerb(-debugVerb) ) G4cout << trk << " GmPDSGeantinoProcess::SplitOriginalPartile  new weight " << weinew << " = " << trk->GetWeight() << " = " << GetWeight(trk) << " old weight " << exp(logwei) << " pos " <<  trk->GetVertexPosition() << G4endl;
+	if( ScoringVerb(debugVerb) ) G4cout << trk << " GmPDSGeantinoProcess::SplitOriginalPartile  new weight " << weinew << " = " << trk->GetWeight() << " = " << GetWeight(trk) << " old weight " << exp(logwei) << " pos " <<  trk->GetVertexPosition() << G4endl;
 #endif
 	aParticleChange2.AddSecondary(trk);
       }

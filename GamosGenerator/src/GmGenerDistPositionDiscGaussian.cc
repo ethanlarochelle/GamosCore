@@ -35,6 +35,14 @@
 #include "geomdefs.hh"
 
 //---------------------------------------------------------------------
+GmGenerDistPositionDiscGaussian::GmGenerDistPositionDiscGaussian()
+{
+  theCentre = G4ThreeVector(0., 0., 0.);
+  theRotation = G4RotationMatrix();
+  theSigmaM = -1.e-9;
+  
+}
+//---------------------------------------------------------------------
 G4ThreeVector GmGenerDistPositionDiscGaussian::GeneratePosition( const GmParticleSource* )
 {
   G4double val = sqrt(theSigmaM*log(1-CLHEP::RandFlat::shoot()) );
@@ -86,7 +94,7 @@ void GmGenerDistPositionDiscGaussian::SetParams( const std::vector<G4String>& pa
 		  G4String("direction cosines are normalized to one, they were " + GmGenUtils::ftoa(dir.mag())).c_str());
       dir /= dir.mag();
     } 
-   G4double angx = -asin(dir.y());
+    G4double angx = -asin(dir.y());
     // there are always two solutions angx, angy and PI-angx, PI+angy, choose first
     G4double angy;
     if( dir.y() == 1. ) {

@@ -173,31 +173,3 @@ G4bool GmPSSurfaceFlux::ProcessHits(G4StepPoint* aStepPoint, G4Step* aStep, G4in
 
   return TRUE;
 }
-
-//-----------------------------------------------------------------------
-void GmPSSurfaceFlux::EndOfEvent(G4HCofThisEvent*)
-{;}
-
-
-//-----------------------------------------------------------------------
-void GmPSSurfaceFlux::DrawAll()
-{;}
-
-//-----------------------------------------------------------------------
-void GmPSSurfaceFlux::PrintAll()
-{
-  G4cout << " MultiFunctionalDet  " << detector->GetName() << G4endl;
-  G4cout << " PrimitiveScorer " << GetName() <<G4endl; 
-  G4cout << " Number of entries " << EvtMap->entries() << G4endl;
-  std::map<G4int,G4double*>::iterator itr = EvtMap->GetMap()->begin();
-  for(; itr != EvtMap->GetMap()->end(); itr++) {
-    G4cout << "  copy no.: " << itr->first
-	   << "  flux  : " << *(itr->second)
-	   << G4endl;
-  }
-}
- #include "GamosCore/GamosBase/Base/include/GmVClassifier.hh" 
-G4int GmPSSurfaceFlux::GetIndex(G4Step* aStep ) 
- { 
- return theClassifier->GetIndexFromStep( aStep ); 
-} 

@@ -43,7 +43,7 @@ public:
   GmReadPhantomEGSGeometry();
   ~GmReadPhantomEGSGeometry();
 
-  virtual void ReadPS( GmFileIn& ){};
+  virtual void ReadPV( GmFileIn& ){};
 
 private:
   virtual void ReadPhantomData();

@@ -68,6 +68,8 @@ protected:
   G4double thePlaneZ;
   G4double theGasDensity;
 
+  G4double theRRZ;
+
 };
 
 #endif

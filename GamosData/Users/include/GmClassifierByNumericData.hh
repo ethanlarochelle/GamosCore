@@ -55,7 +55,7 @@ private:
   std::map<G4double,G4int> theIndexMap;
   G4double theMin, theMax, theStep;
 
-  G4bool bAllowOutOfLimits;
+  G4int theAllowOutOfLimits;
 };
 
 #endif

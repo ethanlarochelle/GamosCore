@@ -48,7 +48,8 @@ GmDataVertexPosY::~GmDataVertexPosY()
 //----------------------------------------------------------------
 G4double GmDataVertexPosY::GetValueFromStep( const G4Step* aStep, G4int )
 {
-  return aStep->GetTrack()->GetVertexPosition().y();
+   return aStep->GetTrack()->GetPosition().y();
+ return aStep->GetTrack()->GetVertexPosition().y();
 }
 
 //----------------------------------------------------------------

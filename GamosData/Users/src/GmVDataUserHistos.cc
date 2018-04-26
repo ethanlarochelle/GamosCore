@@ -84,6 +84,8 @@ void GmVDataUserHistos::BookHistos(G4int index, GmVClassifier* theClassifier)
 //----------------------------------------------------------------
 void GmVDataUserHistos::EndOfRun()
 {
+  theHistos.clear();
+  
   if( !bPrintHistoStats ) return;
 
   std::vector<GmVData*>::const_iterator ite;

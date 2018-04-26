@@ -58,7 +58,6 @@ void GmEventDataCoutUA::BeginOfRunAction( const G4Run* )
 //----------------------------------------------------------------
 void GmEventDataCoutUA::BeginOfEventAction(const G4Event* evt)
 {
-  G4cout << "GmEventDataCoutUA::BeginOfEventAction " << G4endl; 
   std::vector<GmVData*>::const_iterator ite;
   for( ite = theData.begin(); ite != theData.end(); ite++ )
     {

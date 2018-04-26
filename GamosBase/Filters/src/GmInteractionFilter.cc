@@ -27,7 +27,7 @@
 #include "GamosCore/GamosUtils/include/GmGenUtils.hh"
 #include "GamosCore/GamosUtils/include/GmG4Utils.hh"
 #include "GamosCore/GamosGeometry/include/GmGeometryUtils.hh"
-#include "GamosCore/GamosBase/Base/include/GmBaseVerbosity.hh"
+#include "GamosCore/GamosBase/Filters/include/GmFilterVerbosity.hh"
 #include "G4Track.hh"
 #include "G4VProcess.hh"
 
@@ -55,13 +55,13 @@ G4bool GmInteractionFilter::AcceptStep(const G4Step* aStep)
       || procType == fGeneral
       || procType == fParameterisation ) {
 #ifndef GAMOS_NO_VERBOSE
-    if( BaseVerb(debugVerb) ) G4cout << " GmInteractionFilter::AcceptStep 1 " << G4endl;
+    if( FilterVerb(debugVerb) ) G4cout << " GmInteractionFilter::AcceptStep 1 " << G4endl;
 #endif
     return TRUE;
   }
 
 #ifndef GAMOS_NO_VERBOSE
-  if( BaseVerb(debugVerb) ) G4cout << " GmInteractionFilter::AcceptStep 0 " << G4endl;
+  if( FilterVerb(debugVerb) ) G4cout << " GmInteractionFilter::AcceptStep 0 " << G4endl;
 #endif
   return FALSE;
 }

@@ -48,7 +48,7 @@
 // * acceptance of all terms of the Geant4 Software license.          *
 // ********************************************************************
 //
-// $Id: GmAcollinearEplusAnnihilation.hh,v 1.14 2016/10/09 18:09:47 arce Exp $
+// $Id: GmAcollinearEplusAnnihilation.hh,v 1.3 2018/01/20 15:14:36 arce Exp $
 //
 // -------------------------------------------------------------------
 //

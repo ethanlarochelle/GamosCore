@@ -71,34 +71,6 @@ G4bool GmG4PSTrackLength::ProcessHits(G4Step* aStep,G4TouchableHistory*)
   
 }
 
-void GmG4PSTrackLength::EndOfEvent(G4HCofThisEvent*)
-{;}
-
-
-void GmG4PSTrackLength::DrawAll()
-{;}
-
-void GmG4PSTrackLength::PrintAll()
-{
-  G4cout << " MultiFunctionalDet  " << detector->GetName() << G4endl;
-  G4cout << " PrimitiveScorer " << GetName() << G4endl;
-  G4cout << " Number of entries " << EvtMap->entries() << G4endl;
-  std::map<G4int,G4double*>::iterator itr = EvtMap->GetMap()->begin();
-  for(; itr != EvtMap->GetMap()->end(); itr++) {
-    G4cout << "  copy no.: " << itr->first << "  track length: " ;
-    if ( multiplyKinE && !divideByVelocity ){
-      G4cout << *(itr->second)/(CLHEP::mm*CLHEP::MeV) <<" CLHEP::mm*CLHEP::MeV";
-    } else if ( !multiplyKinE && divideByVelocity ){
-      G4cout << *(itr->second)*CLHEP::second <<" /second";
-    } else if ( multiplyKinE && divideByVelocity) {
-      G4cout << *(itr->second)/CLHEP::MeV*CLHEP::second <<" CLHEP::MeV/second";
-    } else {
-      G4cout  << G4BestUnit(*(itr->second),"Length");
-    }
-    G4cout << G4endl;
-  }
-}
-
 void GmG4PSTrackLength::SetParameters( const std::vector<G4String>& params)
 {
   if( params.size() != 2 ){
@@ -143,8 +115,3 @@ G4String GmG4PSTrackLength::GetUnitName() const
   }
 }
 
- #include "GamosCore/GamosBase/Base/include/GmVClassifier.hh" 
-G4int GmG4PSTrackLength::GetIndex(G4Step* aStep ) 
- { 
- return theClassifier->GetIndexFromStep( aStep ); 
-} 

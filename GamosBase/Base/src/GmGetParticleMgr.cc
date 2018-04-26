@@ -24,8 +24,6 @@
 // ********************************************************************
 //
 
-
-
 #include "GmGetParticleMgr.hh"
 #include "GamosCore/GamosBase/Base/include/GmParameterMgr.hh"
 #include "GamosCore/GamosUtils/include/GmGenUtils.hh"
@@ -39,6 +37,7 @@
 #include "G4GenericIon.hh"
 #include "G4NistManager.hh"
 #include "G4ProcessManager.hh"
+#include "G4IonTable.hh"
 
 GmGetParticleMgr* GmGetParticleMgr::theInstance = 0;
 
@@ -162,12 +161,18 @@ G4Ions* GmGetParticleMgr::CreateIon( const G4String& newValues )
     G4Ions* ion = 0;
     G4String partName = wl[0];
     // check if it is an ion 
-    //     std::string::size_type istart = partName.find("[");
-    //    std::string::size_type iend = partName.find("]");
-    //    if( istart  != std::string::npos
-    //	&& iend != std::string::npos ) {
-    //    G4String isot = partName.substr(0,istart);
+    std::string::size_type istart = partName.find("[");
+    std::string::size_type iend = partName.find("]");
+    G4double excitation = 0.;
+    if( istart != std::string::npos ) {
+      excitation = GmGenUtils::GetValue(partName.substr(istart+1,iend-istart-1))*CLHEP::keV;
+    }
     G4String isot = partName;
+    if( istart  != std::string::npos
+	&& iend != std::string::npos ) {
+      isot = partName.substr(0,istart);
+    }
+    // look for the element (characters, not numbers)
     unsigned int ii;
     for( ii = 0; ii < isot.length(); ii++ ){
       if( GmGenUtils::IsNumber( isot[ii] ) ) break;
@@ -176,8 +181,8 @@ G4Ions* GmGetParticleMgr::CreateIon( const G4String& newValues )
       G4String symb = isot.substr(0,ii);
       G4Element* elem = G4NistManager::Instance()->FindOrBuildElement(symb, false);
       if( elem ) {
-	//	ion = CreateIon( G4int(elem->GetZ()), atoi( G4String(isot.substr( ii, isot.length() )) ), atof( G4String(partName.substr( istart+1, iend-istart-1 ) ))*CLHEP::keV, 0 );
-	ion = CreateIon( G4int(elem->GetZ()), atoi( G4String(isot.substr( ii, isot.length() )) ), 0.0*CLHEP::keV, 0 );
+	ion = CreateIon( G4int(elem->GetZ()), atoi( G4String(isot.substr( ii, isot.length() )) ), excitation, 0 );
+	//ion = CreateIon( G4int(elem->GetZ()), atoi( G4String(isot.substr( ii, isot.length() )) ), 0.0*CLHEP::keV, 0 );
       }
     }
     /*  } else {

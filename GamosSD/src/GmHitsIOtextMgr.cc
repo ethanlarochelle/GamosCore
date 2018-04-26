@@ -36,6 +36,7 @@ GmHitsIOtextMgr::GmHitsIOtextMgr()
 { 
   theOutputType = "hits.text";
   Init();
+  OpenFileOut();
 }
 
 #include "GamosCore/GamosBase/Base/include/GmParameterMgr.hh"

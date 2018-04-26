@@ -78,6 +78,7 @@
 #include "GmHistoryFilter.hh"
 #include "GmPastHistoryFilter.hh"
 #include "GmHistoryOrAncestorsFilter.hh"
+#include "GmHistoryOrAncestorsFilterForScorer.hh"
 #include "GmHistoryAllFilter.hh"
 #include "GmHistoryAncestorsAllFilter.hh"
 #include "GmAncestorsFilter.hh"
@@ -279,6 +280,7 @@ PLUGINSVC_FACTORY(GmPrimaryOn1SecondaryFilter,GmVFilter*(G4String))
 PLUGINSVC_FACTORY(GmHistoryFilter,GmVFilter*(G4String))
 PLUGINSVC_FACTORY(GmPastHistoryFilter,GmVFilter*(G4String))
 PLUGINSVC_FACTORY(GmHistoryOrAncestorsFilter,GmVFilter*(G4String))
+PLUGINSVC_FACTORY(GmHistoryOrAncestorsFilterForScorer,GmVFilter*(G4String))
 PLUGINSVC_FACTORY(GmHistoryAllFilter,GmVFilter*(G4String))
 PLUGINSVC_FACTORY(GmHistoryAncestorsAllFilter,GmVFilter*(G4String))
 PLUGINSVC_FACTORY(GmAncestorsFilter,GmVFilter*(G4String))
@@ -287,3 +289,5 @@ PLUGINSVC_FACTORY(GmInverseFilter,GmVFilter*(G4String))
 
 PLUGINSVC_FACTORY(GmFilterFromClassifier,GmVFilter*(G4String))
 
+#include "GmFilterVerbosity.hh"
+PLUGINSVC_FACTORY(GmFilterVerbosity, GmVVerbosity*())

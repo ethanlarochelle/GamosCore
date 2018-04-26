@@ -97,7 +97,7 @@ G4bool GmSDSeparateByTime::ProcessHits(G4Step* aStep,
     if(theHitsInEvent.size() != 0) if( SDVerb(debugVerb) ) G4cout << "GmSDSeparateByTime::ProcessHits biggest time " << theBiggestHitTime << " averageTime " << averageTime << " nEvents " << nEvents << " big time factor "<< theBigTimeFactor << G4endl;
 #endif
 
-    bBigTimeCalculated  = TRUE;
+    bBigTimeCalculated = true;
   }
 
   if( bDiscardBigTimes && time > theBiggestHitTime ) {

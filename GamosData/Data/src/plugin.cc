@@ -33,6 +33,7 @@
 #include "GmDataInitialPosPerp.hh"
 #include "GmDataInitialPosPhi.hh"
 #include "GmDataInitialPosTheta.hh"
+#include "GmDataInitialPosMaxXY.hh"
 #include "GmDataFinalPosX.hh"
 #include "GmDataFinalPosY.hh"
 #include "GmDataFinalPosZ.hh"
@@ -62,6 +63,7 @@ PLUGINSVC_FACTORY(GmDataInitialPosMag,GmVData*())
 PLUGINSVC_FACTORY(GmDataInitialPosPerp,GmVData*())
 PLUGINSVC_FACTORY(GmDataInitialPosPhi,GmVData*())
 PLUGINSVC_FACTORY(GmDataInitialPosTheta,GmVData*())
+PLUGINSVC_FACTORY(GmDataInitialPosMaxXY,GmVData*())
 PLUGINSVC_FACTORY(GmDataFinalPosX,GmVData*())
 PLUGINSVC_FACTORY(GmDataFinalPosY,GmVData*())
 PLUGINSVC_FACTORY(GmDataFinalPosZ,GmVData*())
@@ -384,6 +386,7 @@ PLUGINSVC_FACTORY(GmDataFinalPVCopyNumber,GmVData*())
 
 //--- PARTICLE AND PROCESS DATA
 #include "GmDataParticle.hh"
+#include "GmDataPrimaryParticle.hh"
 #include "GmDataInitialProcess.hh"
 #include "GmDataFinalProcess.hh"
 #include "GmDataCreatorProcess.hh"
@@ -397,6 +400,7 @@ PLUGINSVC_FACTORY(GmDataFinalPVCopyNumber,GmVData*())
 #include "GmDataParticlePDGEncoding.hh"
 
 PLUGINSVC_FACTORY(GmDataParticle,GmVData*())
+PLUGINSVC_FACTORY(GmDataPrimaryParticle,GmVData*())
 PLUGINSVC_FACTORY(GmDataInitialProcess,GmVData*())
 PLUGINSVC_FACTORY(GmDataFinalProcess,GmVData*())
 PLUGINSVC_FACTORY(GmDataCreatorProcess,GmVData*())
@@ -512,3 +516,6 @@ PLUGINSVC_FACTORY(GmDataSecoInitialDirTheta,GmVData*())
 
 #include "GmDataFinalDirNormalAngle.hh"
 PLUGINSVC_FACTORY(GmDataFinalDirNormalAngle,GmVData*())
+
+#include "GmDataNofHits.hh"
+PLUGINSVC_FACTORY(GmDataNofHits,GmVData*())

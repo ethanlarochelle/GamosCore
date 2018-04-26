@@ -67,7 +67,7 @@ G4bool GmGenUtils::IsNumber( const G4String& str)
 //------------------------------------------------------------------------
 G4bool GmGenUtils::IsNumberWithUnit( const G4String& str)
 {
-  //-  G4cout << " GmGenUtils::IsNumberWithUnit( " << str << G4endl;
+  //  G4cout << " GmGenUtils::IsNumberWithUnit( " << str << G4endl; //GDEB
   if( str == "false" || str == "FALSE" ) return 1;
   if( str == "true" || str == "TRUE" ) return 1;
 
@@ -86,8 +86,9 @@ G4bool GmGenUtils::IsNumberWithUnit( const G4String& str)
   for( il = 0; il < str.length(); il++ ) {
     //    char chara = str.at(il);
     if( symbols.find(str.at(il)) != symbols.end() ) {
+      if( il != 0 && (str.at(il) == '-' || str.at(il) == '+' ) && (str.at(il-1) == 'e' || str.at(il-1) == 'E' ) ) continue;
       symbolPositions.insert(il);
-      //      G4cout << " symbolPositions " << il << " = " << str[il] << G4endl;
+      //           G4cout << " symbolPositions " << il << " = " << str[il] << G4endl; //GDEB
     }
   }
   symbolPositions.insert(il);
@@ -98,11 +99,14 @@ G4bool GmGenUtils::IsNumberWithUnit( const G4String& str)
   for( ;; ite1++, ite2++ ){
     int ipos1 = *ite1;
     int ipos2 = *ite2;
-    //-    G4cout << " IPOS  " << ipos1 << " " << ipos2 << G4endl;
+    //    G4cout << " IPOS  " << ipos1 << " " << ipos2 << G4endl; //GDEB
     if( ipos2-ipos1 != 1 ) { ; //not contiguous 
       G4String word = str.substr(ipos1+1, ipos2-ipos1-1);
-      //-      G4cout << " WORD " << word << " " << ipos1 << " " << ipos2 << G4endl;
-      if( !IsNumber(word) && !IsUnit(word) && !G4tgrUtils::WordIsFunction(word) ) return 0;
+      //      G4cout << " WORD " << word << " " << ipos1 << " " << ipos2 << G4endl; //GDEB
+      if( !IsNumber(word) && !IsUnit(word) && !G4tgrUtils::WordIsFunction(word) ) {
+	//	G4cout << " return 0 " << word << " IsNumber(word) " << IsNumber(word) << " IsUnit(word) " << IsUnit(word) << " G4tgrUtils::WordIsFunction(word) " << G4tgrUtils::WordIsFunction(word) << G4endl; //GDEB
+	return 0;
+      }
     }
     if( ipos2 == int(il) ) break;
   }
@@ -686,7 +690,7 @@ void GmGenUtils::ReadUnits()
     wl =  GmGenUtils::GetWordsInString( G4String(ltemp) );
     if( wl.size() >= 7 ) {
       // wl[0] is blank because line start with blank! 
-      if( wl[1] == "static" && wl[2] == "const"){
+      if( wl[1] == "static" && wl[2] == "constexpr"){
 	//	G4cout << "UNIT inserted " << wl[4] << " " << theUnits.size() << G4endl;
 	    theUnits.insert( wl[4] );
       }
@@ -719,6 +723,9 @@ G4bool GmGenUtils::IsUnit( const G4String str )
   if( theUnits.find(str) != theUnits.end() ) {
     return true;
   } else {
+    /*    for( std::set<G4String>::const_iterator ite = theUnits.begin(); ite != theUnits.end(); ite++ ) {
+      G4cout << " UNIT " << *ite << G4endl; //GDEB
+      } */
     return false;
   }
 }
@@ -865,6 +872,42 @@ std::vector<G4String> GmGenUtils::StringSplit( const G4String& theString, const 
   return theStringVector;
 }
 
-template <typename T> int  GmGenUtils::sgn(T val) {
-    return (T(0) < val) - (val < T(0));
+//----------------------------------------------------------------
+std::string::size_type GmGenUtils::GetNextSeparator( G4int iSeparator, G4String dataName )
+{
+  if( iSeparator >= G4int(dataName.length()) ) return std::string::npos;
+
+  const char* separators("+-*/()");
+  std::string::size_type isepF = std::string::npos;
+  for( G4int ii = 0; ii < 6; ii++ ){
+    std::string::size_type isepFt = dataName.find(separators[ii],iSeparator);
+    //-    G4cout  << " separator " << separators[ii] << " " << isepFt << G4endl;
+    // check for case of exponential
+    if( ii < 2 && G4int(isepFt) >= 2 ) {
+      if( ( dataName[isepFt-1] == 'e' || dataName[isepFt-1] == 'E' )
+	  && ( GmGenUtils::IsNumber( dataName[isepFt-2] ) || dataName[isepFt-2] == '.' )
+	  && ( GmGenUtils::IsNumber( dataName[isepFt+1] ) ) ){
+	 isepFt = dataName.find(isepFt+1,iSeparator);
+      }
+    }
+
+    if( isepFt != std::string::npos ) {
+      isepF = std::min( isepF, isepFt );
+    }
+  }
+
+  //  G4cout << " GmVDataUser::GetNextSeparator( " <<  G4int(isepF) << " " << dataName << " " << iSeparator << " LEN " << dataName.length() << G4endl;
+  return isepF;
+}
+
+
+//----------------------------------------------------------------
+G4bool GmGenUtils::IsSeparator( const G4String word )
+{
+  
+  if( G4tgrUtils::WordIsFunction( word ) || GmGenUtils::IsNumber( word ) || GmGenUtils::IsUnit(word) ){
+    return true;
+  } else {	
+    return false;
+  }
 }

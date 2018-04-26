@@ -26,10 +26,10 @@
 #ifndef GmPhysicsPositronStandard_HH
 #define GmPhysicsPositronStandard_HH 1
 
-#include "G4VPhysicsConstructor.hh"
+#include "GmVPhysicsElectron.hh"
 #include "globals.hh"
 
-class GmPhysicsPositronStandard : public G4VPhysicsConstructor {
+class GmPhysicsPositronStandard : public GmVPhysicsElectron {
 
 public: 
 

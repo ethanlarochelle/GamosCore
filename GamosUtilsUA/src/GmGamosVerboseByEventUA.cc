@@ -24,19 +24,20 @@
 // ********************************************************************
 //
 #include "GmGamosVerboseByEventUA.hh"
-#include "G4Track.hh"
-#include "G4Event.hh"
+#include "GmUtilsUAVerbosity.hh"
 
-#include "GmGamosVerboseByEventUA.hh"
 #include "GamosCore/GamosBase/Base/include/GmVVerbosity.hh"
 #include "GamosCore/GamosBase/Base/include/GmParameterMgr.hh"
 #include "GamosCore/GamosUtils/include/GmGenUtils.hh"
 #include "GamosCore/GamosUtils/include/GmVerbosity.hh"
 
+#include "G4Track.hh"
+#include "G4Event.hh"
+
 //---------------------------------------------------------------------------
 GmGamosVerboseByEventUA::GmGamosVerboseByEventUA()
 {
-
+  verbCmd = new GmUIcmdWithAString("/gamos/verbosity/byEvent",this);
 }
 
 //----------------------------------------------------------------
@@ -52,7 +53,9 @@ void GmGamosVerboseByEventUA::BeginOfEventAction( const G4Event* anEvent )
   mmis::const_iterator ite;
   for( ite = theVerbs.begin(); ite != theVerbs.end(); ite++ ){
     if( (*ite).first == anEvent->GetEventID() ) {
-      G4cout << " GmGamosVerboseByEventUA::BeginOfEventAction " << (*ite).second.first << " = " << (*ite).second.second << G4endl;
+#ifndef GAMOS_NO_VERBOSE
+      if( UtilsUAVerb(debugVerb) ) G4cout << " GmGamosVerboseByEventUA::BeginOfEventAction " << (*ite).second.first << " = " << (*ite).second.second << G4endl;
+#endif
       GmVVerbosity::SetVerbosityLevel( (*ite).second.first, (*ite).second.second );
     }
     
@@ -100,7 +103,7 @@ void GmGamosVerboseByEventUA::SetNewValue(G4UIcommand * command,G4String newValu
 		  (G4String("Value is = ") + wl[2]).c_str());
     }
     G4int eventMax = G4int(GmGenUtils::GetValue(wl[3]));
-    if( eventMax <= eventMin ) {
+    if( eventMax < eventMin ) {
       G4Exception("GmGamosVerboseByEventUA::SetNewValue",
 		  "Maximum event number must be > minimum event number",
 		  FatalErrorInArgument,
@@ -108,7 +111,7 @@ void GmGamosVerboseByEventUA::SetNewValue(G4UIcommand * command,G4String newValu
     }
 
     theVerbs.insert( mmis::value_type( eventMin, std::pair<G4String,G4int>(verbName,verbVal) ));
-    theVerbs.insert( mmis::value_type( eventMax , std::pair<G4String,G4int>(verbName,silentVerb)));
+    theVerbs.insert( mmis::value_type( eventMax+1 , std::pair<G4String,G4int>(verbName,silentVerb)));
 
   }
 }

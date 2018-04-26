@@ -25,7 +25,7 @@
 //
 #include "GmVANDFilter.hh"
 #include "G4Track.hh"
-#include "GamosCore/GamosBase/Base/include/GmBaseVerbosity.hh"
+#include "GamosCore/GamosBase/Filters/include/GmFilterVerbosity.hh"
 
 //----------------------------------------------------------------
 GmVANDFilter::GmVANDFilter(G4String name)
@@ -46,12 +46,12 @@ G4bool GmVANDFilter::AcceptTrackAND(const G4Track* aTrack)
     if( theFilters[ii]->AcceptTrack(aTrack) ) {
       bAccept = TRUE;
 #ifndef GAMOS_NO_VERBOSE
-      if( BaseVerb(debugVerb) ) G4cout << theName << " GmVANDFilter::AcceptTrackAND filter= " << theFilters[ii]->GetName() << " " << bAccept << G4endl;
+      if( FilterVerb(debugVerb) ) G4cout << GetName() << " GmVANDFilter::AcceptTrackAND filter= " << theFilters[ii]->GetName() << " " << bAccept << G4endl;
 #endif
     } else {
       bAccept = FALSE;
 #ifndef GAMOS_NO_VERBOSE
-      if( BaseVerb(debugVerb) ) G4cout << theName << " GmVANDFilter::AcceptTrackAND filter= " << theFilters[ii]->GetName() << " " << bAccept << G4endl;
+      if( FilterVerb(debugVerb) ) G4cout << GetName() << " GmVANDFilter::AcceptTrackAND filter= " << theFilters[ii]->GetName() << " " << bAccept << G4endl;
 #endif
       break;
     }
@@ -69,12 +69,12 @@ G4bool GmVANDFilter::AcceptStepAND(const G4Step* aStep)
     if( theFilters[ii]->AcceptStep(aStep) ) {
       bAccept = TRUE;
 #ifndef GAMOS_NO_VERBOSE
-      if( BaseVerb(debugVerb) ) G4cout << theName << " GmVANDFilter::AcceptStepAND filter= " << theFilters[ii]->GetName() << " " << bAccept << G4endl;
+      if( FilterVerb(debugVerb) ) G4cout << GetName() << " GmVANDFilter::AcceptStepAND filter= " << theFilters[ii]->GetName() << " " << bAccept << G4endl;
 #endif
     } else {
       bAccept = FALSE;
 #ifndef GAMOS_NO_VERBOSE
-      if( BaseVerb(debugVerb) ) G4cout << theName << " GmVANDFilter::AcceptStepAND filter= " << theFilters[ii]->GetName() << " " << bAccept << G4endl;
+      if( FilterVerb(debugVerb) ) G4cout << GetName() << " GmVANDFilter::AcceptStepAND filter= " << theFilters[ii]->GetName() << " " << bAccept << G4endl;
 #endif
       break;
     }

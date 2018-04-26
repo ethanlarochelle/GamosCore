@@ -40,12 +40,8 @@ GmHitsWriteUA::GmHitsWriteUA()
 
    if( bBinFile ) {
      theHitsIOMgr = new GmHitsIObinMgr;
-     GmHitsIObinMgr* theHitsIOMgrbin = static_cast<GmHitsIObinMgr*>(theHitsIOMgr);
-     theHitsIOMgrbin->OpenFileOut();
    } else {
      theHitsIOMgr = new GmHitsIOtextMgr;
-     GmHitsIOtextMgr* theHitsIOMgrtext = static_cast<GmHitsIOtextMgr*>(theHitsIOMgr);
-     theHitsIOMgrtext->OpenFileOut();
    }
 }
 

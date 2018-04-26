@@ -23,7 +23,6 @@
 // * acceptance of all terms of the GAMOS Software license.           *
 // ********************************************************************
 //
-//#define VERBOSE_ENERSPLIT
 //
 // ********************************************************************
 // * License and Disclaimer                                           *
@@ -89,7 +88,7 @@ G4int GmEnergySplitter::SplitEnergyInVolumes(const G4Step* aStep )
 #ifdef VERBOSE_ENERSPLIT
   G4bool verbose = 1;
   if( verbose ) G4cout << "GmEnergySplitter::SplitEnergyInVolumes totalEdepo " << aStep->GetTotalEnergyDeposit() 
-		       << " Nsteps " << G4RegularNavigationHelper::Instance()->theStepLengths.size() << G4endl;
+		       << " Nsteps " << G4RegularNavigationHelper::Instance()->GetStepLengths.size() << G4endl;
 #endif    
 
   if( aStep->GetTrack()->GetDefinition()->GetPDGCharge() == 0)  { // neutral particle: energy is deposited at the end of the step (if the process is Transportation , edepo = 0)
@@ -129,16 +128,15 @@ G4int GmEnergySplitter::SplitEnergyInVolumes(const G4Step* aStep )
     G4double sl = rnsl[ii].second;
     slSum += sl;
 #ifdef VERBOSE_ENERSPLIT
-    if(verbose) G4cout  << "GmEnergySplitter::SplitEnergyInVolumes"<< ii << " RN: iter0 step length geom " << sl << G4endl;
+    if(verbose) G4cout  << "GmEnergySplitter::SplitEnergyInVolumes"<< ii << " RN: iter1 step length geom " << sl << G4endl;
 #endif
   }
   
 #ifdef VERBOSE_ENERSPLIT
   if( verbose )
-    G4cout << "GmEnergySplitter::SplitEnergyInVolumes: step length geom TOTAL " << slSum 
-	   << " true total " << stepLength 
-	   << " step ratio " << stepLength/slSum 
-	   << " Edeposited " << edep 
+    G4cout << "GmEnergySplitter RN:  step length geom TOTAL " << slSum 
+	   << " true TOTAL " << stepLength 
+	   << " ratio " << stepLength/slSum 
 	   << " Energy " << aStep->GetPreStepPoint()->GetKineticEnergy() 
 	   << " Material " << aStep->GetPreStepPoint()->GetMaterial()->GetName() 
 	   << " Number of geom steps " << rnsl.size() << G4endl;
@@ -149,7 +147,6 @@ G4int GmEnergySplitter::SplitEnergyInVolumes(const G4Step* aStep )
       G4double sl = G4RegularNavigationHelper::Instance()->theStepLengths[ii].second;
       G4double edepStep = edep * sl/slSum; //divide edep along steps, proportional to step length
 #ifdef VERBOSE_ENERSPLIT
-      if(verbose) G4cout  << "GmEnergySplitter::SplitEnergyInVolumes: No iterations to correct elost and msc => distribute energy deposited according to geometrical step length in each voxel " << G4endl;
       if(verbose) G4cout  << "GmEnergySplitter::SplitEnergyInVolumes"<< ii 
 			  << " edep " << edepStep << G4endl;
 #endif
@@ -177,7 +174,7 @@ G4int GmEnergySplitter::SplitEnergyInVolumes(const G4Step* aStep )
 
     G4double slRatio = stepLength/slSum;
 #ifdef VERBOSE_ENERSPLIT
-    if(verbose) G4cout << "GmEnergySplitter::SplitEnergyInVolumes  RN: iter0, step ratio " << slRatio << G4endl;
+    if(verbose) G4cout << "GmEnergySplitter::SplitEnergyInVolumes  RN: iter 0, step ratio " << slRatio << G4endl;
 #endif
       
     //--- energy at each interaction
@@ -237,7 +234,7 @@ G4int GmEnergySplitter::SplitEnergyInVolumes(const G4Step* aStep )
 	//Correct step lengths so that they sum the total step length
 	G4double slratio = aStep->GetStepLength()/slSum;
 #ifdef VERBOSE_ENERSPLIT
-	if(verbose) G4cout << "GmEnergySplitter::SplitEnergyInVolumes" << " RN: iter" << iiter << " step ratio " << slRatio << G4endl;
+	if(verbose) G4cout << "GmEnergySplitter::SplitEnergyInVolumes" << ii << " RN: iter" << iiter << " step ratio " << slRatio << G4endl;
 #endif
 	for( size_t ii2 = 0; ii2 < rnsl.size(); ii2++ ){
 	  stepLengths[ii2] *= slratio;
@@ -273,7 +270,7 @@ G4int GmEnergySplitter::SplitEnergyInVolumes(const G4Step* aStep )
       G4double enerRatio = (edep/totalELost);
       
 #ifdef VERBOSE_ENERSPLIT
-      if(verbose) G4cout  << "GmEnergySplitter::SplitEnergyInVolumes" << " RN: iter" << iiter << " energy ratio " << enerRatio << G4endl;
+      if(verbose) G4cout  << "GmEnergySplitter::SplitEnergyInVolumes"<< ii << " RN: iter" << iiter << " energy ratio " << enerRatio << G4endl;
 #endif
 	
 #ifdef VERBOSE_ENERSPLIT
@@ -283,7 +280,7 @@ G4int GmEnergySplitter::SplitEnergyInVolumes(const G4Step* aStep )
 	theEnergies[ii2] *= enerRatio;
 #ifdef VERBOSE_ENERSPLIT
 	elostTot += theEnergies[ii2];
-	if(verbose) G4cout  << "GmEnergySplitter::SplitEnergyInVolumes"<< ii2 << " RN: iter" << iiter << " corrected energy lost " << theEnergies[ii2] 
+	if(verbose) G4cout  << "GmEnergySplitter::SplitEnergyInVolumes "<< ii2 << " RN: iter" << iiter << " corrected energy lost " << theEnergies[ii2] 
 			    << " orig elost " << theEnergies[ii2]/enerRatio 
 			    << " energy before interaction " << kinEnergyPreOrig-elostTot+theEnergies[ii2]
 			    << " energy after interaction " << kinEnergyPreOrig-elostTot

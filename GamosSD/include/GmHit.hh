@@ -29,7 +29,7 @@
 #include "globals.hh"
 class GmEDepo;
 class GmCheckOriginalGamma;
-
+#include "G4TransportationManager.hh"
 #include "G4ThreeVector.hh"
 #include <vector>
 #include <set>
@@ -78,7 +78,7 @@ public:
   G4String GetSDType() const { return theSDType; }
 
   void SetEnergy( G4double ener ) { theEnergy = ener;}
-  void SetPosition(G4ThreeVector pos ) { thePosition = pos;}
+  void SetPosition(G4ThreeVector pos ); 
   void SetTimeMin( G4double time ) { theTimeMin = time;}
   void SetTimeMax( G4double time ) { theTimeMax = time;}
 
@@ -110,6 +110,7 @@ private:
   G4bool bDeadTimeFound;
 
   G4int theHitsTimeType;
+
 };
 
 std::ostream& operator<<(std::ostream& s, const GmHit& hit);

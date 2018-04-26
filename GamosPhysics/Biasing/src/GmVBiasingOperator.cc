@@ -64,8 +64,8 @@ void GmVBiasingOperator::ConvertParticleProcessToPointers()
     G4String              particleName = particle->GetParticleName();
     G4ProcessManager*         pmanager = particle->GetProcessManager();
 
-    std::vector<mmss::const_iterator> partItes;
-    for( mmss::const_iterator ite = theParticleProcessNames.begin(); ite != theParticleProcessNames.end(); ite++ ) {
+    std::vector<mmss::const_iterator::iterator> partItes;
+    for( mmss::const_iterator::iterator ite = theParticleProcessNames.begin(); ite != theParticleProcessNames.end(); ite++ ) {
       if( GmGenUtils::AreWordsEquivalent( (*ite).first, particleName ) ) {
 	partItes.push_back( ite );
       }

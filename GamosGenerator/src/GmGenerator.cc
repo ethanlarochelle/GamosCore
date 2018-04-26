@@ -27,8 +27,10 @@
 #include "GmGeneratorMessenger.hh"
 #include "GmIsotopeMgr.hh"
 #include "GmSingleParticleSource.hh"
-#include "GmIsotopeSource.hh"
 #include "GmDoubleBackToBackParticleSource.hh"
+#include "GmIsotopeSource.hh"
+#include "RTPlanSource.hh"
+#include "RTIonPlanScanSpotSource.hh"
 #include "GmGenerVerbosity.hh"
 #include "GamosCore/GamosBase/Base/include/GmParameterMgr.hh"
 #include "GamosCore/GamosData/Distributions/include/GmVNumericDistribution.hh"
@@ -57,7 +59,7 @@ GmGenerator::GmGenerator()
 
   theLastEventTime = 0.;
 
- // GmMovementUtils::SetbUsingGmGenerator( true );
+  GmMovementUtils::SetbUsingGmGenerator( true );
 
   bBiasDistributions = false;
 }
@@ -81,7 +83,7 @@ void GmGenerator::AddSingleParticleSource( const G4String& newValues )
     G4Exception("GmGenerator::AddSingleParticleSource",
 		"Wrong argument",
 		FatalErrorInArgument,
-		G4String("There must be three parameters: SOURCE_NAME PARTICLE_NAME ENERGY " + newValues).c_str());
+		G4String("There must be three parameters: SOURCE_NAME PARTICLE_NAME ENERGY, while they are: " + newValues).c_str());
   }
   energy = GmGenUtils::GetValue( wl[2] ); 
   
@@ -103,7 +105,7 @@ void GmGenerator::AddDoubleBackToBackParticleSource( const G4String& newValues )
     G4Exception("GmGenerator::AddDoubleBackToBackParticleSource",
 		"Wrong argument",
 		FatalErrorInArgument,
-		G4String("There must be three parameters: SOURCE_NAME PARTICLE_NAME ENERGY " + newValues).c_str());
+		G4String("There must be three parameters: SOURCE_NAME PARTICLE_NAME ENERGY, while they are: " + newValues).c_str());
   }
   energy = GmGenUtils::GetValue( wl[2] ); 
   
@@ -124,11 +126,47 @@ void GmGenerator::AddIsotopeSource( const G4String& newValues )
     G4Exception("GmGenerator::AddIsotopeSource",
 		"Wrong argument",
 		FatalErrorInArgument,
-		G4String("There must be three parameters: SOURCE_NAME PARTICLE_NAME ACTIVITY " + newValues).c_str());
+		G4String("There must be three parameters: SOURCE_NAME PARTICLE_NAME ACTIVITY, while they are: " + newValues).c_str());
   }
   activity = GmGenUtils::GetValue( wl[2] );
   
   theSources.push_back( theIsotopeMgr->AddActiveIsotopeSource( wl[0], wl[1], activity ) );
+}
+
+//----------------------------------------------------------------------
+void GmGenerator::AddRTPlanSource( const G4String& newValues )
+{
+  G4String sourceName;
+  G4String particleName;
+  
+  std::vector<G4String> wl = GmGenUtils::GetWordsInString(newValues);
+  if( wl.size() != 2 ) {
+    G4Exception("GmGenerator::AddRTPlanSource",
+		"Wrong argument",
+		FatalErrorInArgument,
+		G4String("There must be one parameter: SOURCE_NAME PARTICLE, while they are: " + newValues).c_str());
+  }
+  
+  RTPlanSource* parts = new RTPlanSource( wl[0], wl[1] );
+  theSources.push_back( parts );
+}
+
+//----------------------------------------------------------------------
+void GmGenerator::AddRTIonPlanScanSpotSource( const G4String& newValues )
+{
+  G4String sourceName;
+  G4String particleName;
+  
+  std::vector<G4String> wl = GmGenUtils::GetWordsInString(newValues);
+  if( wl.size() != 2 ) {
+    G4Exception("GmGenerator::AddRTIonPlanScanSpotSource",
+		"Wrong argument",
+		FatalErrorInArgument,
+		G4String("There must be one parameter: SOURCE_NAME PARTICLE, while they are: " + newValues).c_str());
+  }
+  
+  RTIonPlanScanSpotSource* parts = new RTIonPlanScanSpotSource( wl[0], wl[1] );
+  theSources.push_back( parts );
 }
 
 

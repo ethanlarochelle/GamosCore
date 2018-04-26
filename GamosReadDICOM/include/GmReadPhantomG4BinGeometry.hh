@@ -40,7 +40,7 @@ public:
   GmReadPhantomG4BinGeometry();
   ~GmReadPhantomG4BinGeometry();
 
-  virtual void ReadPS( GmFileIn& ){};
+  virtual void ReadPV( GmFileIn& ){};
 
 private:
   virtual void ReadPhantomData();
@@ -49,6 +49,7 @@ private:
 
   std::pair<G4double,G4double> ReadVoxelDim( G4int nVoxel, std::ifstream& fin );
 
+  G4String thePatientPosition;
 };
 
 #endif

@@ -25,7 +25,7 @@
 //
 #include "GmHistoryFilter.hh"
 #include "G4Track.hh"
-#include "GamosCore/GamosBase/Base/include/GmBaseVerbosity.hh"
+#include "GamosCore/GamosBase/Filters/include/GmFilterVerbosity.hh"
 
 //----------------------------------------------------------------
 GmHistoryFilter::GmHistoryFilter(G4String name)
@@ -46,7 +46,7 @@ G4bool GmHistoryFilter::AcceptTrack(const G4Track* aTrack)
 
   if( bPassed )  {
 #ifndef GAMOS_NO_VERBOSE
-    if( BaseVerb(debugVerb) ) G4cout << theName << " GmHistoryFilter::AcceptTrack 1 , because previously 1" << G4endl;
+    if( FilterVerb(debugVerb) ) G4cout << GetName() << " GmHistoryFilter::AcceptTrack 1 , because previously 1" << G4endl;
 #endif
     return TRUE;
   }
@@ -56,7 +56,7 @@ G4bool GmHistoryFilter::AcceptTrack(const G4Track* aTrack)
   if( bAccept ) bPassed = TRUE;
 
 #ifndef GAMOS_NO_VERBOSE
-  if( BaseVerb(debugVerb) ) G4cout << theName << " GmHistoryFilter::AcceptTrack " << bAccept << G4endl;
+  if( FilterVerb(debugVerb) ) G4cout << GetName() << " GmHistoryFilter::AcceptTrack " << bAccept << G4endl;
 #endif
 
   return bAccept;
@@ -71,7 +71,7 @@ G4bool GmHistoryFilter::AcceptStep(const G4Step* aStep)
 
   if( bPassed ) {
 #ifndef GAMOS_NO_VERBOSE
-    if( BaseVerb(debugVerb) ) G4cout << theName << " GmHistoryFilter::AcceptStep 1 , because previously 1" << G4endl;
+    if( FilterVerb(debugVerb) ) G4cout << GetName() << " GmHistoryFilter::AcceptStep 1 , because previously 1" << G4endl;
 #endif
     return TRUE;
   }
@@ -81,7 +81,7 @@ G4bool GmHistoryFilter::AcceptStep(const G4Step* aStep)
   if( bAccept ) bPassed = TRUE;
 
 #ifndef GAMOS_NO_VERBOSE
-  if( BaseVerb(debugVerb) ) G4cout << theName << " GmHistoryFilter::AcceptStep " << bAccept << G4endl;
+  if( FilterVerb(debugVerb) ) G4cout << GetName() << " GmHistoryFilter::AcceptStep " << bAccept << G4endl;
 #endif
 
   return bAccept;

@@ -73,7 +73,7 @@ public:
   virtual G4VParticleChange* GenerateBiasingFinalState( const G4Track*,
                                                         const G4Step*   ) 
   {return 0;}
-  
+
 };
 
 #endif

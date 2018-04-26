@@ -341,3 +341,9 @@ void GmBiasingMgr::AddParticleProcesses2Oper(std::vector<G4String> params )
   }
   */
 }
+
+//-----------------------------------------------------------------------
+void GmBiasingMgr::AddSplittingProcess( std::vector<G4String> params)
+{
+  theBiasingPhysics->AddSplittingProcess(params);
+}

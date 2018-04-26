@@ -104,30 +104,6 @@ G4bool GmPSCylindricalRPhiDoseDeposit::ProcessHits(G4Step* aStep,G4TouchableHist
 } 
 
 //--------------------------------------------------------------------
-void GmPSCylindricalRPhiDoseDeposit::EndOfEvent(G4HCofThisEvent*)
-{
-}
-
-//--------------------------------------------------------------------
-void GmPSCylindricalRPhiDoseDeposit::DrawAll()
-{;}
-
-//--------------------------------------------------------------------
-void GmPSCylindricalRPhiDoseDeposit::PrintAll()
-{
-  G4cout <<" GmPSCylindricalRPhiDoseDeposit::PrintAllDefault() " << G4endl;
-  G4cout << " MultiFunctionalDet  " << detector->GetName() << G4endl;
-  G4cout << " PrimitiveScorer " << GetName() << G4endl;
-  G4cout << " Number of entries " << EvtMap->entries() << G4endl;
-  std::map<G4int,G4double*>::iterator itr = EvtMap->GetMap()->begin();
-  for(; itr != EvtMap->GetMap()->end(); itr++) {
-    G4cout << "  copy no.: " << itr->first
-	   << "  dose deposit: " << G4BestUnit(*(itr->second),"Dose")
-	   << G4endl;
-  }
-}
-
-//--------------------------------------------------------------------
 void GmPSCylindricalRPhiDoseDeposit::SetParameters( const std::vector<G4String>& params)
 {
   if( params.size() != 8
@@ -183,8 +159,3 @@ void GmPSCylindricalRPhiDoseDeposit::SetParameters( const std::vector<G4String>&
   }
 
 }
- #include "GamosCore/GamosBase/Base/include/GmVClassifier.hh" 
-G4int GmPSCylindricalRPhiDoseDeposit::GetIndex(G4Step* aStep ) 
- { 
- return theClassifier->GetIndexFromStep( aStep ); 
-} 

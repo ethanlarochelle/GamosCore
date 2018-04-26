@@ -52,6 +52,7 @@ public:
 
 protected:
   mut fTimers;
+private:
   unsigned int theCurrentTimerID;
 
 };

@@ -78,19 +78,11 @@ class GmG4PSPopulation : public GmVPrimitiveScorer
       virtual ~GmG4PSPopulation();
 
   public: 
-      virtual void EndOfEvent(G4HCofThisEvent*);
       virtual void clear();
-
-  public:
-      virtual void DrawAll();
-      virtual void PrintAll();
-  virtual G4int GetIndex(G4Step*);
 
   private:
       std::map<G4int,G4TrackLogger>  fCellTrackLogger;
 
 };
-
-
 
 #endif

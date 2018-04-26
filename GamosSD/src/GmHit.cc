@@ -29,6 +29,7 @@
 #include "GamosCore/GamosSD/include/GmHitsEventMgr.hh"
 #include "GamosCore/GamosAnalysis/include/GmCheckOriginalGamma.hh"
 #include "GamosCore/GamosUtils/include/GmGenUtils.hh"
+#include "GamosCore/GamosBase/Base/include/GmParameterMgr.hh"
 
 #include "G4Step.hh"
 #include "G4Track.hh"
@@ -52,8 +53,16 @@ GmHit::GmHit(G4Step* aStep, G4double energy, unsigned long long id, const G4Stri
   theEDepos.push_back( new GmEDepo( energy, aTrack->GetPosition(), aStep->GetTrack()->GetDefinition(), aStep->GetPostStepPoint()->GetGlobalTime() ) );
 
   // only for checks, it should be set by SD (at the center of face of entrance)
-  thePosition = aStep->GetTrack()->GetPosition();
-  
+  if( GmParameterMgr::GetInstance()->GetNumericValue("GmHit:LocalHitCoordinates",0) ) {
+    thePosition = aStep->GetTrack()->GetPosition();
+    thePosition = (G4TransportationManager::GetTransportationManager()->
+		   GetNavigatorForTracking()->
+		   GetGlobalToLocalTransform()).TransformPoint(thePosition);
+  } else {
+    thePosition = aStep->GetTrack()->GetPosition();
+  }
+
+    
 #ifndef GAMOS_NO_VERBOSE
   if( SDVerb(infoVerb) ) G4cout << " new GmHit " << id << " in det type " << sdtyp << " E " << theEnergy << " posXYZ " << aStep->GetTrack()->GetPosition().x() << " " << aStep->GetTrack()->GetPosition().y() << " " << aStep->GetTrack()->GetPosition().z() << G4endl;
 #endif
@@ -66,6 +75,18 @@ GmHit::GmHit(G4Step* aStep, G4double energy, unsigned long long id, const G4Stri
   bDeadTimeFound = false;
 
   theHitsTimeType = evtmgr->GetHitsTimeType();
+}
+
+//----------------------------------------------------------------------
+void GmHit::SetPosition(G4ThreeVector pos ) {
+
+  if( GmParameterMgr::GetInstance()->GetNumericValue("GmHit:LocalHitCoordinates",0) ) {
+    thePosition = (G4TransportationManager::GetTransportationManager()->
+		   GetNavigatorForTracking()->
+		   GetGlobalToLocalTransform()).TransformPoint(thePosition);
+  } else {
+    thePosition = pos;
+  }
 }
 
 //----------------------------------------------------------------------

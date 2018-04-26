@@ -89,6 +89,15 @@ void GmReadPhantomG4BinGeometry::ReadPhantomData()
     thePhantomMaterialsOriginal[ii] = mate;
   }
 
+  for( G4int jj = 0; jj < 3; jj++) {
+    if( fread(&sc, sizeof(char), 1, fin) != 1) {
+      G4Exception(" GmReadPhantomG4BinGeometry::ReadPhantomData",
+		  "Error",
+		  FatalException,
+		  "Problem reading patient position");
+    }
+    thePatientPosition += G4String(sc);
+  }
   if( fread(&nVoxelX, sizeof(size_t),  1, fin) != 1) {
     G4Exception(" GmReadPhantomG4BinGeometry::ReadPhantomData",
 		"Error",
@@ -175,7 +184,7 @@ void GmReadPhantomG4BinGeometry::ReadPhantomData()
   
   ReadVoxelDensitiesBin( fin );
 
-  //  ReadPS( fin );
+  //  ReadPV( fin );
 
   fclose(fin);
  
@@ -201,6 +210,8 @@ void GmReadPhantomG4BinGeometry::ReadVoxelDensitiesBin( FILE* fin )
   //--- Calculate the average material density for each material/density bin
   std::map< std::pair<G4Material*,G4int>, matInfo* > newMateDens;
   
+  theMateDensities = new float[nVoxelX*nVoxelY*nVoxelZ];
+
   G4float dens;
   //---- Read the material densities
   for( G4int iz = 0; iz < nVoxelZ; iz++ ) {
@@ -214,7 +225,11 @@ void GmReadPhantomG4BinGeometry::ReadVoxelDensitiesBin( FILE* fin )
 		      G4String("Problem reading material density" + GmGenUtils::itoa(ix) + " " + GmGenUtils::itoa(iy) + " " + GmGenUtils::itoa(iz)).c_str());
 	}
 	//	G4cout << ix << " " << iy << " " << iz << " density " << dens << G4endl;
-	if( !bRecalculateMaterialDensities ) continue; 
+	if( !bRecalculateMaterialDensities ) {
+	  G4int copyNo = ix + (iy)*nVoxelX + (iz)*nVoxelX*nVoxelY;
+	  theMateDensities[copyNo] = dens;
+	  continue;
+	}
 	
 	G4int copyNo = ix + (iy)*nVoxelX + (iz)*nVoxelX*nVoxelY;
 	//--- store the minimum and maximum density for each material (just for printing)
@@ -254,8 +269,9 @@ void GmReadPhantomG4BinGeometry::ReadVoxelDensitiesBin( FILE* fin )
 	  theMateIDs[copyNo] = thePhantomMaterialsOriginal.size()-1 + mi->id;
 	  //	  G4cout << copyNo << " mat new first " << thePhantomMaterialsOriginal.size()-1 + mi->id << G4endl;
 	}
-	//	G4cout << ix << " " << iy << " " << iz << " filling mateIDs " << copyNo << " = " << atoi(cid)-1 << G4endl;
-	//	mateIDs[copyNo] = atoi(cid)-1;
+	theMateDensities[copyNo] = dens;
+	//	G4cout << ix << " " << iy << " " << iz << " filling theMateIDs " << copyNo << " = " << atoi(cid)-1 << G4endl;
+	//	theMateIDs[copyNo] = atoi(cid)-1;
       }
     }
   }

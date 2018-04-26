@@ -85,6 +85,8 @@ private:
   GmUIcmdWithAString* addPartProcCmd;
   std::map<G4String,GmVEWBiasingOperation*> theOperationNames;
   std::map<const G4BiasingProcessInterface*,GmVEWBiasingOperation*> theOperations;
+  GmUIcmdWithAString* addSplittingProcCmd;
+
 };
 
 #endif

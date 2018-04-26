@@ -87,8 +87,9 @@ public:
 
   static std::vector<G4String> StringSplit( const G4String& theString, const  G4String& theDelimiter);
 
-  template <typename T> int sgn(T val);
-  
+  static G4bool IsSeparator( const G4String word );
+  static std::string::size_type GetNextSeparator( G4int iSeparator, G4String dataName );
+
 };
 
 #endif

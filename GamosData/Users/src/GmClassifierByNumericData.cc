@@ -35,8 +35,8 @@
 //---------------------------------------------------------------
 GmClassifierByNumericData::GmClassifierByNumericData(G4String name) : GmVClassifier( name )
 {
-  bAllowOutOfLimits = G4bool(GmParameterMgr::GetInstance()->GetNumericValue(theName+":AllowOutOfLimits",1 ));
-  //  G4cout << " GmClassifierByNumericData AllowOutOfLimits " << theName << " = " << bAllowOutOfLimits << G4endl;
+  theAllowOutOfLimits = GmParameterMgr::GetInstance()->GetNumericValue(theName+":AllowOutOfLimits",1 );
+  //  G4cout << " GmClassifierByNumericData AllowOutOfLimits " << theName << " = " << theAllowOutOfLimits << G4endl;
 }
 
 //---------------------------------------------------------------
@@ -118,18 +118,21 @@ G4int GmClassifierByNumericData::GetIndexFromSecoTrack(const G4Track* aTrack1, c
 G4int GmClassifierByNumericData::GetIndexFromValue(const G4double val )
 {
   if( val < theMin || val > theMax ) {
-    if( bAllowOutOfLimits ) {
+    if( theAllowOutOfLimits == 1 ) {
       G4Exception(G4String(theName+"::GetIndexFromValue").c_str(),
 		  "Value out of limits",
 		  JustWarning,
 		  G4String(GmGenUtils::ftoa(theMin)+ " <=? " + GmGenUtils::ftoa(val)+" <=? "+GmGenUtils::ftoa(theMax)).c_str());
       if( val < theMin ) return 0;
       if( val > theMax ) return INT_MAX;
-    } else {
+    } else if( theAllowOutOfLimits == 0 ) {
       G4Exception(G4String(theName+"::GetIndexFromValue").c_str(),
 		  "Value out of limits",
 		  FatalErrorInArgument,
 		  G4String(GmGenUtils::ftoa(theMin)+ " <=? " + GmGenUtils::ftoa(val)+" <=? "+GmGenUtils::ftoa(theMax)).c_str());
+    } else {
+      if( val < theMin ) return 0;
+      if( val > theMax ) return INT_MAX;
     }
   }
 

@@ -42,6 +42,7 @@ public:
 
   G4PhantomParameterisation* GetPhantomParam( G4bool bMustExist = true);
   G4PhantomParameterisation* GetPhantomParam( G4VPhysicalVolume* pv, G4bool bMustExist = true );
+  std::vector<G4PhantomParameterisation*> GetPhantomParams(G4bool bMustExist);
   G4LogicalVolume* GetPhantomMotherVolume( G4bool bMustExist = true );
 
   G4bool IsPhantomVolume( G4VPhysicalVolume* pv );

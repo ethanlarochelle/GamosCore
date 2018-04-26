@@ -39,10 +39,6 @@ public:
 
   virtual std::vector<GmRecHit*> ReconstructDigits(const std::vector<GmDigit*>*) = 0;
 
-  virtual void CleanRecHits();
-  
-  virtual void DeleteHit( GmRecHit* rhit );
-
 };
 
 #endif

@@ -60,13 +60,13 @@ public:
     thePhantomMaterials = pm;
   }
 
-  G4int GetNVoxelX() {
+  G4int GetNoVoxelX() {
     return nVoxelX;
   }
-  G4int GetNVoxelY() {
+  G4int GetNoVoxelY() {
     return nVoxelY;
   }
-    G4int GetNVoxelZ() {
+    G4int GetNoVoxelZ() {
     return nVoxelZ;
   }
 
@@ -104,8 +104,22 @@ public:
     return dimZ/2.;
   }
 
-  G4int GetNVoxels() {
+  G4int GetNoVoxels() {
     return nVoxelX * nVoxelY * nVoxelZ;
+  }
+
+  G4double GetInitialRotAngleX() const {
+    return theInitialRotAngleX;
+  }
+  G4double GetInitialRotAngleY() const {
+    return theInitialRotAngleY;
+  }
+  G4double GetInitialRotAngleZ() const {
+    return theInitialRotAngleZ;
+  }
+
+  G4ThreeVector GetInitialDisp() const {
+    return theInitialDisp;
   }
   
 protected:
@@ -117,9 +131,7 @@ protected:
   G4Material* BuildMaterialChangingDensity( G4Material* origMate, float density, G4String mateName );
 
   virtual void ReadVoxelDensities( std::ifstream& fin );
-
 protected:
-  G4LogicalVolume* world_logic;
   G4LogicalVolume* cont_logic;
   G4VPhysicalVolume* parameterisedPhysVolume; 
 

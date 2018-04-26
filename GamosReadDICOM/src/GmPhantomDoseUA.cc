@@ -120,7 +120,7 @@ void GmPhantomDoseUA::UserSteppingAction(const G4Step* aStep)
     G4double edepo = aStep->GetTotalEnergyDeposit();
     if( edepo > 0. ){
       //     G4cout << " MATE " << aTrack->GetVolume()->GetLogicalVolume()->GetMaterial()->GetName() << " " << aTrack->GetVolume()->GetLogicalVolume()->GetMaterial()->GetDensity()/g*cm3 << " " << aTrack->GetPosition().y() << G4endl;
-      size_t copyNo = (size_t)(aStep->GetPreStepPoint()->GetTouchable()->GetReplicaNumber(0));
+      size_t copyNo = (size_t)(aTrack->GetVolume()->GetCopyNo());
 //      G4cout << " In Phantom " << copyNo << G4endl;
       theDose[copyNo] += edepo;
       theDose2[copyNo] += edepo*edepo;

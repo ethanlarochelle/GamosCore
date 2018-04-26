@@ -53,13 +53,13 @@ public:
     return theActivities[ii];
   }
   
-  G4int GetNVoxelX() {
+  G4int GetNoVoxelX() {
     return nVoxelX;
   }
-  G4int GetNVoxelY() {
+  G4int GetNoVoxelY() {
     return nVoxelY;
   }
-    G4int GetNVoxelZ() {
+    G4int GetNoVoxelZ() {
     return nVoxelZ;
   }
 
@@ -91,7 +91,7 @@ public:
     return dimZ/2.;
   }
 
-  G4int GetNVoxels() {
+  G4int GetNoVoxels() {
     return nVoxelX * nVoxelY * nVoxelZ;
   }
   

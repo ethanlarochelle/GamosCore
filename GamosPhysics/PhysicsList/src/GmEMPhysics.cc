@@ -97,9 +97,10 @@ void GmEMPhysics::ConstructParticles()
   G4MuonMinus::MuonMinusDefinition();
   G4MuonPlus::MuonPlusDefinition();
 
-  theParticleIterator->reset();
-  while( (*theParticleIterator)() ){
-    theParticleIterator->value();
+  auto particleIterator=GetParticleIterator();
+  particleIterator->reset();
+  while( (*particleIterator)() ){
+    particleIterator->value();
   }
 
 }

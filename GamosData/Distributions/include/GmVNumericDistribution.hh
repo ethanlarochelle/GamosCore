@@ -35,6 +35,7 @@ public:
   GmVNumericDistribution(G4String name);
   virtual ~GmVNumericDistribution(){};
 
+  virtual void Initialize();
   virtual void BuildData();
   virtual void ReadFile();
 
@@ -54,13 +55,14 @@ public:
   }
 
 protected:
+  virtual void CheckNValues();
   void CheckOtherFileNames( G4String& fileNameROOT, G4String& fileNameCSV, G4String& fileNameText, G4String& fileName, G4int fNumber );
-  void ReadFileName( G4String& fileName );
+  //?  virtual void ReadFileName( G4String& fileName );
 #ifndef GAMOS_NO_ROOT
-  void ReadFileROOT( G4String& fileName );
+  virtual void ReadFileROOT( G4String& fileName );
 #endif
-  void ReadFileCSV( G4String& fileName );
-  void ReadFileText( G4String& fileName );
+  virtual void ReadFileCSV( G4String& fileName );
+  virtual void ReadFileText( G4String& fileName );
 
 protected:
   
@@ -69,7 +71,7 @@ protected:
   G4double theMinimum;
   G4double theMaximum;
 
-  G4bool bAllowOutOfLimits;
+  G4int theAllowOutOfLimits;
 
 };
 

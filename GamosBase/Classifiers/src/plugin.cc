@@ -60,3 +60,6 @@ PLUGINSVC_FACTORY(GmCompoundClassifier,GmVClassifier*(G4String))
 PLUGINSVC_FACTORY(GmClassifierBySecondariesList,GmVClassifier*(G4String))
 PLUGINSVC_FACTORY(GmClassifierBySecondariesListExclude,GmVClassifier*(G4String))
 PLUGINSVC_FACTORY(GmClassifierByHadronicReaction,GmVClassifier*(G4String))
+
+#include "GmClassifierVerbosity.hh"
+PLUGINSVC_FACTORY(GmClassifierVerbosity, GmVVerbosity*())

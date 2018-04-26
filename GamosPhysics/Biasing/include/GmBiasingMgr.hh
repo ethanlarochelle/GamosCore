@@ -38,7 +38,6 @@ Changes:     03/2016: creation
 #include "G4ThreeVector.hh"
 
 #include <map>
-#include <vector>
 class GmVBiasingOperator;
 class GmGenericBiasingPhysics;
 
@@ -56,7 +55,8 @@ private:
   void AddProcesses2Oper(std::vector<G4String> params );
   void AddParticles2Oper(std::vector<G4String> params );
   void AddParticleProcesses2Oper(std::vector<G4String> params );
-
+  void AddSplittingProcess( std::vector<G4String> params);
+  
 private:
   static GmBiasingMgr* theInstance;
   std::map<G4String,GmVBiasingOperator*> theOperators;

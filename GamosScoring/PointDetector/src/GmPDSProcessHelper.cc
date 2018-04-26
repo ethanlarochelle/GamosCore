@@ -338,8 +338,8 @@ void GmPDSProcessHelper::ReadEnergyBinsForGammas()
 void GmPDSProcessHelper::BuildEnergies()
 {
 
-  G4String energiesFile = GetPDSStringParameter("EnergiesFileName",theOriginalParticleName,"Flux2Dose.neutrons.ICRU57.lis");
-  G4String flux2DoseFile = GetPDSStringParameter("Flux2DoseFileName",theOriginalParticleName,"Flux2Dose.neutrons.ICRU57.lis");
+  G4String energiesFile = GetPDSStringParameter("EnergiesFileName",theOriginalParticleName,"Flux2Dose.neutron.ICRU57.lis");
+  G4String flux2DoseFile = GetPDSStringParameter("Flux2DoseFileName",theOriginalParticleName,"Flux2Dose.neutron.ICRU57.lis");
 
   //--- If two files are equal use Flux2Dose, else read file
   if( energiesFile == flux2DoseFile ) {

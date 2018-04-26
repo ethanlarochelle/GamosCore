@@ -29,17 +29,19 @@
 #include "GmReadPhantomG4BinGeometry.hh"
 #include "GmReadPhantomEGSGeometry.hh"
 #include "GmSimplePhantomGeometry.hh"
-#include "GmReadPhantomEGSwithPSGeometry.hh"
-#include "GmReadPhantomG4withPSGeometry.hh"
+#include "GmReadPhantomEGSwithStGeometry.hh"
+#include "GmReadPhantomG4withStGeometry.hh"
 #include "GmReadPhantomPartialG4Geometry.hh"
+#include "GmCrossPhantomGeometry.hh"
 
 PLUGINSVC_FACTORY(GmReadPhantomG4Geometry,G4VUserDetectorConstruction*())
 PLUGINSVC_FACTORY(GmReadPhantomG4BinGeometry,G4VUserDetectorConstruction*())
 PLUGINSVC_FACTORY(GmReadPhantomEGSGeometry,G4VUserDetectorConstruction*())
 PLUGINSVC_FACTORY(GmSimplePhantomGeometry,G4VUserDetectorConstruction*())
-PLUGINSVC_FACTORY(GmReadPhantomEGSwithPSGeometry,G4VUserDetectorConstruction*())
-PLUGINSVC_FACTORY(GmReadPhantomG4withPSGeometry,G4VUserDetectorConstruction*())
+PLUGINSVC_FACTORY(GmReadPhantomEGSwithStGeometry,G4VUserDetectorConstruction*())
+PLUGINSVC_FACTORY(GmReadPhantomG4withStGeometry,G4VUserDetectorConstruction*())
 PLUGINSVC_FACTORY(GmReadPhantomPartialG4Geometry,G4VUserDetectorConstruction*())
+PLUGINSVC_FACTORY(GmCrossPhantomGeometry,G4VUserDetectorConstruction*())
 
 #include "GmReadDICOMVerbosity.hh"
 PLUGINSVC_FACTORY(GmReadDICOMVerbosity,GmVVerbosity*())
@@ -60,3 +62,5 @@ PLUGINSVC_FACTORY(GmEndPhantomStructureFilter,GmVFilter*(G4String))
 PLUGINSVC_FACTORY(GmTraversePhantomStructureFilter,GmVFilter*(G4String))
 PLUGINSVC_FACTORY(GmInPhantomStructureFilter,GmVFilter*(G4String))
 
+#include "GmClassifierCrossPhantom.hh"
+PLUGINSVC_FACTORY(GmClassifierCrossPhantom,GmVClassifier*(G4String))

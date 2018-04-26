@@ -108,7 +108,7 @@ void GmVPrimitiveScorerVector::SetClassifier(GmVClassifier* idx )
 //--------------------------------------------------------------------
 void GmVPrimitiveScorerVector::AddDefaultPrinter()
 {
-  G4String param = "GmPSPrinterG4cout";
+  G4String param = "GmPSPrinterCout";
   GmVPSPrinter* psp = Reflex::PluginService::Create<GmVPSPrinter*>(param,param);
   thePrinters.push_back( psp );
 }

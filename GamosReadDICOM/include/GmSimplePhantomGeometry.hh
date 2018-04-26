@@ -46,7 +46,7 @@ public:
   ~GmSimplePhantomGeometry();
 
 
-  virtual void ReadPS( GmFileIn& ){};
+  virtual void ReadPV( GmFileIn& ){};
 
 private:
   virtual void ReadPhantomData();

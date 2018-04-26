@@ -30,9 +30,6 @@ PLUGINSVC_FACTORY(GmDummyPhysics,G4VUserPhysicsList*())
 
 #include "GmDNAPhysics.hh"
 PLUGINSVC_FACTORY(GmDNAPhysics,G4VUserPhysicsList*())
-#include "GmLEPTSPhysics.hh"
-PLUGINSVC_FACTORY(GmLEPTSPhysics,G4VUserPhysicsList*())
-
 
 #include "GmG4PhysicsLists.hh"
 PLUGINSVC_FACTORY(G4FTFP_BERT,G4VUserPhysicsList*())
@@ -60,4 +57,7 @@ PLUGINSVC_FACTORY(G4QGSP_BIC_AllHP,G4VUserPhysicsList*())
 
 #include "GmQGSP_BIC_HP_EMopt3.hh"
 PLUGINSVC_FACTORY(GmQGSP_BIC_HP_EMopt3,G4VUserPhysicsList*())
+ 
+#include "PhysListEmStandardSS.hh"
+PLUGINSVC_FACTORY(PhysListEmStandardSS,G4VUserPhysicsList*())
 

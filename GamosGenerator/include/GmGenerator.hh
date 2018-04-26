@@ -45,6 +45,8 @@ public:
   void AddIsotopeSource( const G4String& newValues );
   void AddSingleParticleSource( const G4String& newValues );
   void AddDoubleBackToBackParticleSource( const G4String& newValues );
+  void AddRTPlanSource( const G4String& newValues );
+  void AddRTIonPlanScanSpotSource( const G4String& newValues );
 
   GmParticleSource* FindSource( const G4String& name, G4bool mustExist = TRUE );
   void SetDistribution( const G4String& distType, std::vector<G4String>& wl );

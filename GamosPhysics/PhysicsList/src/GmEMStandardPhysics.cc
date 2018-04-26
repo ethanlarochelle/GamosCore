@@ -156,9 +156,10 @@ void GmEMStandardPhysics::AddDecay()
 
   G4Decay* fDecayProcess = new G4Decay();
 
-  theParticleIterator->reset();
-  while( (*theParticleIterator)() ){
-    G4ParticleDefinition* particle = theParticleIterator->value();
+  auto particleIterator=GetParticleIterator();
+  particleIterator->reset();
+  while( (*particleIterator)() ){
+    G4ParticleDefinition* particle = particleIterator->value();
     G4ProcessManager* pmanager = particle->GetProcessManager();
 
     if (fDecayProcess->IsApplicable(*particle) && !particle->IsShortLived()) { 
@@ -283,9 +284,10 @@ void GmEMStandardPhysics::SelectBremssAngularDist()
 
   //  G4ParticleTable* theParticleTable = G4ParticleTable::GetParticleTable();
   //  G4ParticleTable::G4PTblDicIterator* theParticleIterator = theParticleTable->GetIterator();
-  theParticleIterator->reset();
-  while( (*theParticleIterator)() ){
-    G4ParticleDefinition* particle = theParticleIterator->value();
+   auto particleIterator=GetParticleIterator();
+  particleIterator->reset();
+  while( (*particleIterator)() ){
+    G4ParticleDefinition* particle = particleIterator->value();
     G4ProcessManager* pmanager = particle->GetProcessManager();
     G4ProcessVector* procVector = pmanager->GetProcessList();
     for( G4int ii = procVector->size()-1; ii >= 0; ii-- ) {
@@ -296,7 +298,7 @@ void GmEMStandardPhysics::SelectBremssAngularDist()
 	if( particle == G4Electron::Electron()) {
 	  angularDist = GmParameterMgr::GetInstance()->GetStringValue("GmPhysicsElectron:Bremsstrahlung:AngularDistribution","");
 	} else if( particle == G4Positron::Positron()) {
-	  angularDist = GmParameterMgr::GetInstance()->GetStringValue("GmPhysicsElectron:Bremsstrahlung:AngularDistribution","");
+	  angularDist = GmParameterMgr::GetInstance()->GetStringValue("GmPhysicsPositron:Bremsstrahlung:AngularDistribution","");
 	}	
 	
 	if( angularDist == "tsai" ) {

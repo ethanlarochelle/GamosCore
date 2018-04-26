@@ -32,7 +32,7 @@
 #include "G4LogicalVolumeStore.hh"
 #include "G4TransportationManager.hh"
 #include "G4Navigator.hh"
-#include "GamosCore/GamosBase/Base/include/GmBaseVerbosity.hh"
+#include "GamosCore/GamosBase/Filters/include/GmFilterVerbosity.hh"
 
 //-------------------------------------------------------------
 GmInMassLogicalVolumeFilter::GmInMassLogicalVolumeFilter(G4String name)
@@ -51,7 +51,7 @@ GmInMassLogicalVolumeFilter::~GmInMassLogicalVolumeFilter()
 G4bool GmInMassLogicalVolumeFilter::AcceptTrack(const G4Track* aTrack )
 {
 #ifndef GAMOS_NO_VERBOSE
-  if( BaseVerb(debugVerb) ) G4cout << " GmInMassLogicalVolumeFilter::AcceptTrack " << G4endl;
+  if( FilterVerb(debugVerb) ) G4cout << " GmInMassLogicalVolumeFilter::AcceptTrack " << G4endl;
 #endif
 
   G4VPhysicalVolume* physvol = G4TransportationManager::GetTransportationManager()->GetNavigatorForTracking()->LocateGlobalPointAndSetup( aTrack->GetPosition(), (G4ThreeVector*)0, false, false ); 
@@ -60,17 +60,17 @@ G4bool GmInMassLogicalVolumeFilter::AcceptTrack(const G4Track* aTrack )
     
     if( theLogicalVolumes.find(logvol) != theLogicalVolumes.end() ) {
 #ifndef GAMOS_NO_VERBOSE
-    if( BaseVerb(debugVerb) ) G4cout << " GmInMassLogicalVolumeFilter::AcceptTrack  return 1 " << logvol->GetName() << G4endl;
+    if( FilterVerb(debugVerb) ) G4cout << " GmInMassLogicalVolumeFilter::AcceptTrack  return 1 " << logvol->GetName() << G4endl;
 #endif
       return TRUE;
     }
 #ifndef GAMOS_NO_VERBOSE
-    if( BaseVerb(debugVerb) ) G4cout << " GmInMassLogicalVolumeFilter::AcceptTrack  return 0 " << logvol->GetName() << G4endl;
+    if( FilterVerb(debugVerb) ) G4cout << " GmInMassLogicalVolumeFilter::AcceptTrack  return 0 " << logvol->GetName() << G4endl;
 #endif
     return FALSE;
   } else {
 #ifndef GAMOS_NO_VERBOSE
-    if( BaseVerb(debugVerb) ) G4cout << " GmInMassLogicalVolumeFilter::AcceptTrack  return 0 , no vol " << G4endl;
+    if( FilterVerb(debugVerb) ) G4cout << " GmInMassLogicalVolumeFilter::AcceptTrack  return 0 , no vol " << G4endl;
 #endif
     return FALSE;
   }
@@ -82,12 +82,12 @@ G4bool GmInMassLogicalVolumeFilter::AcceptStep(const G4Step* aStep)
   G4LogicalVolume* logvol = aStep->GetTrack()->GetVolume()->GetLogicalVolume();
   if( theLogicalVolumes.find(logvol) != theLogicalVolumes.end() ) {
 #ifndef GAMOS_NO_VERBOSE
-    if( BaseVerb(debugVerb) ) G4cout << " GmInMassLogicalVolumeFilter::AcceptStep  return 1 " << logvol->GetName() << G4endl;
+    if( FilterVerb(debugVerb) ) G4cout << " GmInMassLogicalVolumeFilter::AcceptStep  return 1 " << logvol->GetName() << G4endl;
 #endif
     return TRUE;
   }
 #ifndef GAMOS_NO_VERBOSE
-  if( BaseVerb(debugVerb) ) G4cout << " GmInMassLogicalVolumeFilter::AcceptStep  return 0 " << logvol->GetName() << G4endl;
+  if( FilterVerb(debugVerb) ) G4cout << " GmInMassLogicalVolumeFilter::AcceptStep  return 0 " << logvol->GetName() << G4endl;
 #endif
   return FALSE;
 }

@@ -40,11 +40,12 @@ GmChangeEnergies::GmChangeEnergies()
 void GmChangeEnergies::GetEnergyParameters(G4String name)
 {
   GmParameterMgr* parMgr = GmParameterMgr::GetInstance();
-
-  theMinE = parMgr->GetNumericValue(name+":minE",1.E-12*CLHEP::MeV);
+  //  theMinE = parMgr->GetNumericValue(name+":minE",1.E-12*CLHEP::MeV);
+  theMinE = GmGenUtils::GetValue(parMgr->GetStringValue(name+":minE","1.E-12"));
   theMaxE = parMgr->GetNumericValue(name+":maxE",1.E+2*CLHEP::MeV);
   theNStepsE = (unsigned int)(parMgr->GetNumericValue(name+":nStepsE",15));
   bLogE = G4bool(parMgr->GetNumericValue(name+":logE",1));
+  G4cout << " GmChangeEnergies NAME " << name << " minE " << theMinE << G4endl; //GDEB
 
   theEnergyFileName = parMgr->GetStringValue(name+":EnergiesFileName","");
   if( theEnergyFileName == "" ) {
@@ -101,6 +102,8 @@ void GmChangeEnergies::BuildEnergies()
       }
     }
   }
+
+    G4cout << " BuilEnergies  minE " << theMinE << G4endl; //GDEB
 
 }
 

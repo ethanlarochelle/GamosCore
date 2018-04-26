@@ -45,7 +45,7 @@
 class GmBOptrForceCollision;
 #include "G4VAuxiliaryTrackInformation.hh"
 
-enum ForceCollisionState { FCS_free, FCS_toBeCloned, FCS_toBeForced, FCS_toBeFreeFlight };
+enum class ForceCollisionState { free, toBeCloned, toBeForced, toBeFreeFlight };
 
 class GmBOptrForceCollisionTrackData : public G4VAuxiliaryTrackInformation {
 
@@ -60,7 +60,7 @@ public:
 
   // -- Get methods:
   G4bool                             IsFreeFromBiasing() const
-  { return ( fForceCollisionState == FCS_free);}
+  { return ( fForceCollisionState == ForceCollisionState::free);}
   // -- no set methods are provided : sets are made under exclusive control of GmBOptrForceCollision objects through friendness.
   
 private:
@@ -70,7 +70,7 @@ private:
   void Reset()
   {
     fForceCollisionOperator = nullptr;
-    fForceCollisionState    = FCS_free;
+    fForceCollisionState    = ForceCollisionState::free;
   }
   
 };

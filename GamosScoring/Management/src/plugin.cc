@@ -30,3 +30,7 @@ PLUGINSVC_FACTORY(GmScoringUA,GmUserAction*())
 
 #include "GmScoringVerbosity.hh"
 PLUGINSVC_FACTORY(GmScoringVerbosity,GmVVerbosity*())
+
+#include "GmCompoundScorer.hh"
+
+PLUGINSVC_FACTORY(GmCompoundScorer,GmVPrimitiveScorer*(G4String))

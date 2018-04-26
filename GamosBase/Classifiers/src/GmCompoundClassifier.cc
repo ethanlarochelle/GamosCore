@@ -24,7 +24,7 @@
 // ********************************************************************
 //
 #include "GmCompoundClassifier.hh"
-#include "GamosCore/GamosBase/Base/include/GmBaseVerbosity.hh"
+#include "GamosCore/GamosBase/Classifiers/include/GmClassifierVerbosity.hh"
 
 #include "GamosCore/GamosBase/Base/include/GmClassifierMgr.hh"
 #include "G4Step.hh"

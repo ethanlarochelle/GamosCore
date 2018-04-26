@@ -36,8 +36,8 @@
 GmVEWBiasingOperation::GmVEWBiasingOperation(G4String name)
 : G4VBiasingOperation(name),
   fNSplit(1),
-  fNSplitInv(1.),
-  fParticleChange()
+  fNSplitInv(1.)
+  //t, fParticleChange()
 {
   thePlaneX = GmParameterMgr::GetInstance()->GetNumericValue(GetName()+":XDim",100.*CLHEP::mm);
   thePlaneY = GmParameterMgr::GetInstance()->GetNumericValue(GetName()+":YDim",100.*CLHEP::mm);
@@ -51,6 +51,7 @@ GmVEWBiasingOperation::GmVEWBiasingOperation(G4String name)
 
 GmVEWBiasingOperation::~GmVEWBiasingOperation()
 {
+  fParticleChange.Clear();
 }
 
 //---------------------------------------------------------------------------------------
@@ -77,7 +78,7 @@ G4bool GmVEWBiasingOperation::IsInPlane(const G4ThreeVector dir, const G4ThreeVe
   //G4double xInPlane = pos.x()+diffZ*(std::tan(std::acos(dir.z())));
   G4double xInPlane = pos.x()+diffZ*dir.x()/dir.z();
 #ifndef GAMOS_NO_VERBOSE
-  if( BiasingVerb(testVerb) ) G4cout << "GmVEWBiasingOperation::IsInPlane xInPlane / posX / dirX  " << xInPlane << " <? " << thePlaneX << G4endl;
+  if( BiasingVerb(testVerb) ) G4cout << "GmVEWBiasingOperation::IsInPlane xInPlane / posX / dirX  " << xInPlane << " / " << pos.x() << " / " << dir.x() << " " << thePlaneX << G4endl;
 #endif
 
   if ( fabs(xInPlane) > thePlaneX ) {

@@ -114,7 +114,7 @@ void GmReadPhantomEGSGeometry::ReadPhantomData()
   if( ReadDICOMVerb(infoVerb) ) G4cout << "GmReadPhantomEGSGeometry::ReadPhantomData dimZ " << dimZ << " offsetZ " << offsetZ << G4endl;
 #endif
 
-  //  mateIDs = new size_t[nVoxelX*nVoxelY*nVoxelZ];
+  //  theMateIDs = new size_t[nVoxelX*nVoxelY*nVoxelZ];
   theMateIDs = new size_t[nVoxelX*nVoxelY*nVoxelZ];
   for( G4int iz = 0; iz < nVoxelZ; iz++ ) {
     for( G4int iy = 0; iy < nVoxelY; iy++ ) { // check if loop in X first???
@@ -124,8 +124,8 @@ void GmReadPhantomEGSGeometry::ReadPhantomData()
       //      G4cout << " stemp " << stemp << G4endl;
 	G4int nnew = ix + (iy)*nVoxelX + (iz)*nVoxelX*nVoxelY;
 	G4String cid = stemp.substr(ix,1).c_str();
-		//if( nnew % 10000 == 0 ) G4cout << stemp << " " << ix << " " << iy << " " << iz << " filling mateIDs " << nnew << " = " << atoi(cid.c_str())-1 << G4endl;
-		//if( nnew > nVoxelX*nVoxelY*nVoxelZ-10000 ) G4cout << ix << " " << iy << " " << iz << " filling mateIDs " << nnew << " = " << atoi(cid)-1 << G4endl;
+		//if( nnew % 10000 == 0 ) G4cout << stemp << " " << ix << " " << iy << " " << iz << " filling theMateIDs " << nnew << " = " << atoi(cid.c_str())-1 << G4endl;
+		//if( nnew > nVoxelX*nVoxelY*nVoxelZ-10000 ) G4cout << ix << " " << iy << " " << iz << " filling theMateIDs " << nnew << " = " << atoi(cid)-1 << G4endl;
 	G4int mateID = atoi(cid)-1;
 	if( mateID < 0 || mateID >= nMaterials ) {
 	  G4Exception("GmReadPhantomEGSGeometry::ReadPhantomData",
@@ -137,14 +137,14 @@ void GmReadPhantomEGSGeometry::ReadPhantomData()
 			       + GmGenUtils::itoa(mateID)).c_str());
 	}
 	theMateIDs[nnew] = mateID;
-	//	mateIDs[nnew] = 1-1;
+	//	theMateIDs[nnew] = 1-1;
       }
     }
   }
 
   ReadVoxelDensities( *fin );
 
-  ReadPS( fing );
+  ReadPV( fing );
 
   fin->close();
 

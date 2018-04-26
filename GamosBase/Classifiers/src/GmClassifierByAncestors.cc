@@ -24,7 +24,7 @@
 // ********************************************************************
 //
 #include "GmClassifierByAncestors.hh"
-#include "GamosCore/GamosBase/Base/include/GmBaseVerbosity.hh"
+#include "GamosCore/GamosBase/Classifiers/include/GmClassifierVerbosity.hh"
 #include "G4Step.hh"
 #include "G4TouchableHistory.hh"
 #include "GamosCore/GamosUtils/include/GmGenUtils.hh"

@@ -33,6 +33,7 @@
 #include "GmNumericDistributionLogLog.hh"
 #include "GmNumericDistributionUpper.hh"
 #include "GmNumericDistributionLower.hh"
+#include "GmNumericNDimDistributionUpper.hh"
 #include "GmDistributionRatio.hh"
 #include "GmGaussianDistribution.hh"
 
@@ -44,6 +45,9 @@ PLUGINSVC_FACTORY(GmNumericDistributionLogLin,GmVDistribution*(G4String))
 PLUGINSVC_FACTORY(GmNumericDistributionLogLog,GmVDistribution*(G4String))
 PLUGINSVC_FACTORY(GmNumericDistributionUpper,GmVDistribution*(G4String))
 PLUGINSVC_FACTORY(GmNumericDistributionLower,GmVDistribution*(G4String))
+
+PLUGINSVC_FACTORY(GmNumericNDimDistributionUpper,GmVDistribution*(G4String))
+
 PLUGINSVC_FACTORY(GmDistributionRatio,GmVDistribution*(G4String))
 PLUGINSVC_FACTORY(GmGaussianDistribution,GmVDistribution*(G4String))
 

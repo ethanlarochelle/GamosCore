@@ -26,7 +26,7 @@
 #include "Reflex/PluginService.h"
 #include "GamosCore/GamosScoring/Management/include/GmScoringVerbosity.hh"
 
-#include "GmPSPrinterG4cout.hh"
+//#include "GmPSPrinterG4cout.hh"
 #include "GmPSPrinterCout.hh"
 #include "GmPSPrinterBinFile.hh"
 #include "GmPSPrinterTextFile.hh"
@@ -35,7 +35,7 @@
 #include "GmPSPrinterHistos.hh"
 #include "GmPSPrinterCSVFile.hh"
 
-PLUGINSVC_FACTORY(GmPSPrinterG4cout,GmVPSPrinter*(G4String))
+//PLUGINSVC_FACTORY(GmPSPrinterG4cout,GmVPSPrinter*(G4String))
 PLUGINSVC_FACTORY(GmPSPrinterCout,GmVPSPrinter*(G4String))
 PLUGINSVC_FACTORY(GmPSPrinter3ddose,GmVPSPrinter*(G4String))
 PLUGINSVC_FACTORY(GmPSPrinterSqdose,GmVPSPrinter*(G4String))

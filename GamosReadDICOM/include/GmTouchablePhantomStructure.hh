@@ -39,7 +39,7 @@ class G4VTouchable;
 // 
 ///////////////////////////////////////////////////////////////////////////////
 class GmRegularParamUtils;
-class GmReadPhantomPSMgr;
+class GmReadPhantomSVMgr;
 
 class GmTouchablePhantomStructure : public GmVTouchableFilterVolume 
 {
@@ -61,7 +61,7 @@ protected:
   std::set<G4int> theIndices;
 
   GmRegularParamUtils* theRegularUtils;
-  GmReadPhantomPSMgr* thePVMgr;
+  GmReadPhantomSVMgr* thePVMgr;
   G4int theIdxShift;
 
 };

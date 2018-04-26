@@ -24,7 +24,7 @@
 // ********************************************************************
 //
 #include "GmParentFilter.hh"
-#include "GamosCore/GamosBase/Base/include/GmBaseVerbosity.hh"
+#include "GamosCore/GamosBase/Filters/include/GmFilterVerbosity.hh"
 
 #include "GamosCore/GamosUtils/include/GmG4Utils.hh"
 
@@ -53,13 +53,13 @@ G4bool GmParentFilter::AcceptTrack(const G4Track* aTrack)
 
   if( bPassed.find( parentID ) != bPassed.end()) { // passed parent in any step
 #ifndef GAMOS_NO_VERBOSE
-    if( BaseVerb(debugVerb) ) G4cout << " GmParentFilter::AcceptTrack return TRUE, because ancestor was accepted " << G4endl;
+    if( FilterVerb(debugVerb) ) G4cout << " GmParentFilter::AcceptTrack return TRUE, because ancestor was accepted " << G4endl;
 #endif
     return TRUE;
   }
 
 #ifndef GAMOS_NO_VERBOSE
-  if( BaseVerb(debugVerb) ) G4cout << " GmParentFilter::AcceptTrack return FALSE" << G4endl;
+  if( FilterVerb(debugVerb) ) G4cout << " GmParentFilter::AcceptTrack return FALSE" << G4endl;
 #endif
 
   return FALSE;
@@ -87,13 +87,13 @@ G4bool GmParentFilter::AcceptStep(const G4Step* aStep)
   //--- Check if passed previous track at AcceptTrack
   if( bPassed.find( aTrack->GetParentID()) != bPassed.end()) {
 #ifndef GAMOS_NO_VERBOSE
-    if( BaseVerb(debugVerb) ) G4cout << " GmParentFilter::AcceptStep returns TRUE, because ancestor was accepted at AcceptTrack " << G4endl;
+    if( FilterVerb(debugVerb) ) G4cout << " GmParentFilter::AcceptStep returns TRUE, because ancestor was accepted at AcceptTrack " << G4endl;
 #endif
     return TRUE;
   } 
     
 #ifndef GAMOS_NO_VERBOSE
-  if( BaseVerb(debugVerb) ) G4cout << " GmParentFilter::AcceptStep return FALSE" << G4endl;
+  if( FilterVerb(debugVerb) ) G4cout << " GmParentFilter::AcceptStep return FALSE" << G4endl;
 #endif
 
   return FALSE;

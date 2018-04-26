@@ -63,7 +63,7 @@ GmDataFinalParallelPVCopyNumber::~GmDataFinalParallelPVCopyNumber()
 G4double GmDataFinalParallelPVCopyNumber::GetValueFromStep( const G4Step* , G4int )
 {
   const G4StepPoint* postSP = theParallelWorldProcess->fGhostPreStepPoint;
-  return postSP->GetTouchable()->GetReplicaNumber(0);
+  return postSP->GetPhysicalVolume()->GetCopyNo();
 }
 
 //----------------------------------------------------------------

@@ -29,7 +29,7 @@
 #include <vector>
 #include "GmSqdoseHeader.hh"
 class Gm3ddose;
-enum SqdoseType{ SqTALL=1, SqTFILLED=2 };
+enum SqdoseType{ SqTALL, SqTFILLED, SqTCROSS_PHANTOM };
 
 class GmSqdose
 {
@@ -72,6 +72,9 @@ public:
 
   void SetSqdoseType( SqdoseType typ ) {
     theType = typ; }
+
+  SqdoseType GetType() const {
+    return theType; }
 
 private:
   GmSqdoseHeader* theHeader;

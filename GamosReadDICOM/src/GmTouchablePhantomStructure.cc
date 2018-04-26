@@ -24,7 +24,7 @@
 // ********************************************************************
 //
 #include "GmTouchablePhantomStructure.hh"
-#include "GmReadPhantomPSMgr.hh"
+#include "GmReadPhantomSVMgr.hh"
 #include "GmRegularParamUtils.hh"
 #include "GmReadDICOMVerbosity.hh"
 
@@ -38,7 +38,7 @@
 GmTouchablePhantomStructure::GmTouchablePhantomStructure()
 {
   theRegularUtils = GmRegularParamUtils::GetInstance();
-  thePVMgr = GmReadPhantomPSMgr::GetInstance();
+  thePVMgr = GmReadPhantomSVMgr::GetInstance();
 }
 
 //---------------------------------------------------------------------
@@ -59,8 +59,7 @@ G4bool GmTouchablePhantomStructure::AcceptTouchable(const G4VTouchable* touch)
 
   if( theRegularUtils->IsPhantomVolume( pv ) ){
     //    G4PhantomParameterisation* pparam = theRegularUtils->GetPhantomParam( true );  
-    G4int idx = thePVMgr->GetPVSID( touch->GetReplicaNumber(0) );
-
+    G4int idx = thePVMgr->GetSVID( touch->GetReplicaNumber() );
     if( idx != -1 ) {
       //      G4cout << pv->GetCopyNo() << " GmTouchablePhantomStructure idx " << idx << G4endl;
       if( CheckIndex(idx) ) {
@@ -82,7 +81,7 @@ G4bool GmTouchablePhantomStructure::CheckIndex( G4int idx )
   //split index 
   for( G4int ii = 0;; ii++) {
     G4int ns = pow(theIdxShift,ii);
-    if( ns > idx ) break;
+    if( ns >= idx ) break;
     G4int idx1 = (idx/ns)%theIdxShift;
     if( theIndices.find(idx1) != theIndices.end() ) {
       return true;
@@ -116,12 +115,12 @@ void GmTouchablePhantomStructure::SetParameters( std::vector<G4String>& params)
   }
   
   for( unsigned int ii = 0; ii < params.size(); ii++ ){
-    theIndices.insert(thePVMgr->GetPVSIDFromPVSName(params[ii]));
+    theIndices.insert(thePVMgr->GetSVIDFromPhysVolName(params[ii]));
 #ifndef GAMOS_NO_VERBOSE
-    if( ReadDICOMVerb(debugVerb) )  G4cout << ii << " GmTouchablePhantomStructure theIndices " << thePVMgr->GetPVSIDFromPVSName(params[ii]) << G4endl;
+    if( ReadDICOMVerb(debugVerb) )  G4cout << ii << " GmTouchablePhantomStructure theIndices " << thePVMgr->GetSVIDFromPhysVolName(params[ii]) << G4endl;
 #endif
   }
 
-  theIdxShift = G4int(GmParameterMgr::GetInstance()->GetNumericValue("GmPhantomStructure:NShift",100));
+  theIdxShift = G4int(GmParameterMgr::GetInstance()->GetNumericValue("GmPhantomStructure:IDShift",100));
 }
 

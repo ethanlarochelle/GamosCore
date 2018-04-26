@@ -25,7 +25,7 @@
 //
 #include "GmHistoryAncestorsAllFilter.hh"
 #include "G4Track.hh"
-#include "GamosCore/GamosBase/Base/include/GmBaseVerbosity.hh"
+#include "GamosCore/GamosBase/Filters/include/GmFilterVerbosity.hh"
 
 //----------------------------------------------------------------
 GmHistoryAncestorsAllFilter::GmHistoryAncestorsAllFilter(G4String name)
@@ -80,7 +80,7 @@ G4bool GmHistoryAncestorsAllFilter::AcceptStep(const G4Step* aStep)
   if( bAccept ) {
     bAccept = AcceptStepAND(aStep);
 #ifndef GAMOS_NO_VERBOSE
-    if( bAccept ) if( BaseVerb(debugVerb) ) G4cout << " GmHistoryAncestorsFilter::AcceptStep return 1, because current step is accepted " << G4endl;
+    if( bAccept ) if( FilterVerb(debugVerb) ) G4cout << " GmHistoryAncestorsFilter::AcceptStep return 1, because current step is accepted " << G4endl;
 #endif
   }
 

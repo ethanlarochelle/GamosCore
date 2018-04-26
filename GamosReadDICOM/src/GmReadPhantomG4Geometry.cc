@@ -89,7 +89,13 @@ void GmReadPhantomG4Geometry::ReadPhantomData()
     thePhantomMaterialsOriginal[ii] = mate;
   }
 
-  *fin >> nVoxelX >> nVoxelY >> nVoxelZ;
+  *fin >> thePatientPosition;
+  if( GmGenUtils::IsNumber( thePatientPosition ) ) {
+    nVoxelX = G4int(GmGenUtils::GetValue(thePatientPosition));
+    *fin >> nVoxelY >> nVoxelZ;
+  } else {
+    *fin >> nVoxelX >> nVoxelY >> nVoxelZ;
+  }
   G4cout << "GmReadPhantomG4Geometry::ReadPhantomData nVoxel X/Y/Z " << nVoxelX << " " << nVoxelY << " " << nVoxelZ << G4endl;
   *fin >> offsetX >> dimX;
   dimX = (dimX - offsetX)/nVoxelX;
@@ -107,7 +113,7 @@ void GmReadPhantomG4Geometry::ReadPhantomData()
       for( G4int ix = 0; ix < nVoxelX; ix++ ) {
 	*fin >> stemp; 
 	G4int nnew = ix + (iy)*nVoxelX + (iz)*nVoxelX*nVoxelY;
-	//	G4cout << ix << " " << iy << " " << iz << " filling mateIDs " << nnew << " = " <<  atoi(stemp.c_str())-1 << " " << stemp << G4endl;
+	//	G4cout << ix << " " << iy << " " << iz << " filling theMateIDs " << nnew << " = " <<  atoi(stemp.c_str())-1 << " " << stemp << G4endl;
 	G4int mateID = atoi(stemp.c_str());
 	if( mateID < 0 || mateID >= nMaterials ) {
 	  G4Exception("GmReadPhantomG4Geometry::ReadPhantomData",
@@ -125,7 +131,7 @@ void GmReadPhantomG4Geometry::ReadPhantomData()
 
   ReadVoxelDensities( *fin );
 
-  ReadPS( fing );
+  ReadPV( fing );
 
   fin->close();
 }

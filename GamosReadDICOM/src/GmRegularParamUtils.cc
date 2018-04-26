@@ -46,6 +46,34 @@ GmRegularParamUtils* GmRegularParamUtils::GetInstance()
 }
 
 //-----------------------------------------------------------------------
+std::vector<G4PhantomParameterisation*> GmRegularParamUtils::GetPhantomParams(G4bool bMustExist)
+{
+  std::vector<G4PhantomParameterisation*> paramregs;
+
+  G4PhysicalVolumeStore* pvs = G4PhysicalVolumeStore::GetInstance();
+  std::vector<G4VPhysicalVolume*>::iterator cite;
+  for( cite = pvs->begin(); cite != pvs->end(); cite++ ) {
+    //    G4cout << " PV " << (*cite)->GetName() << " " << (*cite)->GetTranslation() << G4endl;
+    if( IsPhantomVolume( *cite ) ) {
+      const G4PVParameterised* pvparam = static_cast<const G4PVParameterised*>(*cite);
+      G4VPVParameterisation* param = pvparam->GetParameterisation();
+      //    if( static_cast<const G4PhantomParameterisation*>(param) ){
+      //    if( static_cast<const G4PhantomParameterisation*>(param) ){
+      //      G4cout << "G4PhantomParameterisation volume found  " << (*cite)->GetName() << G4endl;
+      paramregs.push_back( static_cast<G4PhantomParameterisation*>(param) );
+    }
+  }
+  
+  if( paramregs.size() == 0 && bMustExist ) G4Exception("GmRegularParamUtils::GetPhantomParam",
+					    "Wrong argument",
+					    FatalErrorInArgument,
+					    "No G4PhantomParameterisation found ");
+  
+  return paramregs;
+  
+}
+
+//-----------------------------------------------------------------------
 G4PhantomParameterisation* GmRegularParamUtils::GetPhantomParam(G4bool bMustExist)
 {
   G4PhantomParameterisation* paramreg = 0;

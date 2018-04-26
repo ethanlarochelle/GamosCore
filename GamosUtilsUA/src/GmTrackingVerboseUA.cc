@@ -45,6 +45,7 @@ GmTrackingVerboseUA::GmTrackingVerboseUA()
 }
 
 
+//---------------------------------------------------------------------------
 void GmTrackingVerboseUA::BeginOfRunAction( const G4Run* )
 {
   //----- Set which events are verbose
@@ -70,7 +71,7 @@ void GmTrackingVerboseUA::BeginOfRunAction( const G4Run* )
 }
 
 //----------------------------------------------------------------
-void GmTrackingVerboseUA::EndOfEventAction( const G4Event* anEvent )
+void GmTrackingVerboseUA::BeginOfEventAction( const G4Event* anEvent )
 {
   //----------- Set /tracking/verbose for this event 
   G4int eventNo = anEvent->GetEventID();

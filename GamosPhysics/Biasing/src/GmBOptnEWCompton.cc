@@ -37,6 +37,11 @@
 GmBOptnEWCompton::GmBOptnEWCompton(G4String name)
 : GmVEWBiasingOperation(name)
 {
+#ifndef BEAMZPOS
+  theRRZ = GmParameterMgr::GetInstance()->GetNumericValue("EWBS:RussianRoulettePlaneZ",-DBL_MAX);
+#else
+  theRRZ = GmParameterMgr::GetInstance()->GetNumericValue("EWBS:RussianRoulettePlaneZ",DBL_MAX);
+#endif
 }
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
@@ -52,7 +57,8 @@ ApplyFinalStateBiasing( const G4BiasingProcessInterface* callingProcess,
                         const G4Step*                              step,
                         G4bool&                                         )
 {
-
+  std::vector<G4Track*> addTrackVector;
+  
   G4String history = "";
   G4String newHistory = "";
   G4bool bParticleChangeInit = false; // it can be initialised by first gamma or first e-
@@ -108,9 +114,6 @@ ApplyFinalStateBiasing( const G4BiasingProcessInterface* callingProcess,
   if( BiasingVerb(testVerb) ) G4cout << " GmBOptnEWCompton density " << track->GetVolume()->GetLogicalVolume()->GetMaterial()->GetDensity()/(CLHEP::g/CLHEP::cm3) << " < " << theGasDensity/(CLHEP::g/CLHEP::cm3) << " WEI " << gammaWeight << " NSPLIT " << nSplit << G4endl; 
 #endif
   
-  // -- inform we will have nSplit gamma's:
-  G4int nSecos = 0;
-  
   // -- now start the fNSplit calls to the process to store each
   // -- related gamma:
   G4int nCalls = 1;
@@ -119,6 +122,7 @@ ApplyFinalStateBiasing( const G4BiasingProcessInterface* callingProcess,
   while ( nCalls <= nSplit ) {
     newHistory = "";
     G4VParticleChange* processFinalState = callingProcess->GetWrappedProcess()->PostStepDoIt(*track, *step);
+
     //    G4cout << " processFinalState NSECOS " <<  processFinalState->GetNumberOfSecondaries() << G4endl; //GDEB
     
 #ifndef GAMOS_NO_VERBOSE
@@ -130,7 +134,7 @@ ApplyFinalStateBiasing( const G4BiasingProcessInterface* callingProcess,
     G4double newWeight = gammaWeight/nSplit;
     G4ParticleChangeForGamma* actualParticleChange =
       ( G4ParticleChangeForGamma* ) processFinalState ;
-    // IN PLAY OR RR
+    // IN PLANE OR RR
     if( IsInPlane( actualParticleChange->GetProposedMomentumDirection(), track->GetPosition() ) ) {
       nGammaAccepted++;
       bGammaAccepted = true;
@@ -170,7 +174,6 @@ ApplyFinalStateBiasing( const G4BiasingProcessInterface* callingProcess,
 	if( !bParticleChangeInit ) {
 	  fParticleChange.Initialize(*track);
 	  bParticleChangeInit = true;
-	  //t	  fParticleChange.SetNumberOfSecondaries( nSplit );
 	}
 
 	fParticleChange.ProposeWeight( newWeight );
@@ -191,41 +194,44 @@ ApplyFinalStateBiasing( const G4BiasingProcessInterface* callingProcess,
 #ifndef GAMOS_NO_VERBOSE
       if( BiasingVerb(testVerb) ) G4cout << "1CHK " << " Compton "  <<track->GetDefinition()->GetParticleName() << " " << newWeight << " " << track->GetWeight() << " " << history+newHistory << G4endl;
 #endif
-	
+      //      addTrackVector.push_back( const_cast<G4Track*>(track) );
+
 	//      actualParticleChange->Clear();
       } else { 
 	// NOT FIRST GAMMA THAT IS ACCEPTED: ADD SECONDARY
         G4Track* gammaTrack = new G4Track( *track );
 	gammaTrack->SetKineticEnergy( actualParticleChange->GetProposedKineticEnergy() );
 	gammaTrack->SetMomentumDirection( actualParticleChange->GetProposedMomentumDirection() );
-	fParticleChange.AddSecondary( gammaTrack );
-	nSecos++;
+	addTrackVector.push_back( gammaTrack );
         gammaTrack->SetWeight( newWeight );
 #ifndef GAMOS_NO_VERBOSE
-  	if( BiasingVerb(testVerb) ) G4cout << "nCHK " << " Compton "  <<gammaTrack->GetDefinition()->GetParticleName() << " " << gammaTrack->GetWeight() << " " << track->GetWeight() << " " << history+newHistory << G4endl;
+  	if( BiasingVerb(testVerb) ) G4cout << "nCHK " << " Compton "  <<gammaTrack->GetDefinition()->GetParticleName() << " " << gammaTrack->GetWeight() << " " << track->GetWeight() << " " << history+newHistory  << " N=" << addTrackVector.size() << G4endl;
 #endif
       }
 
     }
-
+    
+    G4double trackZ = track->GetPosition().z();
     for( int ie = 0; ie < processFinalState->GetNumberOfSecondaries(); ie++) {
       G4Track* secoTrack = processFinalState->GetSecondary(ie);
       //---- PLAY RR WITH SECONDARY ELECTRONS IF GAMMA IS FAT
       if( secoTrack->GetDefinition() == G4Electron::Electron() ) {
-	if( nSplit > 1 ) {
-	  
+#ifndef BEAMZPOS
+	if( nSplit > 1 && trackZ < theRRZ ) { // no RR on e- below RR plane
+#else
+	if( nSplit > 1 && trackZ > theRRZ ) { // no RR on e- below RR plane
+#endif
 	  G4double randn = CLHEP::RandFlat::shoot();
 	  if( randn < fNSplitInv ) {
 	    if( !bParticleChangeInit ) {
 	      fParticleChange.Initialize(*track);
 	      bParticleChangeInit = true;
 	    }
-	    fParticleChange.AddSecondary( secoTrack );	
-	    nSecos++;
+	    addTrackVector.push_back( secoTrack );
 	    secoTrack->SetWeight( 1. );
 #ifndef GAMOS_NO_VERBOSE
 	    if( BiasingVerb(testVerb) ) {
-	      G4cout << fParticleChange.GetNumberOfSecondaries() << " GmBOptnEWCompton e- ACCEPTED by RR " << secoTrack->GetWeight() << " " << secoTrack->GetKineticEnergy() <<  G4endl;
+	      G4cout << fParticleChange.GetNumberOfSecondaries() << " GmBOptnEWCompton e- ACCEPTED by RR " << secoTrack->GetWeight() << " " << secoTrack->GetKineticEnergy() << " N=" << addTrackVector.size() << G4endl;
 	      //	    newHistory += "_eArr";
 	      G4cout << "CHK " << " Compton "  << secoTrack->GetDefinition()->GetParticleName() << " " << secoTrack->GetWeight() << " " << track->GetWeight() << " " << history+newHistory+"_eArr" << G4endl;
 	    }
@@ -239,21 +245,22 @@ ApplyFinalStateBiasing( const G4BiasingProcessInterface* callingProcess,
 #endif
 	    delete secoTrack;
 	  }
+	} else {
+	  addTrackVector.push_back( secoTrack );
 	}
-	
-      } else  {
+      	
+      } else {
     //---- IN PLANE OR RR WITH SECONDARY GAMMAS (FLUORESCENCE)
 	if( IsInPlane( secoTrack->GetMomentumDirection(), secoTrack->GetPosition() ) ) {
 	  if( !bParticleChangeInit ) {
 	    fParticleChange.Initialize(*track);
 	    bParticleChangeInit = true;
 	  }
-	  fParticleChange.AddSecondary( secoTrack );
-	  nSecos++;
+	  addTrackVector.push_back( secoTrack );
 	  secoTrack->SetWeight( gammaWeight/fNSplit );
 #ifndef GAMOS_NO_VERBOSE
 	  if( BiasingVerb(testVerb) ) {
-	    G4cout << fParticleChange.GetNumberOfSecondaries() << " GmBOptnEWCompton fluo gamma  ACCEPTED in plane " <<  gammaWeight/fNSplit << G4endl; 
+	    G4cout << fParticleChange.GetNumberOfSecondaries() << " GmBOptnEWCompton fluo gamma  ACCEPTED in plane " <<  gammaWeight/fNSplit  << " N=" << addTrackVector.size() <<  G4endl; 
 	    newHistory += "FLUO_Aip";
 	    G4cout << "CHK " << " Compton "  << secoTrack->GetDefinition()->GetParticleName() << " " <<  secoTrack->GetWeight() << " " << track->GetWeight() << " " << history+newHistory << G4endl;
 	  } 
@@ -264,12 +271,11 @@ ApplyFinalStateBiasing( const G4BiasingProcessInterface* callingProcess,
 	      fParticleChange.Initialize(*track);
 	      bParticleChangeInit = true;
 	    }
-	    fParticleChange.AddSecondary( secoTrack );
-	    nSecos++;
+	    addTrackVector.push_back( secoTrack );
 	    secoTrack->SetWeight( gammaWeight );
 #ifndef GAMOS_NO_VERBOSE
 	    if( BiasingVerb(testVerb) ) {
-	      G4cout << fParticleChange.GetNumberOfSecondaries() << " GmBOptnEWCompton fluo gamma ACCEPTED by RR increase weight " << gammaWeight << G4endl; 
+	      G4cout << fParticleChange.GetNumberOfSecondaries() << " GmBOptnEWCompton fluo gamma ACCEPTED by RR increase weight " << gammaWeight  << " N=" << addTrackVector.size() << G4endl; 
 	      newHistory += "FLUO_Arr";
 	      G4cout << "CHK " << " Compton "  << secoTrack->GetDefinition()->GetParticleName() << " " <<  secoTrack->GetWeight() << " " << track->GetWeight() << " " << history+newHistory << G4endl;
 	    } 
@@ -304,11 +310,17 @@ ApplyFinalStateBiasing( const G4BiasingProcessInterface* callingProcess,
 #endif  
   }
   
-#ifndef GAMOS_NO_VERBOSE
+  // -- we are done:
+  G4int nSecos = addTrackVector.size();
+  fParticleChange.SetNumberOfSecondaries( nSecos );
+  for( G4int iit = 0; iit < nSecos; iit++ ) {
+    fParticleChange.AddSecondary( addTrackVector[iit] );
+  }
+
+  #ifndef GAMOS_NO_VERBOSE
   if( BiasingVerb(testVerb) ) G4cout << " GmBOptnEWCompton NSECOS_FINAL e- " << fParticleChange.GetNumberOfSecondaries()-std::max(0,nGammaAccepted-1) <<  " gamma " << nGammaAccepted << " : " << fParticleChange.GetNumberOfSecondaries() << " = " << nSecos <<G4endl; 
 #endif  
-  // -- we are done:
-  //  fParticleChange.SetNumberOfSecondaries( nSecos );
+
   return &fParticleChange;
 }
 

@@ -37,7 +37,6 @@ private:
 public:
   static G4bool bUsingGmGenerator;
 
-private:
   static void SetbUsingGmGenerator( G4bool val ) {
     bUsingGmGenerator = val;
   }

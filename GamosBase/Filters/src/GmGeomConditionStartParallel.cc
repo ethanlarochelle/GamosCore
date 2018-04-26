@@ -25,7 +25,7 @@
 //
 #include "G4TouchableHistory.hh"
 #include "GmGeomConditionStartParallel.hh"
-#include "GamosCore/GamosBase/Base/include/GmBaseVerbosity.hh"
+#include "GamosCore/GamosBase/Filters/include/GmFilterVerbosity.hh"
 #include "G4Track.hh"
 #include "G4Step.hh"
 #include "GamosCore/GamosUtils/include/GmG4Utils.hh"
@@ -54,16 +54,16 @@ const G4VTouchable* GmGeomConditionStartParallel::GetTouchableFromTrack(const G4
 {
 
 #ifndef GAMOS_NO_VERBOSE
-  if( BaseVerb(debugVerb) ) G4cout << " GmGeomConditionStartParallel::GetTouchableFromTrack step number " << aTrack->GetCurrentStepNumber() << G4endl;
+  if( FilterVerb(debugVerb) ) G4cout << " GmGeomConditionStartParallel::GetTouchableFromTrack step number " << aTrack->GetCurrentStepNumber() << G4endl;
 #endif
   if( aTrack->GetCurrentStepNumber() != 0 ) {
 #ifndef GAMOS_NO_VERBOSE
-    if( BaseVerb(debugVerb) ) G4cout << " GmGeomConditionStartParallel::GetTouchableFromTrack return 0 " << aTrack->GetCurrentStepNumber() << G4endl;
+    if( FilterVerb(debugVerb) ) G4cout << " GmGeomConditionStartParallel::GetTouchableFromTrack return 0 " << aTrack->GetCurrentStepNumber() << G4endl;
 #endif
     return 0;
   } else {
 #ifndef GAMOS_NO_VERBOSE
-    if( BaseVerb(debugVerb) ) G4cout << " GmGeomConditionStartParallel::GetTouchableFromTrack return touchable " << aTrack->GetVolume()->GetName() << G4endl;
+    if( FilterVerb(debugVerb) ) G4cout << " GmGeomConditionStartParallel::GetTouchableFromTrack return touchable " << aTrack->GetVolume()->GetName() << G4endl;
 #endif
     return aTrack->GetTouchable();
   }
@@ -79,25 +79,25 @@ const G4VTouchable* GmGeomConditionStartParallel::GetTouchableFromStep(const G4S
 {
 	
 #ifndef GAMOS_NO_VERBOSE
-  if( BaseVerb(debugVerb) ) G4cout << " GmGeomConditionStartParallel::GetTouchableFromStep step number " << aStep->GetTrack()->GetCurrentStepNumber() << G4endl;
+  if( FilterVerb(debugVerb) ) G4cout << " GmGeomConditionStartParallel::GetTouchableFromStep step number " << aStep->GetTrack()->GetCurrentStepNumber() << G4endl;
 #endif
   if( aStep->GetTrack()->GetCurrentStepNumber() != 1 ) {
 #ifndef GAMOS_NO_VERBOSE
-    if( BaseVerb(debugVerb) ) G4cout << " GmGeomConditionStartParallel::GetTouchableFromStep return 0 " << G4endl;
+    if( FilterVerb(debugVerb) ) G4cout << " GmGeomConditionStartParallel::GetTouchableFromStep return 0 " << G4endl;
 #endif
     return 0;
   } else {
     const G4StepPoint* preSP = theParallelWorldProcess->fGhostPreStepPoint;
 #ifndef GAMOS_NO_VERBOSE
-    if( BaseVerb(debugVerb) ) G4cout << " GmGeomConditionStartParallel::GetTouchableFromStep return ";
+    if( FilterVerb(debugVerb) ) G4cout << " GmGeomConditionStartParallel::GetTouchableFromStep return ";
 #endif
     if( preSP->GetTouchable() && preSP->GetTouchable()->GetVolume() ) {
 #ifndef GAMOS_NO_VERBOSE
-      if( BaseVerb(debugVerb) ) G4cout << preSP->GetTouchable()->GetVolume()->GetName() << G4endl; 
+      if( FilterVerb(debugVerb) ) G4cout << preSP->GetTouchable()->GetVolume()->GetName() << G4endl; 
 #endif
     } else {
 #ifndef GAMOS_NO_VERBOSE
-      if( BaseVerb(debugVerb) ) G4cout << " 0 " << G4endl;
+      if( FilterVerb(debugVerb) ) G4cout << " 0 " << G4endl;
 #endif
     }
 	  return GetTouchableFromStepPoint( preSP );

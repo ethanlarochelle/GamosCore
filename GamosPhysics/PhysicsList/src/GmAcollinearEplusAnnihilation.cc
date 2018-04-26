@@ -111,8 +111,9 @@ G4VParticleChange* GmAcollinearEplusAnnihilation::AtRestDoIt(const G4Track& aTra
 
   G4double TotalAvailableEnergy = 2.0*electron_mass_c2; //this should be modified in case
   //one wants to take into account the residual center of mass momentum of the ee system at the time of annihilation
-
+  
   G4double Phot1Energy = epsil*TotalAvailableEnergy;
+  
   G4double cosTeta = 2.*G4UniformRand()-1.; 
   G4double sinTeta = sqrt((1.-cosTeta)*(1.0 + cosTeta));
   G4double phi     = twopi * G4UniformRand();
@@ -177,7 +178,6 @@ G4VParticleChange* GmAcollinearEplusAnnihilation::AtRestDoIt(const G4Track& aTra
   // Kill the incident positron
   //
   fParticleChange.ProposeTrackStatus(fStopAndKill);
-
   return &fParticleChange;
 }
 

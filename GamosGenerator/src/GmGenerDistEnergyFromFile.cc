@@ -264,8 +264,12 @@ G4double GmGenerDistEnergyFromFile::GenerateEnergy( const GmParticleSource* )
     G4double slope = diffP/diffE;
     G4double normCDF = slope*sqr(diffE)/2. + (*iteD).second*diffE ; // normalize Cumulative Distribution Function
     G4double randomProb = CLHEP::RandFlat::shoot();
-    energy = exp( (( -(*iteD).second + sqrt( sqr((*iteD).second) + 2*slope*randomProb*normCDF) ) / slope ) + log((*iteD).first) );
-    //    energy = exp( ((*iteU).second-(*iteD).second) * CLHEP::RandFlat::shoot() / slope + log((*iteD).first) );
+    if(slope == 0) {
+      energy = exp( log((*iteD).first) + randomProb* (log((*iteU).first)-log((*iteD).first)) );
+    } else {
+     energy = exp( (( -(*iteD).second + sqrt( sqr((*iteD).second) + 2*slope*randomProb*normCDF) ) / slope ) + log((*iteD).first) );
+    }
+     //    energy = exp( ((*iteU).second-(*iteD).second) * CLHEP::RandFlat::shoot() / slope + log((*iteD).first) );
 #ifndef GAMOS_NO_VERBOSE
     if( GenerVerb(debugVerb) ) G4cout << "GmGenerDistEnergyFromFile energy =  " << energy 
 				      << " randomProb " << randomProb

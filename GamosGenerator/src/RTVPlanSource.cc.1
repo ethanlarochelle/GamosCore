@@ -1,0 +1,836 @@
+//
+// ********************************************************************
+// * License and Disclaimer                                           *
+// *                                                                  *
+// * The  GAMOS software  is  copyright of the Copyright  Holders  of *
+// * the GAMOS Collaboration.  It is provided  under  the  terms  and *
+// * conditions of the GAMOS Software License,  included in the  file *
+// * LICENSE and available at  http://fismed.ciemat.es/GAMOS/license .*
+// * These include a list of copyright holders.                       *
+// *                                                                  *
+// * Neither the authors of this software system, nor their employing *
+// * institutes,nor the agencies providing financial support for this *
+// * work  make  any representation or  warranty, express or implied, *
+// * regarding  this  software system or assume any liability for its *
+// * use.  Please see the license in the file  LICENSE  and URL above *
+// * for the full disclaimer and the limitation of liability.         *
+// *                                                                  *
+// * This  code  implementation is the result of  the  scientific and *
+// * technical work of the GAMOS collaboration.                       *
+// * By using,  copying,  modifying or  distributing the software (or *
+// * any work based  on the software)  you  agree  to acknowledge its *
+// * use  in  resulting  scientific  publications,  and indicate your *
+// * acceptance of all terms of the GAMOS Software license.           *
+// ********************************************************************
+//
+#include "RTVPlanSource.hh"
+#include "RTIonPlanBeam.hh"
+#include "GmGenerDistTimeConstant.hh"
+#include "GmGenerDistDirectionConst.hh"
+#include "GmGenerDistDirectionCone.hh"
+#include "GmGenerDistPositionDisc.hh" 
+#include "GmGenerDistPositionDiscGaussian.hh" 
+#include "GmGenerDistEnergyConstant.hh"
+#include "GmGenerDistEnergyGaussian.hh"
+#include "GmGeneratorMgr.hh"
+#include "RTPlanMessenger.hh"
+
+#include "GamosCore/GamosGenerator/include/GmGenerVerbosity.hh"
+#include "GamosCore/GamosBase/Base/include/GmParameterMgr.hh"
+#include "GamosCore/GamosBase/Base/include/GmGetParticleMgr.hh"
+#include "GamosCore/GamosUtils/include/GmGenUtils.hh"
+#include "GamosCore/GamosUtils/include/GmG4Utils.hh"
+#include "GamosCore/GamosGeometry/include/GmVModule.hh"
+#include "GamosCore/GamosGeometry/include/GmModuleJaws.hh"
+#include "GamosCore/GamosGeometry/include/GmModuleMLC.hh"
+#include "GamosCore/GamosGeometry/include/GmGeometryUtils.hh"
+#include "GamosCore/GamosGeometry/include/GmModuleMgr.hh"
+#include "GamosCore/GamosGeometry/include/GmTouchable.hh"
+#include "GamosCore/GamosReadDICOM/include/GmReadPhantomGeometry.hh"
+#include "GamosCore/GamosRunManager/include/GmRunManager.hh"
+
+#include "G4PrimaryVertex.hh"
+#include "G4PrimaryParticle.hh"
+#include "G4ParticleTable.hh"
+#include "G4ParticleDefinition.hh"
+#include "G4RunManager.hh"
+#include "G4EventManager.hh"
+#include "G4tgrVolumeMgr.hh"
+#include "G4tgrVolume.hh"
+#include "G4tgrPlace.hh"
+#include "G4tgrUtils.hh"
+#include "G4GeometryManager.hh"
+#include "G4VVisManager.hh"
+#include "G4Box.hh"
+
+#include "CLHEP/Random/RandFlat.h"
+#include "TColor.h"
+
+//-----------------------------------------------------------------------
+RTVPlanSource::RTVPlanSource( const G4String& name): GmParticleSource( name )
+{
+  new RTPlanMessenger(this);
+}
+
+//-----------------------------------------------------------------------
+void RTVPlanSource::InitializeDistributions( const G4String& partName)
+{
+
+  theTimeDistribution = new GmGenerDistTimeConstant;
+  theActivity = 1.*CLHEP::becquerel;
+  
+  GmParameterMgr* parMgr = GmParameterMgr::GetInstance();
+
+  theOpeningAngle = parMgr->GetNumericValue("source:OpeningAngle",0.);
+  G4cout << theName << " theOpeningAngle " << theOpeningAngle/CLHEP::deg << G4endl; //GDEB
+  if( theOpeningAngle == 0. ) {
+    bDirAngle = false;
+    //dummy distribution, not used
+    theDirectionDistribution = new GmGenerDistDirectionConst;
+  } else {
+    bDirAngle = true;
+    theDirectionDistribution = new GmGenerDistDirectionCone;
+    G4cout << " theOpeningAngle GmGenerDistDirectionCone " << theOpeningAngle << G4endl; //GDEB
+  }
+  
+  bDiscGaussian = G4bool(parMgr->GetNumericValue(theName+":DiscGaussian",0));
+  if( bDiscGaussian ) {
+    theDiscRadius = parMgr->GetNumericValue(theName+":DiscRadius",0.);
+    thePositionDistribution = new GmGenerDistPositionDiscGaussian;  
+  } else {
+    theDiscSigma = parMgr->GetNumericValue(theName+":DiscSigma",0.);
+    thePositionDistribution = new GmGenerDistPositionDisc;
+  }
+
+  theEnergySigma = parMgr->GetNumericValue(theName+":EnergySigma",0.);
+  if( theEnergySigma == 0. ) {
+    bEGauss = false;
+    //dummy distribution, not used
+    theEnergyDistribution = new GmGenerDistEnergyConstant;
+  } else {
+    bEGauss = true;
+    theEnergyDistribution = new GmGenerDistEnergyGaussian;
+  }
+
+  //  static_cast<GmGenerDistEnergyConstant*>(theEnergyDistribution)->SetEnergy(theEnergy);  // could be extracted from source info at Generate(), but it is more efficient here
+  CheckDistributionsExist();
+
+  G4ParticleTable* partTable = G4ParticleTable::GetParticleTable();
+  theParticleDef = partTable->FindParticle( partName);
+  if( !theParticleDef ) {
+    theParticleDef = (G4ParticleDefinition*)(GmGetParticleMgr::GetInstance()->CreateIon(partName));
+  }
+
+  if( !theParticleDef ) {
+    G4Exception("RTVPlanSource::RTVPlanSource",
+		"Wrong argument",
+		FatalErrorInArgument,
+		G4String(GetName() + "  particle does not exist: " + partName).c_str());
+  }
+
+  theNEventsPerMSUnit = parMgr->GetNumericValue(theName+":NEventsPerMSUnit",-1);
+  theMSUnitsToSkip = parMgr->GetNumericValue(theName+":MSUnitsToSkip",0.);
+  theNEventsToSkip = G4int(parMgr->GetNumericValue(theName+":NEventsToSkip",0));
+  if( theMSUnitsToSkip != 0 && theNEventsToSkip != 0 ) {
+    G4Exception("RTVPlanSource",
+		"",
+		FatalException,
+		"It is not allowed to define both parameters: theMSUnitsToSkip && theNEventsToSkip");
+  }
+  iCurrentBeam = 0;
+  theCurrentMetersetEvtID = 0;
+
+  theG4RunManager = G4RunManager::GetRunManager();
+  
+  bInitialized = false;
+
+}
+
+
+//-------------------------------------------------------------
+void RTVPlanSource::CalculateMetersetEvts()
+{
+  G4cout << "  RTVPlanSource::CalculateMetersetEvts() N BEAMS " << theBeams.size() << G4endl; //GDEB
+  //----- Calculate accumulated metersets
+  G4double theAccumulatedMS = 0.;
+  
+  G4double accumMS = 0.;
+  for( size_t iib = 0; iib < theBeams.size(); iib++ ) {
+    std::vector<RTVPlanControlPoint*> CPs = theBeams[iib]->GetControlPoints();
+    accumMS += theBeams[iib]->GetParam("FinalCumulativeMetersetWeight",1);
+    if( GenerVerb(debugVerb) ) G4cout << "ACCUMULATING BEAM METERSETS " << iib << " = " << accumMS << " <- " << theBeams[iib]->GetParam("FinalCumulativeMetersetWeight",1) << " NCPS " << CPs.size() << G4endl; 
+    for( size_t iicp = 0; iicp < CPs.size(); iicp++ ) {
+      std::vector<G4double> meterSets = CPs[iicp]->GetMetersets();
+      G4double numberOfPaintings = CPs[iicp]->GetNumberOfPaintings();
+      //      G4cout << iib << " " << iicp << " nPaintins " << numberOfPaintings << G4endl; //GDEB
+      for( size_t iims = 0; iims < meterSets.size(); iims++ ) {
+	theAccumulatedMS += meterSets[iims]*numberOfPaintings;
+	if( GenerVerb(debugVerb) ) G4cout << CPs[iicp] << "ACCUMULATING METERSETS " << iib << " : " << iicp << " : " << iims << " = " << theAccumulatedMS << " <- " << meterSets[iims] << G4endl; 
+      }
+    }
+  }
+
+  if( fabs(theAccumulatedMS - accumMS) > 1.e-6*accumMS ) {
+    G4Exception("RTVPlanSource::CalculateMetersetEvts",
+		"",
+		JustWarning,
+		("Number of accumulated metersets is different summing Beams FinalCumulativeMetersetWeight = "
+		 + GmGenUtils::ftoa(accumMS) + " and summing ScanSpots = "
+		 + GmGenUtils::ftoa(theAccumulatedMS)
+		 + " DIFF = " + GmGenUtils::ftoa(accumMS-theAccumulatedMS) ).c_str());
+  }
+
+
+  //----- Calculate accumulated metersets events
+  G4int nEventsTotal = theG4RunManager->GetNumberOfEventsToBeProcessed();
+  if(theNEventsPerMSUnit == -1 ) {
+    theNEventsPerMSUnit = nEventsTotal / theAccumulatedMS;
+  }
+  if( GenerVerb(debugVerb) ) G4cout << " theNEventsPerMSUnit " << theNEventsPerMSUnit << " :: " << nEventsTotal << " / " << theAccumulatedMS << G4endl;
+  G4int msEvt = 0;
+  G4double meterSet = 0.;
+
+  theAccumulatedMS = 0.;
+  //  theMetersetEvts.push_back(0);
+  G4bool bFirstScanSpot = true;
+  for( size_t iib = 0; iib < theBeams.size(); iib++ ) {
+    std::vector<RTVPlanControlPoint*> CPs = theBeams[iib]->GetControlPoints();
+    for( size_t iicp = 0; iicp < CPs.size(); iicp++ ) {
+      G4double numberOfPaintings = CPs[iicp]->GetNumberOfPaintings();
+      std::vector<G4double> meterSets = CPs[iicp]->GetMetersets();
+      for( size_t iims = 0; iims < meterSets.size(); iims++ ) {
+	theAccumulatedMS += meterSets[iims]*numberOfPaintings;
+	if( theAccumulatedMS > theMSUnitsToSkip ) {
+	  if( bFirstScanSpot ) {
+	    meterSet += theAccumulatedMS - theMSUnitsToSkip;
+	  } else {
+	    meterSet += meterSets[iims];
+	  }
+	  msEvt = meterSet*theNEventsPerMSUnit*numberOfPaintings;
+	  theMetersetEvts.push_back(msEvt);
+	  bFirstScanSpot = false;
+	} else {
+	  theMetersetEvts.push_back(0);
+	}
+	if( GenerVerb(debugVerb) ) G4cout << theMetersetEvts.size() << " METERSET EVTS " << iib << " : " << iicp << " : " << iims << " *NEvtsPerMSUnit= " << theMetersetEvts[theMetersetEvts.size()-1] << " <- " << meterSet << " NPaintings " << numberOfPaintings << " accum " << theAccumulatedMS << " added " <<meterSets[iims] << G4endl; 
+      }
+    }
+
+  }
+}
+
+
+//-----------------------------------------------------------------------
+G4PrimaryVertex* RTVPlanSource::GenerateVertex( G4double time )
+{
+  if( !bInitialized ) {
+    theGeomUtils = GmGeometryUtils::GetInstance();
+    theModuleMgr = GmModuleMgr::GetInstance();
+    theEvtMgr = G4EventManager::GetEventManager(); 
+    CalculateMetersetEvts();
+    if( GmParameterMgr::GetInstance()->GetNumericValue(theName+":PlotScanSpots",0)) {
+      PlotScanSpots();
+    }
+    theEventID = -1;
+
+    G4tgrUtils::bAllowRepetitions = true;
+    G4cout << "G4tgrUtils::bAllowRepetitions0  " << G4tgrUtils::bAllowRepetitions  << G4endl; //GDEB
+    BuildRTPlan2G4Associations();
+
+    bInitialized = true;
+  }
+  //----- Get Position, direction angle and energy from ScanSpot's
+  //  G4cout <<" theEvtMgr->GetConstCurrentEvent() " <<  theEvtMgr->GetConstCurrentEvent() << G4endl;//GDEB
+  if( theEvtMgr->GetConstCurrentEvent() ) {
+    theEventID = theEvtMgr->GetConstCurrentEvent()->GetEventID();
+  } else {
+    theEventID++;
+  }
+  theEventID += theNEventsToSkip;
+  
+#ifndef GAMOS_NO_VERBOSE
+  if( GenerVerb(debugVerb) ) G4cout << "@@ RTVPlanSource::GenerateVertex change event data theEventID == theNEventsToSkip || theEventID == theMetersetEvts[theCurrentMetersetEvtID] " << G4endl
+ << " " << theEventID << " == " << theNEventsToSkip << " || " << theEventID << " == " << theMetersetEvts[theCurrentMetersetEvtID] << " ; theCurrentMetersetEvtID " << theCurrentMetersetEvtID << " time " << time << G4endl;
+#endif
+  if( theEventID == theNEventsToSkip || theEventID == theMetersetEvts[theCurrentMetersetEvtID] ) { // change event data
+    if( GenerVerb(debugVerb) ) G4cout << " CHANGING EVENT DATA " << theEventID << " Beam: " << iCurrentBeam <<G4endl; //GDEB
+    G4int iNextBeam = iCurrentBeam;
+    ScanSpotData spdata;
+    G4int ie = theCurrentMetersetEvtID;
+    if( ie == G4int(theMetersetEvts.size()-1) ){
+      G4Exception("RTVPlanSource::GenerateVertex",
+		  "",
+		  JustWarning,
+		  ("All ScanSpot's from all beams have been run, and still asking for more events! Run will be aborted at event " + GmGenUtils::itoa(theEventID) + ", while " + GmGenUtils::itoa(theG4RunManager->GetNumberOfEventsToBeProcessed())+" have been requested").c_str() );
+      theG4RunManager->AbortRun();
+      return (G4PrimaryVertex*)0;
+    }
+
+    for( ; ie < G4int(theMetersetEvts.size()-1); ie++ ){
+#ifndef GAMOS_NO_VERBOSE
+      if( GenerVerb(testVerb) ) G4cout << "@@ RTVPlanSource::GenerateVertex Looping to metersets which correspond to same EventID  ie " << ie << G4endl; 
+#endif
+      //--- If several theMeterSetEvts are equal, run until the last one
+      if( theEventID == theNEventsToSkip && theMetersetEvts[theCurrentMetersetEvtID] == 0 ) { //--- Skip first events if meterset = 0
+	theCurrentMetersetEvtID++;
+      } else {	
+	if( theMetersetEvts[ie+(theEventID!=theNEventsToSkip)] != theMetersetEvts[theCurrentMetersetEvtID+(theEventID!=theNEventsToSkip)] ) {
+#ifndef GAMOS_NO_VERBOSE
+	  if( GenerVerb(testVerb) ) G4cout << "@@ DIFFERENT EvtsID [" << ie+(theEventID!=theNEventsToSkip) << "] = " << theMetersetEvts[ie+(theEventID!=theNEventsToSkip)] << " != [" << theCurrentMetersetEvtID+(theEventID!=theNEventsToSkip) << "] = " << theMetersetEvts[theCurrentMetersetEvtID+(theEventID!=theNEventsToSkip)] << G4endl;
+#endif
+	  break;
+	} else {
+#ifndef GAMOS_NO_VERBOSE
+	  if( GenerVerb(testVerb) ) G4cout << "@@ EQUAL EvtsID [" << ie+(theEventID!=theNEventsToSkip) << "] = " << theMetersetEvts[ie+(theEventID!=theNEventsToSkip)] << " == [" << theCurrentMetersetEvtID+(theEventID!=theNEventsToSkip) << "] = " << theMetersetEvts[theCurrentMetersetEvtID+(theEventID!=theNEventsToSkip)] << G4endl;
+#endif
+	}
+      }
+      spdata = theBeams[iCurrentBeam]->NextScanSpot(iNextBeam);
+      if( GenerVerb(testVerb) ) G4cout << " AFTER NextScanSpot Beam changes? " << iNextBeam << " !=? " << iCurrentBeam << G4endl; //GDEB
+      if( iNextBeam != iCurrentBeam ) {  // Beam ControlPoint's exhausted, check next beam
+	if( GenerVerb(debugVerb) ) G4cout << " MOVE TO NEXT BEAM iNextBeam != iCurrentBeam " <<  iNextBeam << " != " << iCurrentBeam << " NBEAMS= " << theBeams.size() << G4endl; 
+	if( iNextBeam >= G4int(theBeams.size()) ) {
+	  G4Exception("RTVPlanSource::GenerateVertex",
+		      "",
+		      JustWarning,
+		      "All ScanSpot's from all beams have been run, and still asking for more events! Run will be aborted");
+	  theG4RunManager->AbortRun();
+	  return (G4PrimaryVertex*)0;
+	}
+	
+	spdata = theBeams[iNextBeam]->NextScanSpot(iNextBeam);
+	if( GenerVerb(testVerb) ) G4cout << " AFTER NextScanSpot Beam changes? " << iNextBeam << " !=? " << iCurrentBeam << G4endl; //GDEB
+	G4cout << " GOT NEW BEAM spdata "
+	 << " X= " << spdata.PositionX 
+	 << " Y= " << spdata.PositionY 
+	 << " Z= " << spdata.PositionZ
+	 << " E= " << spdata.Energy 
+	 << " AngleX= " << spdata.RotAngleX/CLHEP::deg 
+	 << " AngleY= " << spdata.RotAngleY/CLHEP::deg 
+	 << " AngleZ= " << spdata.RotAngleZ/CLHEP::deg 
+	 << " SpotSize= " << spdata.SpotSize 
+	 << " SourceAxisDistance= " << spdata.SourceAxisDistance
+	 << " ControlPoint " << spdata.ControlPoint 
+	 << " Beam " << spdata.Beam << G4endl; //GDEB
+
+	iCurrentBeam = iNextBeam;
+      }
+    }
+      G4cout << " GOT BEAM spdata "
+	 << " X= " << spdata.PositionX 
+	 << " Y= " << spdata.PositionY 
+	 << " Z= " << spdata.PositionZ
+	 << " E= " << spdata.Energy 
+	 << " AngleX= " << spdata.RotAngleX/CLHEP::deg 
+	 << " AngleY= " << spdata.RotAngleY/CLHEP::deg 
+	 << " AngleZ= " << spdata.RotAngleZ/CLHEP::deg 
+	 << " SpotSize= " << spdata.SpotSize 
+	 << " SourceAxisDistance= " << spdata.SourceAxisDistance
+	 << " ControlPoint " << spdata.ControlPoint 
+	 << " Beam " << spdata.Beam << G4endl; //GDEB
+
+
+    //    theLastEventID = theEventID;
+    theCurrentMetersetEvtID = ie;
+    if( theEventID == theNEventsToSkip ) theCurrentMetersetEvtID--; // first event: it was forced to take the first metersetEvts
+
+    //---- New ScanSpot data
+    std::vector<G4String> paramsP;
+    std::vector<G4String> paramsD;
+    std::vector<G4String> paramsE;
+    paramsP.push_back(GmGenUtils::ftoa(GetSpotSize(spdata)));
+    G4ThreeVector position = G4ThreeVector(spdata.PositionX,spdata.PositionY,spdata.PositionZ);
+#ifndef GAMOS_NO_VERBOSE
+    if( GenerVerb(debugVerb) ) G4cout << "RTVPlanSource::GenerateVertex position " << position << G4endl;
+#endif
+    theDirection = G4ThreeVector(0.,0.,-1.); // IEC 61217
+    G4double sourceAxisDist = spdata.SourceAxisDistance;
+    position -= theDirection * sourceAxisDist;
+#ifndef GAMOS_NO_VERBOSE
+    if( GenerVerb(debugVerb) ) G4cout << "RTVPlanSource::GenerateVertex position after sourceAxisDist " << position << " sourceAxisDist " << sourceAxisDist << G4endl;
+#endif
+    position.rotateZ(spdata.RotAngleZ); // GantryPitchAngle
+    theDirection.rotateZ(spdata.RotAngleZ); // GantryPitchAngle
+#ifndef GAMOS_NO_VERBOSE
+    if( GenerVerb(debugVerb) ) G4cout << "RTVPlanSource::GenerateVertex position after GantryPitchAngle " << position << " GantryPitchAngle " << spdata.RotAngleZ/CLHEP::deg << " Final Dir " << theDirection << G4endl;
+#endif
+
+    position.rotateY(spdata.RotAngleY); // GantryAngle
+    theDirection.rotateY(spdata.RotAngleY); // GantryAngle
+#ifndef GAMOS_NO_VERBOSE
+    if( GenerVerb(debugVerb) ) G4cout << "RTVPlanSource::GenerateVertex position after GantryAngle " << position << " GantryAngle " << spdata.RotAngleY/CLHEP::deg << " Final Dir " << theDirection << G4endl;
+#endif
+    if( bDirAngle ) {
+      paramsD.push_back(GmGenUtils::ftoa(theDirection.x()));
+      paramsD.push_back(GmGenUtils::ftoa(theDirection.y()));
+      paramsD.push_back(GmGenUtils::ftoa(theDirection.z()));
+      paramsD.push_back(GmGenUtils::ftoa(theOpeningAngle));
+      theDirectionDistribution->SetParams( paramsD );
+      theDirection = theDirectionDistribution->GenerateDirection(this);
+    }
+#ifndef GAMOS_NO_VERBOSE
+    if( GenerVerb(debugVerb) ) G4cout << "RTVPlanSource::GenerateVertex direction by distribution " << theDirection << G4endl;
+#endif
+    
+    paramsP.push_back(GmGenUtils::ftoa(position.x()));
+    paramsP.push_back(GmGenUtils::ftoa(position.y()));
+    paramsP.push_back(GmGenUtils::ftoa(position.z()));
+
+    paramsP.push_back(GmGenUtils::ftoa(theDirection.x()));
+    paramsP.push_back(GmGenUtils::ftoa(theDirection.y()));
+    paramsP.push_back(GmGenUtils::ftoa(theDirection.z()));
+    
+    /*  thePosition = G4ThreeVector(spdata.PositionX,spdata.PositionY,spdata.PositionZ); // POSIITON Z ???
+	theRotAngleX = spdata.RotAngleX;
+	theRotAngleY = spdata.RotAngleY;
+	theRotAngleZ = spdata.RotAngleZ;
+	thePosition.rotateZ(theRotAngleZ);*/
+    thePositionDistribution->SetParams( paramsP );
+    thePosition = thePositionDistribution->GeneratePosition( this );
+    thePosition = G4ThreeVector(0,0,0); //GDEB
+#ifndef GAMOS_NO_VERBOSE
+    if( GenerVerb(debugVerb) ) G4cout << "RTVPlanSource::GenerateVertex position by distribution " << thePosition << G4endl;
+#endif
+    theEnergy = spdata.Energy;
+    if( bEGauss ) { 
+      paramsE.push_back(GmGenUtils::ftoa(theEnergy));
+      paramsE.push_back(GmGenUtils::ftoa(theEnergySigma));
+      theEnergyDistribution->SetParams( paramsE );
+      theEnergy = theEnergyDistribution->GenerateEnergy(this);
+    }
+
+    MoveGeometry(spdata);
+  }
+  
+#ifndef GAMOS_NO_VERBOSE
+  if( GenerVerb(infoVerb) ) G4cout << "RTVPlanSource::GenerateVertex pos " << thePosition << G4endl;
+#endif
+  
+  G4PrimaryVertex* vtx = new G4PrimaryVertex( thePosition, time );
+  
+#ifndef GAMOS_NO_VERBOSE
+  if( GenerVerb(infoVerb) ) G4cout << "RTVPlanSource::GenerateVertex ener " << theEnergy << G4endl;
+#endif
+  
+  G4ThreeVector mom = theDirection * std::sqrt(theEnergy*theEnergy + 2.*theParticleDef->GetPDGMass()*theEnergy);
+#ifndef GAMOS_NO_VERBOSE
+  if( GenerVerb(infoVerb) ) G4cout << " RTVPlanSource::GenerateVertex  mom " << mom << " theEnergy " << theEnergy << G4endl;
+#endif
+  G4PrimaryParticle* particle = new G4PrimaryParticle( theParticleDef, mom.x(), mom.y(), mom.z() );
+
+  particle->SetWeight( theWeight );
+
+  vtx->SetPrimary(particle);
+
+  return vtx;
+
+}
+
+
+//------------------------------------------------------------------------
+void RTVPlanSource::AssociatePlanVolumes( std::vector<G4String> wl )
+{
+  if( wl.size() != 3 ) {
+    G4Exception("RTVPlanSource::AssociatePlanVolumes",
+		"",
+		FatalException,
+		("Command should have three words: SOURCE_NAME RTPLAN_VOLUME_NAME GEOMETRY_VOLUME_NAME , while it has " + GmGenUtils::itoa(wl.size())).c_str());
+  }
+
+  theRTPlanVoluAssoc[wl[1]] = wl[2];
+  
+}
+
+//------------------------------------------------------------------------
+void RTVPlanSource::DefineAcceleratorVolume( std::vector<G4String> wl )
+{
+  if( wl.size() != 2 ) {
+    G4Exception("RTVPlanSource::AssociatePlanVolumes",
+		"",
+		FatalException,
+		("Command should have two words: SOURCE_NAME VOLUME_NAME , while it has " + GmGenUtils::itoa(wl.size())).c_str());
+  }
+
+  theAcceleratorVolume = wl[1];
+  
+}
+
+
+//------------------------------------------------------------------------
+void RTVPlanSource::BuildRTPlan2G4Associations()
+{
+  for( size_t iib = 0; iib < theBeams.size(); iib++ ) {
+    //---- Look for Geant4 volumes
+    std::map<G4String,G4double> beamParams = theBeams[iib]->GetParams();
+    std::map<G4String,G4double>::const_iterator itep;
+    theGeomUtils = GmGeometryUtils::GetInstance();
+    for( itep = beamParams.begin() ; itep != beamParams.end(); itep++ ) {
+      G4String pname = (*itep).first;
+      if( pname.substr(0,4) == "BLD_" && pname.substr(pname.length()-2,2) == "_Z" ) {
+	G4String rtVName = pname.substr(4,pname.length()-6);
+	std::map<G4String,G4String>::const_iterator itepg = theRTPlanVoluAssoc.find(rtVName);
+	G4String g4VName = "";
+	if( itepg == theRTPlanVoluAssoc.end() ) {
+	  G4Exception("RTVPlanSource::BuildRTPlan2G4Associations",
+		      "",
+		      JustWarning,
+		      ("No association of RT volume " + rtVName + " through an associatePlanVolumes user command, this volume will not be moved").c_str());
+	  continue;
+	} else {
+	  g4VName = (*itepg).second;
+	}
+	std::vector<G4VPhysicalVolume*> PVs = theGeomUtils->GetPhysicalVolumes(g4VName+"*", 1);
+	G4double nLeafJaws = theBeams[iib]->GetParam("BLD_"+rtVName+"_NumberOfLeafJawPairs",1) * 2;
+	if( PVs.size() != nLeafJaws ) {
+	  G4Exception("RTVPlanSource::BuildRTPlan2G4Associations",
+		      "",
+		      FatalException,
+		      ("Number of G4VPhysicalVolume's for volume " + g4VName + " = "
+		       + GmGenUtils::itoa(PVs.size()) + " != number of volumes in RTPlan = "
+		       + GmGenUtils::itoa(nLeafJaws) + "Please contact GAMOS authors").c_str());
+	}
+	theRTPlanG4PVsAssoc[rtVName] = PVs;
+#ifndef GAMOS_NO_VERBOSE
+	if( GenerVerb(debugVerb) ) G4cout << "RTVPlanSource::AssociatePlanVolumes  Beam. " << theBeams[iib]->GetIndex() << " " << rtVName << " associated to PVs " << PVs.size() << G4endl;
+#endif
+	GmVModule* module = theModuleMgr->GetModule(g4VName,0);
+	if( !module ) {
+	  G4Exception("RTVPlanSource::BuildRTPlan2G4Associations",
+		      "",
+		      FatalException,
+		      ("Volume must be a GmModule (i.e. constructed with :MODULE in an ASCII geometry file: " + g4VName).c_str());
+	}
+	theRTPlanGmModuleAssoc[rtVName] = module;
+#ifndef GAMOS_NO_VERBOSE
+	if( GenerVerb(debugVerb) ) G4cout << "RTVPlanSource::AssociatePlanVolumes  Beam. " << theBeams[iib]->GetIndex() << " " << rtVName << " associated to module " << module->GetName() << G4endl;
+#endif
+      }
+    }
+  }
+ 
+}
+
+//------------------------------------------------------------------------
+void RTVPlanSource::MoveGeometry(const ScanSpotData& spdata)
+{
+  G4GeometryManager* geomMgr = G4GeometryManager::GetInstance();
+  geomMgr->OpenGeometry();
+
+  //----- MOVE ACCELERATOR
+  //--- GET POSITION AND ROTATION FROM RTPlan 
+  G4double sourceAxisDist = spdata.SourceAxisDistance;
+  G4ThreeVector position(0.,0.,sourceAxisDist); // if not moved it is in Z axis (IEC 61217)
+  G4RotationMatrix* rotation = new G4RotationMatrix;
+  rotation->rotateZ(spdata.RotAngleZ); // GantryPitchAngle
+#ifndef GAMOS_NO_VERBOSE
+  if( GenerVerb(debugVerb) ) G4cout << "RTVPlanSource::GenerateVertex position after GantryPitchAngle " << position << " GantryPitchAngle " << spdata.RotAngleZ/CLHEP::deg << " Rotation " << *rotation << G4endl;
+#endif
+
+  position.rotateY(spdata.RotAngleY); // GantryAngle
+  rotation->rotateY(spdata.RotAngleY); // GantryAngle
+#ifndef GAMOS_NO_VERBOSE
+  if( GenerVerb(debugVerb) ) G4cout << "RTVPlanSource::GenerateVertex position after GantryAngle " << position << " GantryAngle " << spdata.RotAngleY/CLHEP::deg  << " Rotation " << *rotation << G4endl;
+#endif
+  //--- MOVE VOLUME
+  if( theAcceleratorVolume == "" ) {
+    G4Exception("RTVPlanSource::MoveGeometry",
+		"",
+		FatalException,
+		"No volume defined as accelerator, please use command /gamos/generator/RTPlan/defineAcceleratorVolume ");
+  }
+  std::vector<G4VPhysicalVolume*> PVs = theGeomUtils->GetPhysicalVolumes(theAcceleratorVolume,1);
+  G4VPhysicalVolume* pv = PVs[0];
+  pv->SetTranslation(position);
+  pv->SetRotation(rotation);
+  
+  //--- Loop to all RTPlan BLD's found
+  std::map<G4String,std::vector<G4VPhysicalVolume*> >::const_iterator itespv;
+  for( itespv = theRTPlanG4PVsAssoc.begin(); itespv != theRTPlanG4PVsAssoc.end(); itespv++ ) {
+    G4String rtVol2G4Name = (*itespv).first;
+    PVs = (*itespv).second;
+    for( size_t ipv = 0; ipv < PVs.size(); ipv++ ) {
+      G4cout << " 0PVs " << ipv << " = " << PVs[ipv]->GetName() << G4endl; //GDEB
+    }
+    //--- Get position from beam and control point
+    G4double posZ; // Z position of center
+    
+    std::map<G4String,G4double> beamParams = spdata.Beam->GetParams();
+    //    std::map<G4String,G4double> cpParams = spdata.ControlPoint->GetParams();
+    std::map<G4String,G4double>::const_iterator itep;
+
+    //--- LOOK FOR THE posZ IN RTBeam PARAMETERS
+    for( itep = beamParams.begin() ; itep != beamParams.end(); itep++ ) {
+      G4String pname = (*itep).first;
+      if( pname.substr(0,4) == "BLD_" && pname.substr(pname.length()-2,2) == "_Z" ) {
+	G4String rtVName = pname.substr(4,pname.length()-6);
+	if( rtVName == rtVol2G4Name ) {
+	  posZ = (*itep).second;
+#ifndef GAMOS_NO_VERBOSE
+	  if( GenerVerb(debugVerb) ) G4cout << "RTVPlanSource::MoveGeometry " << rtVol2G4Name << " position Z " << posZ << G4endl;
+#endif
+	break;
+	}
+      }
+    }
+    if( itep == beamParams.end() ) {
+      G4Exception("RTVPlanSource::MoveGeometry",
+		  "",
+		  FatalException,
+		  ("VOLUME " + rtVol2G4Name + " NOT FOUND IN CURRENT BEAM: THIS SHOULD NOT HAPPEN, PLEASE CONTACT GAMOS AUTHORS").c_str());
+    }
+
+    //--- NOW LOOK FOR posX/Y IN RTPlanControlPoint PARAMETERS
+    std::map<G4String,GmVModule*>::const_iterator itemod = theRTPlanGmModuleAssoc.find(rtVol2G4Name);
+    GmVModule* gmModule = (*itemod).second;
+    G4String g4PVName = gmModule->GetName();
+	  
+    G4double nLeafJaws = spdata.Beam->GetParam("BLD_"+rtVol2G4Name+"_NumberOfLeafJawPairs",1) * 2;
+    if( dynamic_cast<GmModuleJaws*>(gmModule) ) {
+      if( nLeafJaws != 2 ) {
+	G4Exception("RTVplanSource::MoveGeometry",
+		    "",
+		    FatalException,
+		    ("Error processing volume of type GmModuleJaws: there should be two leafs in RTPlan, while there are "
+		     + GmGenUtils::itoa(nLeafJaws)).c_str());
+      }
+      
+      G4double posN_1 = spdata.ControlPoint->GetParam(rtVol2G4Name+"_1_POS",1);
+      G4double posP_2 = spdata.ControlPoint->GetParam(rtVol2G4Name+"_2_POS",1);
+#ifndef GAMOS_NO_VERBOSE
+      if( GenerVerb(debugVerb) ) G4cout << "RTVPlanSource::MoveGeometry " << rtVol2G4Name << " position leaf1 " << posN_1 << " leaf2 " << posP_2 << G4endl;
+#endif
+      /*      // check that parameters in RTPlan have correct sign
+      if( posN_1 > 0 || posP_2 < 0) {
+	G4Exception("RTVplanSource::MoveGeometry",
+		    "",
+		    FatalException,
+		    ("Error processing volume of type GmModuleJaws: first position should be negative and second positive, while they are "
+		     + GmGenUtils::ftoa(posN_1) + " , " + GmGenUtils::ftoa(posP_2)).c_str());
+		     } */
+      //      G4int ngmParams = gmModule->GetParams().size();
+      gmModule->ReplaceParam("FIELD_NEG", GmGenUtils::ftoa(posN_1));
+      gmModule->ReplaceParam("FIELD_POS", GmGenUtils::ftoa(posP_2));
+      posZ -= GmGenUtils::GetValue(gmModule->GetParam("ZHDIM"));// substract half_length_Z
+      gmModule->ReplaceParam("Z_CENTRE", GmGenUtils::ftoa(posZ)); 
+      G4cout <<  gmModule->GetParam("ZHDIM") << " posZ-gmModule->GetParam(5)) " << gmModule->GetParam(5) << " -> " << GmGenUtils::GetValue(gmModule->GetParam(5)) << G4endl; //GDEB
+      gmModule->BuildObjects(); // BUILD G4tgr OBJECTS
+
+      //find new G4tgrPlace
+      /*      std::vector<G4tgrVolume*> tgrVolumes =  G4tgrVolumeMgr::GetInstance()->GetVolumeList();
+      for( size_t itv = 0; itv < tgrVolumes.size(); itv++ ) {
+	if( tgrVolumes[itv]->GetName() == g4PVName ) {
+	  std::vector<G4tgrPlace*> tgrPlaces = tgrVolumes[itv]->GetPlacements();
+	  G4cout << " FOUND " << g4PVName << " = " << tgrVolumes[itv] << " NPLACES " << tgrPlaces.size() << G4endl; //GDEB
+	  for( size_t ip = 0; ip < tgrPlaces.size(); ip++ ) {
+	    G4cout << " PLACE COPYNO " << tgrPlaces[ip]->GetCopyNo() << G4endl;
+	  }
+	}
+	}*/
+      std::vector<G4tgrVolume*> tgrVolumes =  G4tgrVolumeMgr::GetInstance()->GetVolumeList();
+      for( size_t itv = 0; itv < tgrVolumes.size(); itv++ ) {
+	//	G4cout << " tgrVolumes[itv]->GetName() == g4PVName " << tgrVolumes[itv]->GetName()<< " == " << g4PVName << G4endl; //GDEB
+	if( tgrVolumes[itv]->GetName().find(g4PVName) != std::string::npos ) {
+	  std::vector<G4tgrPlace*> tgrPlaces = tgrVolumes[itv]->GetPlacements();
+#ifndef GAMOS_NO_VERBOSE
+	  if( GenerVerb(debugVerb) ) G4cout << "RTVPlanSource::MoveGeometry " << rtVol2G4Name << " Number of tgrPlaces " << tgrPlaces.size() << G4endl;
+#endif
+	  //--- Get last two
+	  G4tgrPlace* placeN = tgrPlaces[tgrPlaces.size()-2];
+	  G4tgrPlace* placeP = tgrPlaces[tgrPlaces.size()-1];
+	  //--- Get unique two
+	  if( tgrPlaces.size() != 2 ) {
+	    G4Exception("RTVPlanSource::MoveGeometry",
+		       "",
+		       FatalException,
+		       ("Not only two placement found for volume " + g4PVName
+			+ "  Number of placements found= " + GmGenUtils::itoa(tgrPlaces.size())).c_str());
+	  }
+	  //--- Now change placements in G4VPhysicalVolume's
+	  //--- Move volume
+	  //t	  geomMgr->OpenGeometry( PVs[0]);
+	  PVs[0]->SetTranslation(placeN->GetPlacement());
+	  //t	  geomMgr->CloseGeometry(true,false,PVs[0]);
+	  //t	  geomMgr->OpenGeometry( PVs[1]);
+	  PVs[1]->SetTranslation(placeP->GetPlacement());
+	  //t	  geomMgr->CloseGeometry(true,false,PVs[1]);
+
+	  std::vector<GmTouchable*> touchs = GmGeometryUtils::GetInstance()->GetTouchables( PVs[0]->GetName(), true );
+	  G4cout << " PRINTING TOUCHABLES " << PVs[0]->GetName() << " : " << touchs.size() << G4endl; //GDEB
+	  for( unsigned int jj = 0; jj < touchs.size(); jj++ ) {
+	    G4cout << " TOUCHABLE " << *(touchs[jj]) << G4endl;//GDEB
+	  }
+
+	}
+      }
+      
+    } else if( dynamic_cast<GmModuleMLC*>(gmModule) ) {
+      //----- STORE NEGATIVE LEAFS AND POSITIVE LEAFS POSITIONS FROM RTControlPoint
+      int ipvN = 0;
+      int ipvP = 0;
+      std::vector<G4double> posPos, posNeg;
+      for( size_t ipv = 0; ipv < PVs.size()/2; ipv++ ) { //FIRST HALF POSITIONS ARE NEGATIVE LEAFS
+	ipvN++;
+	posNeg.push_back(spdata.ControlPoint->GetParam(rtVol2G4Name+"_"+GmGenUtils::itoa(ipvN)+"_POS",1));
+#ifndef GAMOS_NO_VERBOSE
+	if( GenerVerb(debugVerb) ) G4cout << "RTVPlanSource::MoveGeometry position leaf negative " << rtVol2G4Name+"_"+GmGenUtils::itoa(ipvN)+"_POS  = " << posNeg[posNeg.size()-1] << G4endl;
+#endif
+      }
+      for( size_t ipv = PVs.size()/2; ipv < PVs.size(); ipv++ ) { //SECOND HALF POSITIONS ARE POSITIVE LEAFS
+	ipvP++;
+	posPos.push_back(spdata.ControlPoint->GetParam(rtVol2G4Name+"_"+GmGenUtils::itoa(ipvP)+"_POS",1));
+#ifndef GAMOS_NO_VERBOSE
+	if( GenerVerb(debugVerb) ) G4cout << "RTVPlanSource::MoveGeometry position leaf positive " << rtVol2G4Name+"_"+GmGenUtils::itoa(ipvP)+"_POS = " << posPos[posPos.size()-1] << G4endl;
+#endif
+      }
+
+      //----- REPLACE LEAF POSITIONS IN GmModuleMLC
+      for( size_t ii = 1; ii < posNeg.size()+1; ii++ ) {
+	gmModule->ReplaceParam("OPEN_POSITION_NEG["+GmGenUtils::itoa(ii)+"]", GmGenUtils::ftoa(posNeg[ii]));
+	gmModule->ReplaceParam("OPEN_POSITION_POS["+GmGenUtils::itoa(ii)+"]", GmGenUtils::ftoa(posPos[ii]));
+      }
+
+      //----- REPLACE Z POSITION IN GmModuleMLC
+      posZ -= GmGenUtils::GetValue(gmModule->GetParam("Z_GAP"));// substract half_length_Z
+      gmModule->ReplaceParam("Z_TOP", GmGenUtils::ftoa(posZ)); 
+
+      //----- BUILD G4tgr OBJECTS
+      gmModule->BuildObjects(); 
+      
+      //find new G4tgrPlace
+      std::vector<G4tgrVolume*> tgrVolumes =  G4tgrVolumeMgr::GetInstance()->GetVolumeList();
+      //	:PLACE MLC_X_80_POS 1 ACCEL RM90Y180Z_MLC 95.1766 0 311.77FF
+      for( size_t ii = 1; ii <= posNeg.size(); ii++ ) {
+	for( size_t itv = 0; itv < tgrVolumes.size(); itv++ ) {
+	  //	  G4cout << " tgrVolumes[itv]->GetName() == g4PVName " << tgrVolumes[itv]->GetName()<< " == " << g4PVName+"_"+GmGenUtils::itoa(ii)+"_NEG" << G4endl; //GDEB
+	  if( tgrVolumes[itv]->GetName() == G4String(g4PVName+"_"+GmGenUtils::itoa(ii)+"_NEG") ) {
+	    std::vector<G4tgrPlace*> tgrPlaces = tgrVolumes[itv]->GetPlacements();
+	    G4cout << " FOUND " << g4PVName+"_"+GmGenUtils::itoa(ii)+"_NEG" << " = " << tgrVolumes[itv] << " NPLACES " << tgrPlaces.size() << G4endl; //GDEB
+	    //	      for( size_t ip = 0; ip < tgrPlaces.size(); ip++ ) {
+	    //		G4cout << " PLACE COPYNO " << tgrPlaces[ip]->GetCopyNo() << G4endl;
+	    //	      }
+#ifndef GAMOS_NO_VERBOSE
+	    if( GenerVerb(debugVerb) ) G4cout << "RTVPlanSource::MoveGeometry " << rtVol2G4Name << " Number of tgrPlaces " << tgrPlaces.size() << G4endl;
+#endif
+	    //--- Get unique one
+	    if( tgrPlaces.size() != 1 ) {
+	      G4Exception("RTVPlanSource::MoveGeometry",
+			  "",
+			  FatalException,
+			  ("Not only one placement found for volume " + g4PVName+"_"+GmGenUtils::itoa(ii)+"_NEG"
+			   + "  Number of placements found= " + GmGenUtils::itoa(tgrPlaces.size())).c_str());
+	    }
+	    G4tgrPlace* place = tgrPlaces[tgrPlaces.size()-1];
+	    //--- Now change placements in G4VPhysicalVolume's
+	    //--- Move volume
+	    //--- Check volume name
+	    pv = PVs[ii*2-1]; // FIRST IS X_1, not X_0
+	    if( pv->GetName() != G4String(g4PVName+"_"+GmGenUtils::itoa(ii)+"_NEG") ) {
+	      G4Exception("RTVPlanSource::MoveGeometry",
+			  "",
+			  FatalException,
+			  ("Trying to move wrong volume: " + pv->GetName() +
+			   " instead of " +  g4PVName+"_"+GmGenUtils::itoa(ii)+"_NEG").c_str());
+	    }
+	    //t	    geomMgr->OpenGeometry( pv );
+	    pv->SetTranslation(place->GetPlacement());
+	    //t	    geomMgr->CloseGeometry(true,false,pv);
+	    
+	    std::vector<GmTouchable*> touchs = GmGeometryUtils::GetInstance()->GetTouchables( PVs[0]->GetName(), true );
+	    G4cout << " PRINTING TOUCHABLES " << PVs[0]->GetName() << " : " << touchs.size() << G4endl; //GDEB
+	    for( unsigned int jj = 0; jj < touchs.size(); jj++ ) {
+	      G4cout << " TOUCHABLE " << *(touchs[jj]) << G4endl;//GDEB
+	    }
+	  }
+	}
+      }
+
+    } else {
+      G4Exception("RTVplanSource::MoveGeometry",
+		  "",
+		  FatalException,
+		  ("VOLUME " + rtVol2G4Name + " NOT FOUND IN CURRENT BEAM: THIS SHOULD NOT HAPPEN, PLEASE CONTACT GAMOS AUTHORS").c_str());
+    }
+      
+  }
+
+
+  //---------- MOVE PHANTOM TO MATCH isocenter
+  PVs = theGeomUtils->GetPhysicalVolumes("phantomContainer",1);
+  pv = PVs[0];
+  //  G4Box* pcBox = static_cast<G4Box*>(pv->GetLogicalVolume()->GetSolid());
+  G4ThreeVector isocPos(spdata.ControlPoint->GetParam("IsocenterPosition_X"),
+			spdata.ControlPoint->GetParam("IsocenterPosition_Y"),
+			spdata.ControlPoint->GetParam("IsocenterPosition_Z"));
+  //-- Get center of phantomContainer
+  GmReadPhantomGeometry* phGeom = static_cast<GmReadPhantomGeometry*>(const_cast<G4VUserDetectorConstruction*>(theG4RunManager->GetUserDetectorConstruction()));
+  if( !phGeom ) {
+    G4Exception("RTVPlanSource::MoveGeometry",
+		"",
+		FatalException,
+		"Geometry constructor has to be of type GmReadPhantomGeometry");
+  }
+  G4ThreeVector pcCenter((phGeom->GetMaxX()+phGeom->GetMinX())/2.,
+			 (phGeom->GetMaxY()+phGeom->GetMinY())/2.,
+			 (phGeom->GetMaxZ()+phGeom->GetMinZ())/2.);
+  // isocenter is with respect to phantom coordinates
+  G4ThreeVector pcPosNew = -isocPos + pcCenter;
+  G4RotationMatrix* rott = new G4RotationMatrix();
+  G4ThreeVector xaxis(1.,0.,0.);
+  G4ThreeVector yaxis(0.,1.,0.);
+  G4ThreeVector zaxis(0.,0.,1.);
+  rott->rotateX(phGeom->GetInitialRotAngleX());
+  rott->rotateY(phGeom->GetInitialRotAngleY());
+  G4cout << " ROT after rotateX " << *rott << G4endl; //GDEB
+  xaxis.rotateX(phGeom->GetInitialRotAngleX());
+  G4cout << " xaxis after rotateX " << xaxis << G4endl; //GDEB
+  yaxis.rotateX(phGeom->GetInitialRotAngleX());
+  G4cout << " yaxis after rotateX " << yaxis << G4endl; //GDEB
+  zaxis.rotateX(phGeom->GetInitialRotAngleX());
+  G4cout << " zaxis after rotateX " << zaxis << G4endl; //GDEB
+  rott->rotateZ(phGeom->GetInitialRotAngleZ());
+  G4cout << " ROT after rotateZ " << *rott << G4endl; //GDEB
+  xaxis.rotateZ(phGeom->GetInitialRotAngleZ());
+  G4cout << " xaxis after rotateZ " << xaxis << G4endl; //GDEB
+  yaxis.rotateZ(phGeom->GetInitialRotAngleZ());
+  G4cout << " yaxis after rotateZ " << yaxis << G4endl; //GDEB
+  zaxis.rotateZ(phGeom->GetInitialRotAngleZ());
+  G4cout << " zaxis after rotateZ " << zaxis << G4endl; //GDEB
+
+  G4cout << " pcPosNew " << pcPosNew << " pcCenter " << pcCenter << " - isocPos " << isocPos << G4endl; //GDEB
+  pcPosNew.rotateX(phGeom->GetInitialRotAngleX());
+  G4cout << phGeom->GetInitialRotAngleX() << " pcPosNew after rotateX " << pcPosNew << G4endl; //GDEB
+  pcPosNew.rotateY(phGeom->GetInitialRotAngleY());
+  G4cout << phGeom->GetInitialRotAngleY() << " pcPosNew after rotateY " << pcPosNew << G4endl; //GDEB
+  pcPosNew.rotateZ(phGeom->GetInitialRotAngleZ());
+  G4cout << phGeom->GetInitialRotAngleZ() << " pcPosNew after rotateZ " << pcPosNew << G4endl; //GDEB
+
+  *rott = rott->inverse();
+  pcPosNew = -isocPos + pcCenter;
+  pcPosNew *= *rott;
+  G4cout << " pcPosNew FINAL after rot " << pcPosNew << G4endl; //GDEB
+  pv->SetTranslation(pcPosNew);
+  G4cout << pv->GetName() << " FRAME ROTATION " << *(pv->GetFrameRotation()) << G4endl; //GDEB
+  G4cout << pv->GetName() << " OBJECT ROTATION " << *(pv->GetObjectRotation()) << G4endl; //GDEB
+  //  pv->SetRotation(rott);
+#ifndef GAMOS_NO_VERBOSE
+  if( GenerVerb(-debugVerb) ) G4cout << phGeom->GetMaxY()<< " " <<phGeom->GetMinY() <<  "RTVPlanSource::MoveGeometry PHANTOM new pos " <<pcPosNew << " isocenterPos " << isocPos << " phContainer center " << pcCenter << " PV= " << pv->GetName() <<  G4endl;
+#endif
+  geomMgr->CloseGeometry(true,false);
+  
+  //  theGeomUtils->DumpG4PVLVTree( G4cout, 13 );
+  std::vector<GmTouchable*> touchs = GmGeometryUtils::GetInstance()->GetTouchables( "phantomContainer", true );
+  for( unsigned int jj = 0; jj < touchs.size(); jj++ ) {
+    G4cout << " TOUCHABLE " << *(touchs[jj]) << G4endl;//GDEB
+  }
+  touchs = GmGeometryUtils::GetInstance()->GetTouchables( "ACCEL", true );
+  for( unsigned int jj = 0; jj < touchs.size(); jj++ ) {
+    G4cout << " TOUCHABLE " << *(touchs[jj]) << G4endl;//GDEB
+  }
+  
+  // Notify the VisManager as well
+  G4VVisManager* pVVisManager = G4VVisManager::GetConcreteInstance();
+  if(pVVisManager) pVVisManager->GeometryHasChanged();
+
+  return;
+  
+}

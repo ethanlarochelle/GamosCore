@@ -30,7 +30,7 @@
 #include "G4TransportationManager.hh"
 #include "G4Navigator.hh"
 #include "G4TouchableHistory.hh"
-#include "GamosCore/GamosBase/Base/include/GmBaseVerbosity.hh"
+#include "GamosCore/GamosBase/Filters/include/GmFilterVerbosity.hh"
 
 GmGeomConditionStart::GmGeomConditionStart()
 {
@@ -42,7 +42,7 @@ GmGeomConditionStart::GmGeomConditionStart()
 const G4VTouchable* GmGeomConditionStart::GetTouchableFromTrack(const G4Track* aTrack)
 {
 #ifndef GAMOS_NO_VERBOSE
-  if( BaseVerb(debugVerb) ) G4cout << " GmGeomConditionStart::GetTouchableFromTrack step number " << aTrack->GetCurrentStepNumber() << G4endl;
+  if( FilterVerb(debugVerb) ) G4cout << " GmGeomConditionStart::GetTouchableFromTrack step number " << aTrack->GetCurrentStepNumber() << G4endl;
 #endif
   if( !theNavigator ) {
     theNavigator = G4TransportationManager::GetTransportationManager()->GetNavigatorForTracking();
@@ -50,7 +50,7 @@ const G4VTouchable* GmGeomConditionStart::GetTouchableFromTrack(const G4Track* a
   theNavigator->LocateGlobalPointAndUpdateTouchable( aTrack->GetVertexPosition(), theTouchable, false ); 
 
 #ifndef GAMOS_NO_VERBOSE
-  if( BaseVerb(debugVerb) ) G4cout << " GmGeomConditionStart::GetTouchableFromTrack return touchable " << theTouchable->GetVolume()->GetName() << G4endl;
+  if( FilterVerb(debugVerb) ) G4cout << " GmGeomConditionStart::GetTouchableFromTrack return touchable " << theTouchable->GetVolume()->GetName() << G4endl;
 #endif
   return theTouchable;
 }
@@ -59,25 +59,25 @@ const G4VTouchable* GmGeomConditionStart::GetTouchableFromTrack(const G4Track* a
 const G4VTouchable* GmGeomConditionStart::GetTouchableFromStep(const G4Step* aStep)
 {
 #ifndef GAMOS_NO_VERBOSE
-  if( BaseVerb(debugVerb) ) G4cout << " GmGeomConditionStart::GetTouchableFromStep step number " << aStep->GetTrack()->GetCurrentStepNumber() << G4endl;
+  if( FilterVerb(debugVerb) ) G4cout << " GmGeomConditionStart::GetTouchableFromStep step number " << aStep->GetTrack()->GetCurrentStepNumber() << G4endl;
 #endif
   if( aStep->GetTrack()->GetCurrentStepNumber() != 1 ) {
 #ifndef GAMOS_NO_VERBOSE
-    if( BaseVerb(debugVerb) ) G4cout << " GmGeomConditionStart::GetTouchableFromStep return 0 " << G4endl;
+    if( FilterVerb(debugVerb) ) G4cout << " GmGeomConditionStart::GetTouchableFromStep return 0 " << G4endl;
 #endif
     return 0;
   } else {
     const G4StepPoint* preSP = aStep->GetPreStepPoint();
 #ifndef GAMOS_NO_VERBOSE
-    if( BaseVerb(debugVerb) ) G4cout << " GmGeomConditionStart::GetTouchableFromStep return ";
+    if( FilterVerb(debugVerb) ) G4cout << " GmGeomConditionStart::GetTouchableFromStep return ";
 #endif
     if( preSP->GetTouchable() && preSP->GetTouchable()->GetVolume() ) {
 #ifndef GAMOS_NO_VERBOSE
-      if( BaseVerb(debugVerb) ) G4cout << preSP->GetTouchable()->GetVolume()->GetName() << G4endl; 
+      if( FilterVerb(debugVerb) ) G4cout << preSP->GetTouchable()->GetVolume()->GetName() << G4endl; 
 #endif
     } else {
 #ifndef GAMOS_NO_VERBOSE
-      if( BaseVerb(debugVerb) ) G4cout << " 0 " << G4endl;
+      if( FilterVerb(debugVerb) ) G4cout << " 0 " << G4endl;
 #endif
     }
     return GetTouchableFromStepPoint( preSP );

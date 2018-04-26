@@ -47,7 +47,6 @@ GmBOptrEWBS::GmBOptrEWBS( G4String name )
 
 }
 
-
 //-----------------------------------------------------------------
 void GmBOptrEWBS::StartRun()
 {

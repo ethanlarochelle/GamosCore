@@ -66,7 +66,6 @@ private:
   static GmTimeStudyMgr* theInstance;
 
   std::vector<GmTimeStudyUA*> theTimeStudies;
-  std::vector<GmTimeStudyUA*> theTimeStudiesEvent;
 
   static G4SteppingVerbose* theG4Verbose;
   static int theG4VerboseLevel;

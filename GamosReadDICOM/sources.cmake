@@ -28,7 +28,7 @@ GEANT4_DEFINE_MODULE(NAME GamosCore_GamosReadDICOM
        GmPhantomDoseUA.hh
        GmReadPhantomG4Geometry.hh
        GmDICOMIntersectVolume.hh
-       GmReadPhantomPSMgr.hh
+       GmReadPhantomSVMgr.hh
        GmReadPhantomGeometry.hh
        GmSqdose.hh
        GmRegularParamUtils.hh
@@ -58,7 +58,7 @@ GEANT4_DEFINE_MODULE(NAME GamosCore_GamosReadDICOM
        GmTouchablePhantomStructure.cc
        GmRegularParamUtils.cc
        GmSqdose.cc
-       GmReadPhantomPSMgr.cc
+       GmReadPhantomSVMgr.cc
        GmPhantomDoseUA.cc
        GmSqdoseHeader.cc
        GmDICOMIntersectVolume.cc

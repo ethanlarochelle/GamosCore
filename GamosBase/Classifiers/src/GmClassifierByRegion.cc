@@ -24,7 +24,7 @@
 // ********************************************************************
 //
 #include "GmClassifierByRegion.hh"
-#include "GamosCore/GamosBase/Base/include/GmBaseVerbosity.hh"
+#include "GamosCore/GamosBase/Classifiers/include/GmClassifierVerbosity.hh"
 #include "GamosCore/GamosGeometry/include/GmGeometryUtils.hh"
 #include "GamosCore/GamosUtils/include/GmGenUtils.hh"
 

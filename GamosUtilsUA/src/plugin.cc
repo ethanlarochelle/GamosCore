@@ -45,6 +45,7 @@
 #include "GmCopyWeightToRDSecondaryUA.hh"
 #include "GmStopRunAfterTimeUA.hh"
 #include "GmSaveHistosAfterNEvents.hh"
+#include "GmPrintEMParamsUA.hh"
 
 PLUGINSVC_FACTORY(GmCountTracksUA,GmUserAction*())
 PLUGINSVC_FACTORY(GmTrackingVerboseUA,GmUserAction*())
@@ -66,6 +67,8 @@ PLUGINSVC_FACTORY(GmCopyWeightToSecondaryUA,GmUserAction*())
 PLUGINSVC_FACTORY(GmCopyWeightToRDSecondaryUA,GmUserAction*())
 PLUGINSVC_FACTORY(GmStopRunAfterTimeUA,GmUserAction*())
 PLUGINSVC_FACTORY(GmSaveHistosAfterNEvents,GmUserAction*())
+PLUGINSVC_FACTORY(GmPrintEMParamsUA,GmUserAction*())
 
 #include "GmUtilsUAVerbosity.hh"
 PLUGINSVC_FACTORY(GmUtilsUAVerbosity,GmVVerbosity*())
+

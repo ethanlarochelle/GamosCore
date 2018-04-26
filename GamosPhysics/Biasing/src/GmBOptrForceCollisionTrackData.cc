@@ -30,12 +30,12 @@ GmBOptrForceCollisionTrackData::GmBOptrForceCollisionTrackData( const GmBOptrFor
 : G4VAuxiliaryTrackInformation(),
   fForceCollisionOperator( optr )
 {
-  fForceCollisionState = FCS_free;
+  fForceCollisionState = ForceCollisionState::free;
 }
 
 GmBOptrForceCollisionTrackData::~GmBOptrForceCollisionTrackData()
 {
-  if ( fForceCollisionState != FCS_free )
+  if ( fForceCollisionState != ForceCollisionState::free )
     {
       G4ExceptionDescription ed;
       ed << "Track deleted while under GmBOptrForceCollision biasing scheme of operator `";
@@ -55,16 +55,16 @@ void GmBOptrForceCollisionTrackData::Print() const
   G4cout << "     Force collision state    : ";
   switch ( fForceCollisionState )
     {
-    case FCS_free :
+    case ForceCollisionState::free :
       G4cout << "free from biasing ";
       break;
-    case FCS_toBeCloned :
+    case ForceCollisionState::toBeCloned :
       G4cout << "to be cloned ";
       break;
-    case FCS_toBeForced :
+    case ForceCollisionState::toBeForced :
       G4cout << "to be interaction forced ";
       break;
-    case FCS_toBeFreeFlight :
+    case ForceCollisionState::toBeFreeFlight :
       G4cout << "to be free flight forced (under weight = 0) ";
       break;
     default:

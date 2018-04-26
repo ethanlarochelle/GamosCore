@@ -345,30 +345,3 @@ G4double GmG4PSDoseDepositVector::GetGeom2TrueStepLength( G4double kinEnergy )
   return g2tratio;
 }
 
-//--------------------------------------------------------------------
-void GmG4PSDoseDepositVector::EndOfEvent(G4HCofThisEvent*)
-{
-}
-
-//--------------------------------------------------------------------
-void GmG4PSDoseDepositVector::DrawAll()
-{;}
-
-//--------------------------------------------------------------------
-void GmG4PSDoseDepositVector::PrintAll()
-{
-  G4cout <<" GmG4PSDoseDepositVector::PrintAllDefault() " << G4endl;
-  G4cout << " MultiFunctionalDet  " << detector->GetName() << G4endl;
-  G4cout << " PrimitiveScorer " << GetName() << G4endl;
-  G4cout << " Number of entries " << EvtMap.size() << G4endl;
-  for( unsigned idx = 0; idx < EvtMap.size(); idx++){
-    G4cout << "  copy no.: " << idx
-	   << "  dose deposit: " << G4BestUnit(EvtMap[idx],"Dose")
-	   << G4endl;
-  }
-}
- #include "GamosCore/GamosBase/Base/include/GmVClassifier.hh" 
-G4int GmG4PSDoseDepositVector::GetIndex(G4Step* aStep ) 
- { 
- return theClassifier->GetIndexFromStep( aStep ); 
-} 

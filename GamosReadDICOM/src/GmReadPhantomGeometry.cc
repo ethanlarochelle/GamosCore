@@ -28,6 +28,7 @@
 #include "GmReadDICOMVerbosity.hh"
 #include "GmDICOMIntersectVolume.hh"
 
+#include "G4GeometryTolerance.hh"
 #include "G4Material.hh"
 #include "G4Box.hh"
 #include "G4LogicalVolume.hh"
@@ -52,16 +53,19 @@
 #include "GamosCore/GamosGeometry/include/GmParallelWorldCreator.hh"
 #include "G4tgbParallelGeomMgr.hh"
 #include "G4VUserParallelWorld.hh"
-#include "G4GeometryTolerance.hh"
 
 //---------------------------------------------------------------------------
 GmReadPhantomGeometry::GmReadPhantomGeometry()
 {
-  new G4tgrMessenger; 
+  new G4tgrMessenger;
 
+  GmParameterMgr* paramMgr = GmParameterMgr::GetInstance();
   parameterisedPhysVolume = 0;
+
+  G4double surfTol = paramMgr->GetNumericValue("GmReadPhantomGeometry:SurfaceTolerance",1E-9*CLHEP::mm);
+  G4GeometryTolerance::GetInstance()->SetSurfaceTolerance(surfTol);
   
-  std::vector<G4double> inidisp = GmParameterMgr::GetInstance()->GetVNumericValue("GmReadPhantomGeometry:InitialDisplacement", std::vector<G4double>());
+  std::vector<G4double> inidisp = paramMgr->GetVNumericValue("GmReadPhantomGeometry:InitialDisplacement", std::vector<G4double>());
   if( inidisp.size() == 0 ){
     theInitialDisp = G4ThreeVector(0.,0.,0.);
   } else if( inidisp.size() == 3 ){
@@ -70,7 +74,7 @@ GmReadPhantomGeometry::GmReadPhantomGeometry()
     G4Exception("GmReadPhantomGeometry","Error in /gamos/setParam GmReadPhantomGeometry:InitialDisp",FatalErrorInArgument,G4String("it must have 3 arguments: POS_X POS_Y POS_Z, and it has "+GmGenUtils::itoa(inidisp.size())).c_str());
   }
 
-  std::vector<G4double> inirot = GmParameterMgr::GetInstance()->GetVNumericValue("GmReadPhantomGeometry:InitialRotAngles", std::vector<G4double>());
+  std::vector<G4double> inirot = paramMgr->GetVNumericValue("GmReadPhantomGeometry:InitialRotAngles", std::vector<G4double>());
   if( inirot.size() == 0 ){
     theInitialRotAngleX = 0.;
     theInitialRotAngleY = 0.;
@@ -83,23 +87,26 @@ GmReadPhantomGeometry::GmReadPhantomGeometry()
     G4Exception("GmReadPhantomGeometry","Error in /gamos/setParam GmReadPhantomGeometry:InitialRotAngles",FatalErrorInArgument,G4String("it must have 3 arguments: ANG_X ANG_Y ANG_Z, and it has "+GmGenUtils::itoa(inirot.size())).c_str());
   }
 
-  bRecalculateMaterialDensities = G4bool(GmParameterMgr::GetInstance()->GetNumericValue("GmReadPhantomGeometry:RecalculateMaterialDensities", 1));
-  
+  bRecalculateMaterialDensities = G4bool(paramMgr->GetNumericValue("GmReadPhantomGeometry:RecalculateMaterialDensities", 1));
+
   new GmDICOMIntersectVolume;
 }
 
 //---------------------------------------------------------------------------
 GmReadPhantomGeometry::~GmReadPhantomGeometry()
 {
+  delete cont_logic;
+  delete parameterisedPhysVolume; 
+
+  //  delete [] theMatePhantom;
+  delete [] theMateIDs;
+  delete [] theMateDensities;
 }
 
 
 //---------------------------------------------------------------------------
 G4VPhysicalVolume* GmReadPhantomGeometry::Construct()
 {
-  G4double surfTol = GmParameterMgr::GetInstance()->GetNumericValue("GmReadPhantomGeometry:SurfaceTolerance",1.e-7*CLHEP::mm);
-  G4GeometryTolerance::GetInstance()->SetSurfaceTolerance(1e11*surfTol);
-
   //------------------- construct g4 geometry
   G4String filename = GmParameterMgr::GetInstance()->GetStringValue("GmReadPhantomGeometry:FileName", ".geom");
 
@@ -335,6 +342,7 @@ G4Material* GmReadPhantomGeometry::BuildMaterialChangingDensity( G4Material* ori
 
 void GmReadPhantomGeometry::ReadVoxelDensities( std::ifstream& fin )
 {
+  G4cout << " ReadVoxelDensities " << G4endl; //GDEB
   G4String stemp;
   std::map<G4int, std::pair<G4double,G4double> > densiMinMax;
   std::map<G4int, std::pair<G4double,G4double> >::iterator mpite;
@@ -361,17 +369,21 @@ void GmReadPhantomGeometry::ReadVoxelDensities( std::ifstream& fin )
       for( G4int ix = 0; ix < nVoxelX; ix++ ) {
 	//	G4cout << " stemp " << stemp << G4endl;
 	fin >> stemp; 
-	//	G4cout << ix << " " << iy << " " << iz << " density " << stemp << G4endl;
+	//	G4cout << ix << " " << iy << " " << iz << " density " << stemp << G4endl;	
+	if( !bRecalculateMaterialDensities ) {
+	  G4double dens = GmGenUtils::GetValue(stemp.c_str() );
+	  G4int copyNo = ix + (iy)*nVoxelX + (iz)*nVoxelX*nVoxelY;
+	  theMateDensities[copyNo] = dens;
+	  continue;
+	}
+
 	G4int copyNo = ix + (iy)*nVoxelX + (iz)*nVoxelX*nVoxelY;
-	G4double dens = GmGenUtils::GetValue(stemp.c_str() );
-	theMateDensities[copyNo] = dens;
-
-	if( !bRecalculateMaterialDensities ) continue; 
-
 	//--- store the minimum and maximum density for each material (just for printing)
 	mpite = densiMinMax.find( theMateIDs[copyNo] );
+	G4double dens = GmGenUtils::GetValue(stemp.c_str() );
 	if( dens < (*mpite).second.first ) (*mpite).second.first = dens;
 	if( dens > (*mpite).second.second ) (*mpite).second.second = dens;
+
 	//--- Get material from original list of material in file
 	int mateID = theMateIDs[copyNo];
 	std::map<G4int,G4Material*>::const_iterator imite = thePhantomMaterialsOriginal.find(mateID);
@@ -404,12 +416,13 @@ void GmReadPhantomGeometry::ReadVoxelDensities( std::ifstream& fin )
 	  theMateIDs[copyNo] = thePhantomMaterialsOriginal.size()-1 + mi->id;
 	  //	  G4cout << copyNo << " mat new first " << thePhantomMaterialsOriginal.size()-1 + mi->id << G4endl;
 	}
+	theMateDensities[copyNo] = dens;
 	//	G4cout << ix << " " << iy << " " << iz << " filling mateIDs " << copyNo << " = " << atoi(cid)-1 << G4endl;
 				      //	mateIDs[copyNo] = atoi(cid)-1;
       }
     }
   }
-
+ 
   if( bRecalculateMaterialDensities ) { 
     for( mpite = densiMinMax.begin(); mpite != densiMinMax.end(); mpite++ ){
 #ifndef GAMOS_NO_VERBOSE
@@ -426,7 +439,7 @@ void GmReadPhantomGeometry::ReadVoxelDensities( std::ifstream& fin )
   }
   // 
   //---- Build and add new materials
-std::map< std::pair<G4Material*,G4int>, matInfo* >::iterator mppite;
+  std::map< std::pair<G4Material*,G4int>, matInfo* >::iterator mppite;
   for( mppite= newMateDens.begin(); mppite != newMateDens.end(); mppite++ ){
     G4double averdens = (*mppite).second->sumdens/(*mppite).second->nvoxels;
     G4double saverdens = G4int(1000.001*averdens)/1000.;

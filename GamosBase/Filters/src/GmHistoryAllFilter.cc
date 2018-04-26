@@ -25,7 +25,7 @@
 //
 #include "GmHistoryAllFilter.hh"
 #include "G4Track.hh"
-#include "GamosCore/GamosBase/Base/include/GmBaseVerbosity.hh"
+#include "GamosCore/GamosBase/Filters/include/GmFilterVerbosity.hh"
 
 //----------------------------------------------------------------
 GmHistoryAllFilter::GmHistoryAllFilter(G4String name)

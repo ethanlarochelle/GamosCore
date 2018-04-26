@@ -96,12 +96,15 @@ void GmPhysicsElectronStandard::ConstructProcess()
 	  G4eBremsstrahlungRelModel* model2 = new G4eBremsstrahlungRelModel();
 	  G4eBremsstrahlung* brems = new G4eBremsstrahlung();
 	  model->SetLowEnergyLimit(brems->MinKinEnergy());
-	  model->SetHighEnergyLimit(model2->LowEnergyLimit());
+	  //	  model->SetHighEnergyLimit(model2->LowEnergyLimit());
+	  model->SetHighEnergyLimit(1.*CLHEP::GeV);
 	  model2->SetHighEnergyLimit(brems->MaxKinEnergy());                
-	  G4VEmFluctuationModel* fm = 0;
+	  /*	  G4VEmFluctuationModel* fm = 0;
 	  brems->AddEmModel(0, model, fm);
-	  brems->AddEmModel(1, model2, fm);
-	  SelectBremssAngularDist( model );
+	  brems->AddEmModel(1, model2, fm); */
+	  brems->AddEmModel(0, model);
+	  brems->AddEmModel(1, model2);
+	  SelectBremssAngularDist( model, "Electron" );
 	  manager->AddProcess(brems,  -1, 3, 3); 
 	}   
     }

@@ -33,7 +33,7 @@ GmKillAtStackingActionUA::GmKillAtStackingActionUA()
 }
 
 //---------------------------------------------------------------------------
-G4ClassificationOfNewTrack GmKillAtStackingActionUA::ClassifyNewTrack(const G4Track* aTrack )
+G4ClassificationOfNewTrack GmKillAtStackingActionUA::ClassifyNewTrack(const G4Track* )
 {
   return fKill;
 }

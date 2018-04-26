@@ -175,7 +175,7 @@ void GmReadPhantomPartialG4Geometry::ReadPhantomData()
 
   ReadVoxelDensitiesPartial( *fin );
 
-  ReadPS( fing );
+  ReadPV( fing );
 
   fin->close();
 }
@@ -197,6 +197,8 @@ void GmReadPhantomPartialG4Geometry::ReadVoxelDensitiesPartial( std::ifstream& f
   }
   //  densitySteps[0] = 0.0001; //air
 
+  theMateDensities = new float[nVoxelX*nVoxelY*nVoxelZ];
+
   //--- Calculate the average material density for each material/density bin
   std::map< std::pair<G4Material*,G4int>, matInfo* > newMateDens;
   G4double dens1;
@@ -214,7 +216,11 @@ void GmReadPhantomPartialG4Geometry::ReadVoxelDensitiesPartial( std::ifstream& f
 	if( ix >= G4int(ifxmin1) && ix <= G4int(ifxmax1) ) {
 	  fin >> dens1;
 	  //	G4cout << ix << " " << iy << " " << iz << " filling mateIDs " << copyNo << " = " <<  atoi(stemp.c_str())-1 << " " << stemp << G4endl;
-	  if( !bRecalculateMaterialDensities ) continue; 
+	  if( !bRecalculateMaterialDensities ) {
+	    copyNo = ix + (iy)*nVoxelX + (iz)*nVoxelX*nVoxelY;
+	    theMateDensities[copyNo] = dens1;
+	    continue;
+	  }
 	  
 	//--- store the minimum and maximum density for each material (just for printing)
 	  mpite = densiMinMax.find( theMateIDs[copyNo] );
@@ -253,9 +259,11 @@ void GmReadPhantomPartialG4Geometry::ReadVoxelDensitiesPartial( std::ifstream& f
 	    theMateIDs[copyNo] = thePhantomMaterialsOriginal.size()-1 + mi->id;
 	    //	  G4cout << copyNo << " mat new first " << thePhantomMaterialsOriginal.size()-1 + mi->id << G4endl;
 	  }
+	  theMateDensities[copyNo] = dens1;
+
 	  copyNo++;
-	//	G4cout << ix << " " << iy << " " << iz << " filling mateIDs " << copyNo << " = " << atoi(cid)-1 << G4endl;
-				      //	mateIDs[copyNo] = atoi(cid)-1;
+	//	G4cout << ix << " " << iy << " " << iz << " filling theMateIDs " << copyNo << " = " << atoi(cid)-1 << G4endl;
+				      //	theMateIDs[copyNo] = atoi(cid)-1;
 	}
       }
     }
@@ -351,7 +359,7 @@ void GmReadPhantomPartialG4Geometry::ConstructPhantom(G4LogicalVolume* )
   thePartialPhantomParam->BuildContainerWalls();
 
   //  G4cout << " Number of Materials " << thePhantomMaterials.size() << G4endl;
-  //  G4cout << " SetMaterialIndices(0) " << mateIDs[0] << G4endl;
+  //  G4cout << " SetMaterialIndices(0) " << theMateIDs[0] << G4endl;
 
   G4PVParameterised * phantom_phys;
   if( OptimAxis == "kUndefined" ) {

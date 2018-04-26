@@ -79,7 +79,7 @@ void GmPhysicsElectronLowEner::ConstructProcess()
       G4eBremsstrahlung* eBrem = new G4eBremsstrahlung();
       G4LivermoreBremsstrahlungModel* bremsModel = new G4LivermoreBremsstrahlungModel();
       bremsModel->SetHighEnergyLimit(LivermoreHighEnergyLimit);
-      SelectBremssAngularDist( bremsModel );
+      SelectBremssAngularDist( bremsModel, "Electron" );
       eBrem->AddEmModel(0, bremsModel );
       pmanager->AddProcess(eBrem, -1,-3, 3);
 

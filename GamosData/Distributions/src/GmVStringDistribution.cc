@@ -37,9 +37,16 @@
 GmVStringDistribution::GmVStringDistribution(G4String name)
   : GmVDistribution(name)
 {
+  Initialize();
+}
+
+//---------------------------------------------------------------------
+void GmVStringDistribution::Initialize()
+{
   bAllValuesDefined = G4bool(GmParameterMgr::GetInstance()->GetNumericValue(theName+":AllValuesDefined",0));
 
-  ReadFile();
+  this->ReadFile();
+  this->BuildData();
 }
 
 //---------------------------------------------------------------------

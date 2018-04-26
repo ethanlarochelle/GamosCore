@@ -40,7 +40,6 @@
 #include "GamosCore/GamosScoring/Management/include/GmScoringMessenger.hh"
 #include "GamosCore/GamosPhysics/PhysicsList/include/GmExtraPhysicsMessenger.hh"
 #include "GamosCore/GamosPhysics/Cuts/include/GmUserLimitsMessenger.hh"
-#include "GamosCore/GamosPhysics/VarianceReduction/include/GmVarianceReductionMessenger.hh"
 #include "GamosCore/GamosPhysics/Biasing/include/GmBiasingMessenger.hh"
 #include "GamosCore/GamosUserActionMgr/include/GmUserAction.hh"
 #include "GamosCore/GamosUserActionMgr/include/GmUserActionMgr.hh"
@@ -102,7 +101,6 @@ GmRunManager::GmRunManager()
 
   new GmExtraPhysicsMessenger();
   new GmUserLimitsMessenger();
-  new GmVarianceReductionMessenger();
   new GmBiasingMessenger();
 
   new GmScoringMessenger();
@@ -260,31 +258,31 @@ void GmRunManager::SelectVerbosity( const G4String& name )
   std::istringstream is((char*)name.c_str());
   is >> verbName >> verbLevel;
 
- G4int val = 4;
- if( GmGenUtils::IsNumber( verbLevel ) ) {
-   val = atoi( verbLevel );
- } else {
-   if( verbLevel == "silent" ) {
-     val = silentVerb;
-   } else if( verbLevel == "error" ) {
-     val = errorVerb;
-   } else if( verbLevel == "warning" ) {
-     val = warningVerb;
-   } else if( verbLevel == "info" ) {
-     val = infoVerb;
-      } else if( verbLevel == "debug" ) {
-     val = debugVerb;
-   } else if( verbLevel == "test" ) {
-     val = testVerb;
-   } else {
-     G4Exception("GmRunManager::SelectVerbosity",
-		 "Wrong argument",
-		 FatalErrorInArgument,
-		 G4String("invalid value = " + verbLevel).c_str());
-   }
+  G4int val = 4;
+  if( GmGenUtils::IsNumber( verbLevel ) ) {
+    val = atoi( verbLevel );
+  } else {
+    if( verbLevel == "silent" ) {
+      val = silentVerb;
+    } else if( verbLevel == "error" ) {
+      val = errorVerb;
+    } else if( verbLevel == "warning" ) {
+      val = warningVerb;
+    } else if( verbLevel == "info" ) {
+      val = infoVerb;
+    } else if( verbLevel == "debug" ) {
+      val = debugVerb;
+    } else if( verbLevel == "test" ) {
+      val = testVerb;
+    } else {
+      G4Exception("GmRunManager::SelectVerbosity",
+		  "Wrong argument",
+		  FatalErrorInArgument,
+		  G4String("invalid value = " + verbLevel).c_str());
+    }
  }
-
- GmVVerbosity::SetVerbosityLevel( verbName, val );
+  
+  GmVVerbosity::SetVerbosityLevel( verbName, val );
 }
 
 //---------------------------------------------------------------------

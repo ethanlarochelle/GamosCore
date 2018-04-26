@@ -27,7 +27,7 @@
 #define GmReadPhantomSVMgr_hh
 
 #include <map>
-#include "globals.hh"
+#include "GamosCore/GamosUtils/include/GmFileIn.hh"
 
 class GmReadPhantomSVMgr 
 {
@@ -39,18 +39,24 @@ public:
   
   static GmReadPhantomSVMgr* GetInstance();
   
-  void ReadPVG4( std::ifstream& fin, G4int nVoxelX, G4int nVoxelY, G4int nVoxelZ );
-  void ReadPVEGS( std::ifstream& fin, G4int nVoxelX, G4int nVoxelY, G4int nVoxelZ );
+  void ReadSVG4( GmFileIn& fin, G4int nVoxelX, G4int nVoxelY, G4int nVoxelZ );
+  void ReadSVEGS( GmFileIn& fin, G4int nVoxelX, G4int nVoxelY, G4int nVoxelZ );
 
-  G4int GetPVID( size_t id );
+  G4int GetSVID( size_t id );
+  size_t* GetSVIDs() const {
+   return theSVIDs;
+  }
+  std::map<G4int,G4String> GetSVs() const {
+    return theSVs;
+  }
 
-  G4int GetPVIDFromPVName( G4String pvName );
+  G4int GetSVIDFromPhysVolName( G4String pvName );
 
 private:
   static GmReadPhantomSVMgr* theInstance;
 
-  size_t* thePVIDs;
-  std::map<G4int,G4String> thePVs;
+  size_t* theSVIDs;
+  std::map<G4int,G4String> theSVs; // the structure voxels
 
 };
 

@@ -67,6 +67,7 @@ ApplyFinalStateBiasing( const G4BiasingProcessInterface* callingProcess,
   // -- Now deal with the gamma's:
   // -- their common weight:
   G4int nSplit = fNSplit;
+  // --- Only split fat positrons
   if( track->GetWeight() < 1. ) {
 #ifndef GAMOS_NO_VERBOSE
     if( BiasingVerb(testVerb) ) history += "_FAT";
@@ -86,7 +87,7 @@ ApplyFinalStateBiasing( const G4BiasingProcessInterface* callingProcess,
     
     // ( note: we don't need to cast to actual type here, as methods for accessing
     //   secondary particles are from base class G4VParticleChange )
-    G4VParticleChange* processFinalState = callingProcess->GetWrappedProcess()->AtRestDoIt(*track, *step);
+    G4VParticleChange* processFinalState = callingProcess->GetWrappedProcess()->PostStepDoIt(*track, *step);
     if( nCalls == 1 ) {
       //-      if ( processFinalState->GetNumberOfSecondaries() == 0 )  return processFinalState;
       // --   - the electron state will be taken as the first one produced by the 
@@ -158,8 +159,7 @@ ApplyFinalStateBiasing( const G4BiasingProcessInterface* callingProcess,
     }
     processFinalState->Clear();
 
-    // --- Only split fat positrons
-    if( track->GetWeight() < 1. ) break; 
+    //-    if( track->GetWeight() < 1. ) break; 
     
     nCalls++;
     

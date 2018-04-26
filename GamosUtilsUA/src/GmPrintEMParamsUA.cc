@@ -158,6 +158,7 @@ std::map<G4String, std::map<G4String,double>* > GmPrintEMParamsUA::GetIoniParams
   while( (*theParticleIterator)() ){
     G4ParticleDefinition* particle = theParticleIterator->value();
     G4ProcessManager* pmanager = particle->GetProcessManager();
+    if( !pmanager ) continue;
     G4ProcessVector* procVector = pmanager->GetProcessList();
     for( G4int ii = procVector->size()-1; ii >= 0; ii-- ) {
       G4VProcess* proc = (*procVector)[ii];
@@ -197,6 +198,7 @@ std::map<G4String, std::map<G4String,double>* > GmPrintEMParamsUA::GetMscParams(
   while( (*theParticleIterator)() ){
     G4ParticleDefinition* particle = theParticleIterator->value();
     G4ProcessManager* pmanager = particle->GetProcessManager();
+    if( !pmanager ) continue;
     G4ProcessVector* procVector = pmanager->GetProcessList();
     for( G4int ii = procVector->size()-1; ii >= 0; ii-- ) {
       G4VProcess* proc = (*procVector)[ii];

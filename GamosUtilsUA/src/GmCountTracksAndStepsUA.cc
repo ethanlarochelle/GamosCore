@@ -50,9 +50,6 @@ void GmCountTracksAndStepsUA::BeginOfRunAction(const G4Run* )
   theNTracks.clear();
 }
 
-#include "G4VPhysicalVolume.hh"
-#include "G4TouchableHistory.hh"
-
 //-----------------------------------------------------------------
 void GmCountTracksAndStepsUA::UserSteppingAction(const G4Step* aStep )
 {

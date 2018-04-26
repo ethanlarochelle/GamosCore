@@ -30,7 +30,7 @@
 #include "G4Track.hh"
 #include "G4LogicalVolume.hh"
 #include "G4LogicalVolumeStore.hh"
-#include "GamosCore/GamosBase/Base/include/GmBaseVerbosity.hh"
+#include "GamosCore/GamosBase/Filters/include/GmFilterVerbosity.hh"
 
 //---------------------------------------------------------------------
 GmTouchableFilterLogicalVolume::GmTouchableFilterLogicalVolume()
@@ -49,13 +49,13 @@ G4bool GmTouchableFilterLogicalVolume::AcceptTouchable(const G4VTouchable* touch
 {
   if( !touch->GetVolume() ) {
 #ifndef GAMOS_NO_VERBOSE
-    if( BaseVerb(debugVerb) ) G4cout << " GmTouchableFilterLogicalVolume::AcceptTouchable return 0, no touch->GetVolume() " << G4endl;
+    if( FilterVerb(debugVerb) ) G4cout << " GmTouchableFilterLogicalVolume::AcceptTouchable return 0, no touch->GetVolume() " << G4endl;
 #endif
     return FALSE; // it should have detected before, but fWorldBoundary is not set
   }
   if( theLogicalVolumes.find(touch->GetVolume()->GetLogicalVolume()) != theLogicalVolumes.end() ) {
 #ifndef GAMOS_NO_VERBOSE
-    if( BaseVerb(debugVerb) ) {
+    if( FilterVerb(debugVerb) ) {
       G4cout << " GmTouchableFilterLogicalVolume::AcceptTouchable TRUE return 1 " << touch->GetVolume()->GetLogicalVolume()->GetName() << G4endl;
       std::set<G4LogicalVolume*>::const_iterator ite;
       for( ite=  theLogicalVolumes.begin(); ite != theLogicalVolumes.end(); ite++ ) {
@@ -67,7 +67,7 @@ G4bool GmTouchableFilterLogicalVolume::AcceptTouchable(const G4VTouchable* touch
   }
 
 #ifndef GAMOS_NO_VERBOSE
-  if( BaseVerb(debugVerb) ) {
+  if( FilterVerb(debugVerb) ) {
     G4cout << " GmTouchableFilterLogicalVolume::AcceptTouchable FALSE return 0 " << touch->GetVolume()->GetLogicalVolume()->GetName() << G4endl;
     std::set<G4LogicalVolume*>::const_iterator ite;
     for( ite=  theLogicalVolumes.begin(); ite != theLogicalVolumes.end(); ite++ ) {
@@ -106,7 +106,7 @@ void GmTouchableFilterLogicalVolume::SetParameters( std::vector<G4String>& param
     for(unsigned int jj = 0; jj < volumes.size(); jj++ ){
       theLogicalVolumes.insert( volumes[jj] );
 #ifndef GAMOS_NO_VERBOSE
-      if( BaseVerb(debugVerb) ) G4cout << "GmTouchableFilterLogicalVolume::SetParameters add parameter " << volumes[jj]->GetName() << G4endl;
+      if( FilterVerb(debugVerb) ) G4cout << "GmTouchableFilterLogicalVolume::SetParameters add parameter " << volumes[jj]->GetName() << G4endl;
 #endif
      }
   }
