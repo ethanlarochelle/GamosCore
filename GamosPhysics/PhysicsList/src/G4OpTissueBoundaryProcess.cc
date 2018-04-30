@@ -78,6 +78,7 @@
 #include "G4GeometryTolerance.hh"
 #include "GamosCore/GamosUtils/include/GmGenUtils.hh"
 
+
 /////////////////////////
 // Class Implementation
 /////////////////////////
@@ -335,15 +336,18 @@ G4OpTissueBoundaryProcess::PostStepDoIt(const G4Track& aTrack, const G4Step& aSt
 
         G4ThreeVector theGlobalPoint = pPostStepPoint->GetPosition();
 
-        G4Navigator* theNavigator =
-                     G4TransportationManager::GetTransportationManager()->
-                                              GetNavigatorForTracking();
-
         G4bool valid;
         //  Use the new method for Exit Normal in global coordinates,
         //    which provides the normal more reliably. 
+
+        // ID of Navigator which limits step
+
+        G4int hNavId = G4ParallelWorldProcess::GetHypNavigatorID();
+        std::vector<G4Navigator*>::iterator iNav =
+                G4TransportationManager::GetTransportationManager()->
+                                         GetActiveNavigatorsIterator();
         theGlobalNormal = 
-                     theNavigator->GetGlobalExitNormal(theGlobalPoint,&valid);
+                     (iNav[hNavId])->GetGlobalExitNormal(theGlobalPoint,&valid);
 
         if (valid) {
           theGlobalNormal = -theGlobalNormal;

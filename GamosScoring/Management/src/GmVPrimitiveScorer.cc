@@ -373,18 +373,18 @@ G4double GmVPrimitiveScorer::GetError( G4int index, G4double sumWX, G4double nEv
   if( theSumV2.find( index ) == theSumV2.end() ) return 0.;
   //  G4double error = (theSumV2[index]*nEvents - sumWX*sumWX) / (nEvents*nEvents*(nEvents-1));
   G4double error = (theSumV2[index]*nEvents - sumWX*sumWX) / (nEvents-1);
-  //  G4cout << " ERROR " << (theSumV2[index]*nEvents - sumWX*sumWX) << " " << theSumV2[index]*nEvents << " - " << sumWX*sumWX << G4endl; //GDEB
+  //  G4cout << "GetError error " << (theSumV2[index]*nEvents - sumWX*sumWX) << " " << theSumV2[index]*nEvents << " - " << sumWX*sumWX << G4endl; //GDEB
 #ifndef GAMOS_NO_VERBOSE
   G4double normF = nEvents*theUnit;
   if( ScoringVerb(debugVerb) ) G4cout << GetName() <<" GetError " << index << " e2= " << error*normF*normF << " S1 " << theSumV2[index]/nEvents << " S2 " << sumWX*sumWX*normF*normF << " S3 " << nEvents-1 << G4endl;
   //t  if( ScoringVerb(debugVerb) ) G4cout << GetName() <<" GetError " << index << " e2= " << error << " S1 " << theSumV2[index]/nEvents << " S2 " << sumWX*sumWX << " S3 " << nEvents-1 << G4endl;
 #endif
-  
-  if( error <= 0. ) {
-    if( error < -1.E-30 ) G4cerr << " !!WARNING  Error squared in scorer " << GetName() << " is negative: " << error << G4endl;
+  G4double error_2 = error*error;
+  if( error_2 <= 0. ) {
+    if( error_2 < -1.E-30 ) G4cerr << " !!WARNING  Error squared in scorer " << GetName() << " is negative: " << error << G4endl;
     error = 0.;
   } else {
-    error = std::sqrt(error);
+    error = std::sqrt(error_2);
   }
 
 #ifndef GAMOS_NO_VERBOSE
@@ -406,7 +406,7 @@ G4double GmVPrimitiveScorer::GetErrorRelative( G4int index, G4double sumWX)
   // divide by averageX
   if( sumWX != 0. ) errorrel /= sumWX; 
 #ifndef GAMOS_NO_VERBOSE
-  if( ScoringVerb(debugVerb) ) G4cout << " GetErrorRelative " << index << " er= " << errorrel << " nev " << " sumWX " << sumWX << G4endl;
+  if( ScoringVerb(debugVerb) ) G4cout << " GetErrorRelative " << index << " er= " << errorrel << " sumWX " << sumWX << G4endl;
 #endif
 
   return errorrel;
