@@ -252,8 +252,11 @@ SetWord("N_LEAF_CROSS_PROFILES",ip++); G4double N_LEAF_CROSS_PROFILES= G4tgrUtil
   //fout  << ":ROTM  "<<R_90x_90z  << " -90 0 -90";  BuildObject( fout ); //14
   //fout  << ":ROTM  "<<R_90x_90z  << " 90 0 0";  BuildObject( fout ); //18
   // fout  << ":ROTM  "<<R_90x_90z  << " 90 0 0";  BuildObject( fout ); //
-  
-  Z_GAP += Z_TOP;
+  G4String R_test1 = "RMTEST1_MLC";
+  fout  << ":ROTM  "<< R_test1  << " 90 0 90 ";  BuildObject( fout );
+  G4String R_test2 = "RMTEST2_MLC";
+  fout  << ":ROTM  "<< R_test2  << " 90 180 90 ";  BuildObject( fout );
+  //Z_GAP += Z_TOP;
   //@@@@@ Loop to leaves  
   for(int ii=1;ii<int(1+N_LEAF_PAIRS);ii++){
     
@@ -328,10 +331,10 @@ SetWord("N_LEAF_CROSS_PROFILES",ip++); G4double N_LEAF_CROSS_PROFILES= G4tgrUtil
       if( GeomVerb(testVerb) ) G4cout << jj << " points moved to minimal C " << z1 << " " << c1 << G4endl; 
 #endif
       
-      c1 = C_FOCUS+(z1+Z_TOP-Z_FOCUS)*(c1-C_FOCUS)/(Z_GAP-Z_FOCUS); // project from Z_GAP to z1+Z_TOP
+      c1 = C_FOCUS+(z1+Z_TOP-Z_FOCUS)*(c1-C_FOCUS)/(Z_TOP+Z_GAP-Z_FOCUS); // project from Z_GAP to z1+Z_TOP
        
 #ifndef GAMOS_NO_VERBOSE
-      if( GeomVerb(testVerb) ) G4cout << jj << " c1 " << c1 << " = " << C_FOCUS << " + " <<  (z1+Z_TOP-Z_FOCUS) << " * " << (c1t-C_FOCUS) << " / " << (Z_GAP-Z_FOCUS) << G4endl;
+      if( GeomVerb(testVerb) ) G4cout << jj << " c1 " << c1 << " = " << C_FOCUS << " + " <<  (z1+Z_TOP-Z_FOCUS) << " * " << (c1t-C_FOCUS) << " / " << (Z_TOP+Z_GAP-Z_FOCUS) << G4endl;
 #endif
       
       //@@@ Recalculate cross points projecting the profile so that the lines start at point (Z_FOCUS,C_FOCUS), and points are displaced by C_LEAF      
@@ -375,7 +378,7 @@ SetWord("N_LEAF_CROSS_PROFILES",ip++); G4double N_LEAF_CROSS_PROFILES= G4tgrUtil
 	+theWords["LONGHDIM"]+" 0  0  1 ";
       fout << text_aux;
       BuildObject( fout );
-      
+
       text_aux=":SOLID "+theWords["NAME"]+"_Leaf_"+GmGenUtils::itoa(ii)+"_BASE_NEG  EXTRUDED "+theWords[text_aux0]+" "+output_line_text+" 2 "
 	+"-1*"+theWords["LONGHDIM"]+" 0  0  1 "
 	+theWords["LONGHDIM"]+" 0  0  1 ";
@@ -405,6 +408,7 @@ SetWord("N_LEAF_CROSS_PROFILES",ip++); G4double N_LEAF_CROSS_PROFILES= G4tgrUtil
 	tubeSolidPos = "_TUBEBOX_POS";
 	tubeSolidNeg = "_TUBEBOX_NEG";
       }
+
     
       //@@@ FINAL INTERSECTION
       fout << ":SOLID "  << theWords["NAME"]<<"_Leaf_"<<GmGenUtils::itoa(ii)<<"_POS INTERSECTION  " 
@@ -414,12 +418,12 @@ SetWord("N_LEAF_CROSS_PROFILES",ip++); G4double N_LEAF_CROSS_PROFILES= G4tgrUtil
 	//<< R00 << " 0 0 0 "; 
 	//	   << R_90x << " 0. " << (c_max+c_min)/2 << " " << GmGenUtils::ftoa(TIP_RADIUS-LONGHDIM) << " ";
 	//t	   << R_90x << " " << -TIP_CIRCLE_Z << " "  << (c_max+c_min)/2 << " " << GmGenUtils::ftoa(-LONGHDIM+TIP_RADIUS) << " ";
-#ifndef BEAMZPOS
-	   << R_90x << " " << -TIP_CIRCLE_Z << " "  << (c_max+c_min)/2 << " " << GmGenUtils::ftoa(LONGHDIM-TIP_RADIUS) << " ";
-#else
-           << R_90x << " " << TIP_CIRCLE_Z << " "  << (c_max+c_min)/2 << " " << GmGenUtils::ftoa(LONGHDIM-TIP_RADIUS) << " ";
-#endif
-      //-	   << R_90x << " " << z_min+TIP_CIRCLE_Z << " " << (c_max+c_min)/2 << " " << GmGenUtils::ftoa(-TIP_RADIUS+LONGHDIM) << " ";
+//#ifndef BEAMZPOS
+	   //<< R_90x << " " << -TIP_CIRCLE_Z << " "  << (c_max+c_min)/2 << " " << GmGenUtils::ftoa(LONGHDIM-TIP_RADIUS) << " ";
+//#else
+      //     << R_90x << " " << TIP_CIRCLE_Z << " "  << (c_max+c_min)/2 << " " << GmGenUtils::ftoa(LONGHDIM-TIP_RADIUS) << " ";
+//#endif
+      	   << R_90x << " " << z_min+TIP_CIRCLE_Z << " " << (c_max+c_min)/2 << " " << GmGenUtils::ftoa(-TIP_RADIUS+LONGHDIM) << " ";
       //	   << R_90x << " " << z_max/2 << " " << (c_max+c_min)/2+z_max/2.-TIP_CIRCLE_Z << " " << GmGenUtils::ftoa(-TIP_RADIUS+LONGHDIM) << " ";
       //	   << rotmLeaf << " " << GmGenUtils::ftoa(Z_TOP+(z_max-Z_TOP)/2.0) << " " << (cg_max+cg_min)/2 << " " << GmGenUtils::ftoa(LONGHDIM+TIP_RADIUS/2) << " ";
       BuildObject( fout );
@@ -429,6 +433,7 @@ SetWord("N_LEAF_CROSS_PROFILES",ip++); G4double N_LEAF_CROSS_PROFILES= G4tgrUtil
 	   << " "
 	   << theWords["NAME"]<<"_Leaf_"<<GmGenUtils::itoa(ii)<< tubeSolidNeg << " "
 	//<< R00 << " 0 0 0 "; BuildObject( fout ); 
+
 #ifndef BEAMZPOS
 	   << R_90x << " " << -TIP_CIRCLE_Z << " " << (c_max+c_min)/2 <<" "<<GmGenUtils::ftoa(TIP_RADIUS-LONGHDIM) << " ";
 #else 
@@ -470,6 +475,7 @@ SetWord("N_LEAF_CROSS_PROFILES",ip++); G4double N_LEAF_CROSS_PROFILES= G4tgrUtil
       if( theWords["LEAFTIPTYPE"]=="ROUND"){
       
 	G4double profR = G4tgrUtils::GetDouble(theWords["TIP_RADIUS"]);
+  G4double z_centre = posCircleZ;
 	//	G4double hvlXP = HVL*sin(atan(1./fabs(slopeP)));
 	G4double posCircleZ2 = posCircleZ*posCircleZ;
 	
@@ -482,11 +488,13 @@ SetWord("N_LEAF_CROSS_PROFILES",ip++); G4double N_LEAF_CROSS_PROFILES= G4tgrUtil
 	G4double slopeP2 = slopeP*slopeP;
 	G4double hvlXP = HVL*sin(atan(1./fabs(slopeP)));
 #endif
-	G4cout << " hvlXP " <<  G4tgrUtils::GetDouble(theWords["HVL"]) << " " << slopeP2 << G4endl; //GDEB
+	//G4cout << " hvlXP " <<  G4tgrUtils::GetDouble(theWords["HVL"]) << " " << slopeP2 << G4endl; //GDEB
 	G4double posCP = GetPosRound( posCircleZ, slopeP, profR, hvlXP, 1 );
 
-	//    G4cout << " CCP " << CCP << " < posCircleZ2 " << posCircleZ2 << " :: " << slopeP2*posCircleZ2 << " - " << (1.+slopeP2)*(posCircleZ2-profR*profR) << " - " << hvlXP*hvlXP/4.*(1+slopeP2)*(1+slopeP2) << " ::: " << slopeP2 << " * " << posCircleZ2 << " -(1+ " << slopeP2 << " )*( " << posCircleZ2 << " - " <<profR << " * " << profR << " )- " << hvlXP << " * " << hvlXP << " /4.*(1+ " << slopeP2 << " )*(1+ " << slopeP2 << G4endl; //GDEB
-	posCP += G4tgrUtils::GetDouble(theWords["LONGHDIM"])-profR;
+	//posCP += G4tgrUtils::GetDouble(theWords["LONGHDIM"])-profR;
+  posCP *= z_centre/Z_ISOCENTRE;
+        //G4cout << " CCP " << posCP << " < posCircleZ2 " << posCircleZ2 << " :: " << slopeP2*posCircleZ2 << " - " << (1.+slopeP2)*(posCircleZ2-profR*profR) << " - " << hvlXP*hvlXP/4.*(1+slopeP2)*(1+slopeP2) << " ::: " << slopeP2 << " * " << posCircleZ2 << " -(1+ " << slopeP2 << " )*( " << posCircleZ2 << " - " <<profR << " * " << profR << " )- " << hvlXP << " * " << hvlXP << " /4.*(1+ " << slopeP2 << " )*(1+ " << slopeP2 << G4endl; //GDEB
+
 #ifndef GAMOS_NO_VERBOSE
 	if( GeomVerb(debugVerb) ) G4cout << " POS_CIRCLE_CENTRE " << posCP << " slopeP " << slopeP << " < posCircleZ " << posCircleZ  <<  G4endl;  
 #endif
@@ -500,10 +508,13 @@ SetWord("N_LEAF_CROSS_PROFILES",ip++); G4double N_LEAF_CROSS_PROFILES= G4tgrUtil
 	G4double slopeN2 = slopeN*slopeN;
 	G4double hvlXN = HVL*sin(atan(1./fabs(slopeN)));
 #endif
-	G4cout << " hvlXN " <<  G4tgrUtils::GetDouble(theWords["HVL"]) << " " << slopeN2 << G4endl; //GDEB
+	//G4cout << " hvlXN " <<  G4tgrUtils::GetDouble(theWords["HVL"]) << " " << slopeN2 << G4endl; //GDEB
 	G4double posCN = GetPosRound( posCircleZ, slopeN, profR, hvlXN, -1 );
-	//     G4cout << " CCN " << CCN << " < posCircleZ2 " << posCircleZ2 << " :: " << slopeN2*posCircleZ2 << " - " << (1.+slopeN2)*(posCircleZ2-profR*profR) << " - " << hvlXN*hvlXN/4.*(1+slopeN2)*(1+slopeN2) << " ::: " << slopeN2 << " * " << posCircleZ2 << " -(1+ " << slopeN2 << " )*( " << posCircleZ2 << " - " <<profR << " * " << profR << " )- " << hvlXN << " * " << hvlXN << " /4.*(1+ " << slopeN2 << " )*(1+ " << slopeN2 << G4endl; //GDEB
-	posCN -= G4tgrUtils::GetDouble(theWords["LONGHDIM"])-profR;
+	//posCN -= G4tgrUtils::GetDouble(theWords["LONGHDIM"])-profR;
+  posCN *= z_centre/Z_ISOCENTRE;
+         //G4cout << " CCN " << posCN << " < posCircleZ2 " << posCircleZ2 << " :: " << slopeN2*posCircleZ2 << " - " << (1.+slopeN2)*(posCircleZ2-profR*profR) << " - " << hvlXN*hvlXN/4.*(1+slopeN2)*(1+slopeN2) << " ::: " << slopeN2 << " * " << posCircleZ2 << " -(1+ " << slopeN2 << " )*( " << posCircleZ2 << " - " <<profR << " * " << profR << " )- " << hvlXN << " * " << hvlXN << " /4.*(1+ " << slopeN2 << " )*(1+ " << slopeN2 << G4endl; //GDEB
+
+  //G4cout << "LONGHDIM: "<< LONGHDIM << " profR: " << profR <<  "openingNeg: " << openingNeg <<"\n";
 	
 #ifndef GAMOS_NO_VERBOSE
 	if( GeomVerb(debugVerb) ) G4cout << " POS_CIRCLE_CENTRE " << posCN << " slopeN " << slopeN << " < posCircleZ " << posCircleZ  <<  G4endl;  
@@ -513,31 +524,41 @@ SetWord("N_LEAF_CROSS_PROFILES",ip++); G4double N_LEAF_CROSS_PROFILES= G4tgrUtil
 	     << theWords["MOTHER_VOLUME"] << " "
 	     << R_aux;
 	if( theWords["ORIENTATION"]=="X"){
-	//t	  fout << " " << -LONGHDIM-(-posCN-profR)
-	  fout << " " << posCN
+    fout << " " << LONGHDIM-openingNeg*(z_centre-Z_FOCUS)/(Z_ISOCENTRE-Z_FOCUS)
+		  //fout << " " << posCN-openingNeg
+	  //fout << " " << openingNeg
 	       << " 0";
 	} else if( theWords["ORIENTATION"]=="Y"){
 	  fout << " 0"
-	       << " " << posCN;
+        << " " << LONGHDIM-openingNeg*(z_centre-Z_FOCUS)/(Z_ISOCENTRE-Z_FOCUS);
+       // << " " << posCN-openingNeg;
+	       //<< " " << openingNeg;
 	}
+    //G4cout << "Neg Current: " << posCN-openingNeg << " Other: " << LONGHDIM+openingNeg*(z_centre-Z_FOCUS)/(Z_ISOCENTRE-Z_FOCUS)<< "\n";
+
 	//	   << GmGenUtils::ftoa(1.0*(-1.0*TIP_RADIUS+(B/Z_ISOCENTRE)*( (Z_TOP+(z_max-Z_TOP)/2.0)  +  TIP_RADIUS*B/( sqrt(pow(Z_ISOCENTRE,2)+pow(B,2)) ) ) + sqrt(  pow(TIP_RADIUS,2) -  pow(B*TIP_RADIUS,2)/( (pow(TIP_RADIUS,2)+pow(B,2)) ) ) ))
 	fout << " " << Z_TOP;
+  //G4cout << " TOP: " << Z_TOP << " GAP: "<< Z_GAP << "\n"<< " max: "<< z_max <<"\n";
 	BuildObject(fout );
+  //G4cout << "ROTM (NEG): "<<R_aux << "\n";
       
 	fout << ":PLACE " << theWords["NAME"] << "_Leaf_"<< GmGenUtils::itoa(ii) << "_POS 1 "
 	     << theWords["MOTHER_VOLUME"] << " "
 	     << R_aux ;
 	if( theWords["ORIENTATION"]=="X"){
-	  //	fout << " " << LONGHDIM+openingPos*(Z_CENTRE-Z_FOCUS)/(Z_ISOCENTRE-Z_FOCUS)
-	  fout << " " << posCP
+	  fout << " " << -LONGHDIM-openingPos*(z_centre-Z_FOCUS)/(Z_ISOCENTRE-Z_FOCUS)
+	  //fout << " " << posCP-openingPos
 	       << " 0";
 	} else	if( theWords["ORIENTATION"]=="Y"){
 	  fout << " 0 "
-	       << " " << posCP;
+        << " " << -LONGHDIM-openingPos*(z_centre-Z_FOCUS)/(Z_ISOCENTRE-Z_FOCUS);
+       //<< " " << posCP-openingPos;
 	}
+  //G4cout << "POS Current: " << posCP-openingPos << " Other: " << -LONGHDIM+openingPos*(z_centre-Z_FOCUS)/(Z_ISOCENTRE-Z_FOCUS)<< "\n";
 	//<< GmGenUtils::ftoa(1.0*( TIP_RADIUS+((-1.0)*A/Z_ISOCENTRE)*( (Z_TOP+(z_max-Z_TOP)/2.0) - TIP_RADIUS*(-1.0)*A/( sqrt(pow(Z_ISOCENTRE,2)+pow(A,2)) ) )  -  sqrt(  pow(TIP_RADIUS,2) -  pow(A*TIP_RADIUS,2)/( (pow(TIP_RADIUS,2)+pow(A,2)) ) ) ))
 	fout << " " << Z_TOP;
 	BuildObject(fout );
+  //G4cout << "ROTM (POS): "<<R_aux << "\n";
 	//      G4cout << " Z_TOP " << Z_TOP << " z_max " << z_max << " " <<  ((Z_TOP+z_max)/2.) << " " << GmGenUtils::ftoa((Z_TOP+z_max)/2.) <<G4endl;
 	//      B= G4tgrUtils::GetDouble(theWords["OPEN_POSITION_POS["+GmGenUtils::itoa(ii)+"]"]);
 	
