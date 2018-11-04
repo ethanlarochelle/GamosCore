@@ -39,6 +39,7 @@
 #include "GmPhysicsCerenkov.hh"
 #include "GmPhysicsCoulombScattering.hh"
 #include "GmPhysicsTissueOptics.hh"
+#include "GmPhysicsScintillation.hh"
 
 #include "GamosCore/GamosUtils/include/GmGenUtils.hh"
 #include "GamosCore/GamosUtils/include/GmG4Utils.hh"
@@ -117,7 +118,7 @@ GmExtraPhysicsMessenger::GmExtraPhysicsMessenger()
   
   // add new physics
   theAddPhysicsCmd = new GmUIcmdWithAString("/gamos/physics/addPhysics",this);  
-  theAddPhysicsCmd->SetGuidance("Add new physics: decay, radioactiveDecay, opticalphoton, cerenkov, gamma-nuclear, electron-nuclear, positron-nuclear, xray-refraction, coulombScattering, tissue-optics");
+  theAddPhysicsCmd->SetGuidance("Add new physics: decay, radioactiveDecay, scintillation, opticalphoton, cerenkov, gamma-nuclear, electron-nuclear, positron-nuclear, xray-refraction, coulombScattering, tissue-optics");
   theAddPhysicsCmd->AvailableForStates(G4State_Idle);
 
   // remove processes by type
@@ -239,7 +240,12 @@ void GmExtraPhysicsMessenger::AddPhysics(G4String newValue)
   } else if( newValue == "radioactiveDecay" ) {
     GmPhysicsRadioactiveDecay* radioPhys = new GmPhysicsRadioactiveDecay;
     radioPhys->ConstructProcess();
-    
+
+  // instantiate scintillation processes  
+  } else if( newValue == "scintillation" ) {
+     GmPhysicsScintillation* scintPhys = new GmPhysicsScintillation;
+     scintPhys->ConstructProcess();
+ 
   // instantiate optical photon processes
   } else if( newValue == "opticalphoton" ) {
     GmPhysicsOpticalPhoton* optPhotPhys = new GmPhysicsOpticalPhoton;

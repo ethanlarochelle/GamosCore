@@ -53,6 +53,7 @@ GEANT4_DEFINE_MODULE(NAME GamosCore_GamosPhysics_PhysicsList
        LocalIonIonInelasticPhysic.hh
        GmPhysicsGammaStandard.hh
        GmExtraPhysicsMessenger.hh
+       GmPhysicsScintillation.hh
 
    SOURCES
        plugin.cc
@@ -92,6 +93,7 @@ GEANT4_DEFINE_MODULE(NAME GamosCore_GamosPhysics_PhysicsList
        GmEMPhysics.cc
        GmPhysicsXrayRefraction.cc
        GmPhysicsCerenkov.cc
+       GmPhysicsScintillation.cc
  
    GRANULAR_DEPENDENCIES
 
