@@ -1,28 +1,3 @@
-//
-// ********************************************************************
-// * License and Disclaimer                                           *
-// *                                                                  *
-// * The  GAMOS software  is  copyright of the Copyright  Holders  of *
-// * the GAMOS Collaboration.  It is provided  under  the  terms  and *
-// * conditions of the GAMOS Software License,  included in the  file *
-// * LICENSE and available at  http://fismed.ciemat.es/GAMOS/license .*
-// * These include a list of copyright holders.                       *
-// *                                                                  *
-// * Neither the authors of this software system, nor their employing *
-// * institutes,nor the agencies providing financial support for this *
-// * work  make  any representation or  warranty, express or implied, *
-// * regarding  this  software system or assume any liability for its *
-// * use.  Please see the license in the file  LICENSE  and URL above *
-// * for the full disclaimer and the limitation of liability.         *
-// *                                                                  *
-// * This  code  implementation is the result of  the  scientific and *
-// * technical work of the GAMOS collaboration.                       *
-// * By using,  copying,  modifying or  distributing the software (or *
-// * any work based  on the software)  you  agree  to acknowledge its *
-// * use  in  resulting  scientific  publications,  and indicate your *
-// * acceptance of all terms of the GAMOS Software license.           *
-// ********************************************************************
-//
 #include "GmVRecHitBuilder.hh"
 #include "GmHitsEventMgr.hh"
 #include "GmSDVerbosity.hh"
@@ -113,59 +88,59 @@ void GmVRecHitBuilder::SetSDType(const G4String& sdtype)
 }
 
 //------------------------------------------------------------------------
-void GmVRecHitBuilder::CheckRecHitsMinEnergy()
+void GmVRecHitBuilder::CheckRecHitsMinEnergy(std::vector<GmRecHit*>& recHits)
 {
 #ifndef GAMOS_NO_VERBOSE
-  if( SDVerb(debugVerb) ) G4cout << " GmVRecHitBuilder::CheckRecHitsMinEnergy() N hits at start= " << theRecHits.size() << G4endl;
+  if( SDVerb(debugVerb) ) G4cout << " GmVRecHitBuilder::CheckRecHitsMinEnergy() N recHits at start= " << recHits.size() << G4endl;
 #endif
 
   std::vector<GmRecHit*>::iterator iterh;
   std::vector< std::vector<GmRecHit*>::iterator > vites;
   /* already not considered when building rechit
     if( theMEBehaviour == MEDeleteSmall ) {
-    for( iterh = theRecHits.begin(); iterh != theRecHits.end(); iterh++ ) {
+    for( iterh = recHits.begin(); iterh != recHits.end(); iterh++ ) {
     if( (*iterh)->GetEnergy() < theMinRecHitEnergy ) {
 	vites.push_back(iterh);
       }
     }
     std::vector<std::vector<GmRecHit*>::iterator>::reverse_iterator iteitev;
     for( iteitev = vites.rbegin(); iteitev != vites.rend(); iteitev++ ){
-      theRecHits.erase(*iteitev);
+      recHits.erase(*iteitev);
     }
   
   } else 
 */
   if( theMEBehaviour == MEAcceptIf1Big ) {
     G4bool b1Big = false;
-    for( iterh = theRecHits.begin(); iterh != theRecHits.end(); iterh++ ) {
+    for( iterh = recHits.begin(); iterh != recHits.end(); iterh++ ) {
       if( (*iterh)->GetEnergy() > theMinRecHitEnergy ) {
 	b1Big = true;
       }
-    }
-    if( !b1Big ) theRecHits.clear();
+      }
+    if( !b1Big ) recHits.clear();
 
   } else if( theMEBehaviour == MEDeleteIf1Small ) {
     G4bool b1Small = false;
-    for( iterh = theRecHits.begin(); iterh != theRecHits.end(); iterh++ ) {
+    for( iterh = recHits.begin(); iterh != recHits.end(); iterh++ ) {
       if( (*iterh)->GetEnergy() < theMinRecHitEnergy ) {
 	b1Small = true;
       }
     }
-    if( b1Small ) theRecHits.clear();
+    if( b1Small ) recHits.clear();
   }
 
 #ifndef GAMOS_NO_VERBOSE
-  if( SDVerb(debugVerb) ) G4cout << " GmVRecHitBuilder::CheckRecHitsMinEnergy() N hits at end= " << theRecHits.size() << G4endl;
+  if( SDVerb(debugVerb) ) G4cout << " GmVRecHitBuilder::CheckRecHitsMinEnergy() N hits at end= " << recHits.size() << G4endl;
 #endif
 
 }
 
 //------------------------------------------------------------------------
-void GmVRecHitBuilder::CheckEnergyEfficiency()
+void GmVRecHitBuilder::CheckEnergyEfficiency(std::vector<GmRecHit*>& recHits)
 {
   if( theEfficiencyDistribution ) {
     std::vector<GmRecHit*>::const_iterator iter;
-    for( iter = theRecHits.begin(); iter != theRecHits.end(); iter++ ) {
+    for( iter = recHits.begin(); iter != recHits.end(); iter++ ) {
       G4double effic = theEfficiencyDistribution->GetNumericValueFromIndex( (*iter)->GetEnergy() );
       if( effic < 1. ) {
 	G4double rand = CLHEP::RandFlat::shoot();
@@ -184,10 +159,10 @@ void GmVRecHitBuilder::CheckEnergyEfficiency()
 
 
 //------------------------------------------------------------------------
-void GmVRecHitBuilder::SmearRecHitsEnergy()
+void GmVRecHitBuilder::SmearRecHitsEnergy(std::vector<GmRecHit*>& recHits)
 { 
   std::vector<GmRecHit*>::const_iterator iter;
-  for( iter = theRecHits.begin(); iter != theRecHits.end(); iter++ ) {
+  for( iter = recHits.begin(); iter != recHits.end(); iter++ ) {
     GmRecHit* recHit = *iter;
     G4double rhEnergy = recHit->GetEnergy();
     G4double ran = CLHEP::RandGauss::shoot(0., theEnergyResol );
@@ -220,12 +195,16 @@ void GmVRecHitBuilder::SmearRecHitsEnergy()
 }
 
 //------------------------------------------------------------------------
-void GmVRecHitBuilder::SmearRecHitsTime()
+void GmVRecHitBuilder::SmearRecHitsTime(std::vector<GmRecHit*>& recHits)
 { 
   std::vector<GmRecHit*>::const_iterator iter;
-  for( iter = theRecHits.begin(); iter != theRecHits.end(); iter++ ) {
+  for( iter = recHits.begin(); iter != recHits.end(); iter++ ) {
     GmRecHit* recHit = *iter;
-    recHit->SetTimeMinSmeared( recHit->GetTimeMin() * CLHEP::RandGauss::shoot(1., theTimeResol ));
+    G4double ran = CLHEP::RandGauss::shoot(0., theTimeResol);
+    recHit->SetTimeMinSmeared( recHit->GetTimeMin() + ran);
+    #ifndef GAMOS_NO_VERBOSE
+    if( SDVerb(debugVerb) ) G4cout << " GmVRecHitBuilder::SmearRecHitsTime final Time " << recHit->GetTimeMin() << " nonSmeared Time " <<  recHit->GetTimeMin()-ran << G4endl;
+#endif
   }
 
 }

@@ -1,28 +1,3 @@
-//
-// ********************************************************************
-// * License and Disclaimer                                           *
-// *                                                                  *
-// * The  GAMOS software  is  copyright of the Copyright  Holders  of *
-// * the GAMOS Collaboration.  It is provided  under  the  terms  and *
-// * conditions of the GAMOS Software License,  included in the  file *
-// * LICENSE and available at  http://fismed.ciemat.es/GAMOS/license .*
-// * These include a list of copyright holders.                       *
-// *                                                                  *
-// * Neither the authors of this software system, nor their employing *
-// * institutes,nor the agencies providing financial support for this *
-// * work  make  any representation or  warranty, express or implied, *
-// * regarding  this  software system or assume any liability for its *
-// * use.  Please see the license in the file  LICENSE  and URL above *
-// * for the full disclaimer and the limitation of liability.         *
-// *                                                                  *
-// * This  code  implementation is the result of  the  scientific and *
-// * technical work of the GAMOS collaboration.                       *
-// * By using,  copying,  modifying or  distributing the software (or *
-// * any work based  on the software)  you  agree  to acknowledge its *
-// * use  in  resulting  scientific  publications,  and indicate your *
-// * acceptance of all terms of the GAMOS Software license.           *
-// ********************************************************************
-//
 #include "GmGeometryUtils.hh"
 #include "GmTouchable.hh"
 //#include "GmParallelToMassUA.hh"
@@ -574,9 +549,6 @@ G4LogicalVolume* GmGeometryUtils::GetTopLV(G4bool bGeomInit)
 {
   G4LogicalVolume* topLV ;
   theTopPV = GetTopPV();
-#ifndef GAMOS_NO_VERBOSE
-  if( GeomVerb(debugVerb) ) G4cout << " topPV " << theTopPV << G4endl;
-#endif
   if( bGeomInit && theTopPV ) {
     topLV = theTopPV->GetLogicalVolume();
   } else {
@@ -799,15 +771,15 @@ std::vector<G4VPhysicalVolume*> GmGeometryUtils::GetPhysicalVolumes( const G4Str
   std::vector<G4VPhysicalVolume*>::iterator citepv;
   for( citepv = pvs->begin(); citepv != pvs->end(); citepv++ ) {
 #ifndef GAMOS_NO_VERBOSE
-      if( GeomVerb(debugVerb) ) G4cout << " GmGeometryUtils::GetPhysicalVolumes  volname " << volname << " copy " << volcopy << " TRY " << (*citepv)->GetName() << " " << (*citepv)->GetCopyNo() << 
-	" " <<   GmGenUtils::AreWordsEquivalent( volname, (*citepv)->GetName() )  << G4endl;
+      if( GeomVerb(debugVerb) ) G4cout << " GmGeometryUtils::GetPhysicalVolumes  volname " << volname << " copy " << volcopy << " TRY " << (*citepv)->GetName() << " copyN " << (*citepv)->GetCopyNo() << 
+	" OK? " <<   GmGenUtils::AreWordsEquivalent( volname, (*citepv)->GetName() )  << G4endl;
 #endif
     if( GmGenUtils::AreWordsEquivalent( volname, (*citepv)->GetName() ) 
 	&& ( (*citepv)->GetCopyNo() == volcopy || -1 == volcopy ) ){
-#ifndef GAMOS_NO_VERBOSE
-      if( GeomVerb(debugVerb) ) G4cout << " GmGeometryUtils::GetPhysicalVolumes  volname found " << G4endl;
-#endif
       vvolu.push_back( *citepv );
+#ifndef GAMOS_NO_VERBOSE
+      if( GeomVerb(debugVerb) ) G4cout << " GmGeometryUtils::GetPhysicalVolumes  volname found N= " <<  vvolu.size() << G4endl;
+#endif
     }
   }
 

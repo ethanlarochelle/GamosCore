@@ -1,30 +1,5 @@
-//
-// ********************************************************************
-// * License and Disclaimer                                           *
-// *                                                                  *
-// * The  GAMOS software  is  copyright of the Copyright  Holders  of *
-// * the GAMOS Collaboration.  It is provided  under  the  terms  and *
-// * conditions of the GAMOS Software License,  included in the  file *
-// * LICENSE and available at  http://fismed.ciemat.es/GAMOS/license .*
-// * These include a list of copyright holders.                       *
-// *                                                                  *
-// * Neither the authors of this software system, nor their employing *
-// * institutes,nor the agencies providing financial support for this *
-// * work  make  any representation or  warranty, express or implied, *
-// * regarding  this  software system or assume any liability for its *
-// * use.  Please see the license in the file  LICENSE  and URL above *
-// * for the full disclaimer and the limitation of liability.         *
-// *                                                                  *
-// * This  code  implementation is the result of  the  scientific and *
-// * technical work of the GAMOS collaboration.                       *
-// * By using,  copying,  modifying or  distributing the software (or *
-// * any work based  on the software)  you  agree  to acknowledge its *
-// * use  in  resulting  scientific  publications,  and indicate your *
-// * acceptance of all terms of the GAMOS Software license.           *
-// ********************************************************************
-//
 #include "GmTouchablePhantomStructure.hh"
-#include "GmReadPhantomPSMgr.hh"
+#include "GmReadPhantomStMgr.hh"
 #include "GmRegularParamUtils.hh"
 #include "GmReadDICOMVerbosity.hh"
 
@@ -38,7 +13,7 @@
 GmTouchablePhantomStructure::GmTouchablePhantomStructure()
 {
   theRegularUtils = GmRegularParamUtils::GetInstance();
-  thePVMgr = GmReadPhantomPSMgr::GetInstance();
+  thePVMgr = GmReadPhantomStMgr::GetInstance();
 }
 
 //---------------------------------------------------------------------
@@ -59,15 +34,20 @@ G4bool GmTouchablePhantomStructure::AcceptTouchable(const G4VTouchable* touch)
 
   if( theRegularUtils->IsPhantomVolume( pv ) ){
     //    G4PhantomParameterisation* pparam = theRegularUtils->GetPhantomParam( true );  
-    G4int idx = thePVMgr->GetPVSID( touch->GetReplicaNumber(0) );
-
+    G4int idx = thePVMgr->GetStID( touch->GetReplicaNumber() );
     if( idx != -1 ) {
-      //      G4cout << pv->GetCopyNo() << " GmTouchablePhantomStructure idx " << idx << G4endl;
+#ifndef GAMOS_NO_VERBOSE
+      if( ReadDICOMVerb(debugVerb) ) G4cout << pv->GetCopyNo() << " GmTouchablePhantomStructure idx " << idx << G4endl;
+#endif
       if( CheckIndex(idx) ) {
-      //      G4cout << " GmTouchablePhantomStructure idx " << idx << " TRUE " << G4endl;   
+#ifndef GAMOS_NO_VERBOSE
+	if( ReadDICOMVerb(debugVerb) )   G4cout << " GmTouchablePhantomStructure idx " << idx << " TRUE " << G4endl;   
+#endif
 	return TRUE;
       }else {
-      //      G4cout << " GmTouchablePhantomStructure idx " << idx << " FALSE " << G4endl;     
+ #ifndef GAMOS_NO_VERBOSE
+	if( ReadDICOMVerb(debugVerb) ) G4cout << " GmTouchablePhantomStructure idx " << idx << " FALSE " << G4endl;     
+#endif
 	return FALSE;
       }
     }
@@ -79,11 +59,12 @@ G4bool GmTouchablePhantomStructure::AcceptTouchable(const G4VTouchable* touch)
 //---------------------------------------------------------------------
 G4bool GmTouchablePhantomStructure::CheckIndex( G4int idx ) 
 {
-  //split index 
+  //split index  
+  G4int ROIShift = thePVMgr->GetROIShift();
   for( G4int ii = 0;; ii++) {
-    G4int ns = pow(theIdxShift,ii);
+    G4int ns = pow(ROIShift,ii);
     if( ns > idx ) break;
-    G4int idx1 = (idx/ns)%theIdxShift;
+    G4int idx1 = (idx/ns)%ROIShift;
     if( theIndices.find(idx1) != theIndices.end() ) {
       return true;
     }
@@ -116,12 +97,13 @@ void GmTouchablePhantomStructure::SetParameters( std::vector<G4String>& params)
   }
   
   for( unsigned int ii = 0; ii < params.size(); ii++ ){
-    theIndices.insert(thePVMgr->GetPVSIDFromPVSName(params[ii]));
+    theIndices.insert(thePVMgr->GetStIDFromPhysVolName(params[ii]));
 #ifndef GAMOS_NO_VERBOSE
-    if( ReadDICOMVerb(debugVerb) )  G4cout << ii << " GmTouchablePhantomStructure theIndices " << thePVMgr->GetPVSIDFromPVSName(params[ii]) << G4endl;
+    if( ReadDICOMVerb(debugVerb) )  G4cout << ii << " GmTouchablePhantomStructure theIndices " << thePVMgr->GetStIDFromPhysVolName(params[ii]) << G4endl;
 #endif
   }
 
-  theIdxShift = G4int(GmParameterMgr::GetInstance()->GetNumericValue("GmPhantomStructure:NShift",100));
+  G4int ROIShift = G4int(GmParameterMgr::GetInstance()->GetNumericValue("GmPhantomStructure:ROIShift",100));
+  thePVMgr->SetROIShift(ROIShift);  
 }
 

@@ -1,39 +1,8 @@
-//
-// ********************************************************************
-// * License and Disclaimer                                           *
-// *                                                                  *
-// * The  GAMOS software  is  copyright of the Copyright  Holders  of *
-// * the GAMOS Collaboration.  It is provided  under  the  terms  and *
-// * conditions of the GAMOS Software License,  included in the  file *
-// * LICENSE and available at  http://fismed.ciemat.es/GAMOS/license .*
-// * These include a list of copyright holders.                       *
-// *                                                                  *
-// * Neither the authors of this software system, nor their employing *
-// * institutes,nor the agencies providing financial support for this *
-// * work  make  any representation or  warranty, express or implied, *
-// * regarding  this  software system or assume any liability for its *
-// * use.  Please see the license in the file  LICENSE  and URL above *
-// * for the full disclaimer and the limitation of liability.         *
-// *                                                                  *
-// * This  code  implementation is the result of  the  scientific and *
-// * technical work of the GAMOS collaboration.                       *
-// * By using,  copying,  modifying or  distributing the software (or *
-// * any work based  on the software)  you  agree  to acknowledge its *
-// * use  in  resulting  scientific  publications,  and indicate your *
-// * acceptance of all terms of the GAMOS Software license.           *
-// ********************************************************************
-//
-#include "Reflex/PluginService.h"
-
 #include "GmGenerator.hh"
 #include "GmGeneratorFromTextFile.hh"
 #include "GmGeneratorFromBinFile.hh"
 #include "GmGeneratorChangeEnergyAndMaterial.hh"
-
-PLUGINSVC_FACTORY (GmGenerator,G4VUserPrimaryGeneratorAction*())
-PLUGINSVC_FACTORY (GmGeneratorFromTextFile,G4VUserPrimaryGeneratorAction*())
-PLUGINSVC_FACTORY (GmGeneratorFromBinFile,G4VUserPrimaryGeneratorAction*())
-PLUGINSVC_FACTORY (GmGeneratorChangeEnergyAndMaterial,G4VUserPrimaryGeneratorAction*())
+#include "GmGeneratorScanVis.hh"
 
 #include "GmGenerDistEnergyConstant.hh"
 #include "GmGenerDistEnergyBetaDecay.hh"
@@ -56,16 +25,28 @@ PLUGINSVC_FACTORY (GmGeneratorChangeEnergyAndMaterial,G4VUserPrimaryGeneratorAct
 #include "GmGenerDistPositionRectangle.hh"
 #include "GmGenerDistPositionDisc.hh"
 #include "GmGenerDistPositionDiscGaussian.hh"
+#include "GmGenerDistPositionDiscFromFile.hh"
 #include "GmGenerDistDirectionRandom.hh"
 #include "GmGenerDistDirectionConst.hh"
 #include "GmGenerDistDirectionCone.hh"
+#include "GmGenerDistDirectionCone2D.hh"
 #include "GmGenerDistDirectionGaussian.hh"
+#include "GmGenerDistDirectionThetaFromFile.hh"
 #include "GmGenerDistPositionDirectionInVolumeSurface.hh"
 #include "GmGenerDistPositionVoxelPhantomMaterials.hh"
 #include "GmGenerDistPositionInVoxelsFromFile.hh"
 #include "GmGenerDistPositionDirectionTowardsBox.hh"
 #include "GmGenerDistEnergyIsolethargical.hh"
 #include "GmGenerDistEnergyMCNPisolethargical.hh"
+
+#ifdef ROOT5
+#include "Reflex/PluginService.h"
+
+PLUGINSVC_FACTORY (GmGenerator,G4VUserPrimaryGeneratorAction*())
+PLUGINSVC_FACTORY (GmGeneratorFromTextFile,G4VUserPrimaryGeneratorAction*())
+PLUGINSVC_FACTORY (GmGeneratorFromBinFile,G4VUserPrimaryGeneratorAction*())
+PLUGINSVC_FACTORY (GmGeneratorChangeEnergyAndMaterial,G4VUserPrimaryGeneratorAction*())
+PLUGINSVC_FACTORY (GmGeneratorScanVis,G4VUserPrimaryGeneratorAction*())
 
 PLUGINSVC_FACTORY(GmGenerDistEnergyConstant,GmVGenerDistEnergy*())
 PLUGINSVC_FACTORY(GmGenerDistEnergyBetaDecay,GmVGenerDistEnergy*())
@@ -91,12 +72,15 @@ PLUGINSVC_FACTORY(GmGenerDistPositionSquare,GmVGenerDistPosition*())
 PLUGINSVC_FACTORY(GmGenerDistPositionRectangle,GmVGenerDistPosition*())
 PLUGINSVC_FACTORY(GmGenerDistPositionDisc,GmVGenerDistPosition*())
 PLUGINSVC_FACTORY(GmGenerDistPositionDiscGaussian,GmVGenerDistPosition*())
+PLUGINSVC_FACTORY(GmGenerDistPositionDiscFromFile,GmVGenerDistPosition*())
 PLUGINSVC_FACTORY(GmGenerDistPositionVoxelPhantomMaterials,GmVGenerDistPosition*())
 PLUGINSVC_FACTORY(GmGenerDistPositionInVoxelsFromFile,GmVGenerDistPosition*())
 
 PLUGINSVC_FACTORY(GmGenerDistDirectionRandom,GmVGenerDistDirection*())
+PLUGINSVC_FACTORY(GmGenerDistDirectionThetaFromFile,GmVGenerDistDirection*())
 PLUGINSVC_FACTORY(GmGenerDistDirectionConst,GmVGenerDistDirection*())
 PLUGINSVC_FACTORY(GmGenerDistDirectionCone,GmVGenerDistDirection*())
+PLUGINSVC_FACTORY(GmGenerDistDirectionCone2D,GmVGenerDistDirection*())
 PLUGINSVC_FACTORY(GmGenerDistDirectionGaussian,GmVGenerDistDirection*())
 
 PLUGINSVC_FACTORY(GmGenerDistPositionDirectionInVolumeSurface,GmVGenerDistPosition*())
@@ -108,3 +92,63 @@ PLUGINSVC_FACTORY(GmGenerDistPositionDirectionTowardsBox,GmVGenerDistDirection*(
 #include "GmGenerVerbosity.hh"
 PLUGINSVC_FACTORY(GmGenerVerbosity,GmVVerbosity*())
 
+#else 
+
+#include "GmGeneratorFactory.hh"
+#include "GmGeneratorDistributionFactories.hh"
+#include "PluginManager/ModuleDef.h"
+
+DEFINE_SEAL_MODULE ();
+
+DEFINE_GAMOS_GENERATOR (GmGenerator);
+DEFINE_GAMOS_GENERATOR (GmGeneratorFromTextFile);
+DEFINE_GAMOS_GENERATOR (GmGeneratorFromBinFile);
+DEFINE_GAMOS_GENERATOR (GmGeneratorChangeEnergyAndMaterial);
+DEFINE_GAMOS_GENERATOR (GmGeneratorScanVis);
+
+DEFINE_GAMOS_GENER_DIST_ENERGY(GmGenerDistEnergyConstant);
+DEFINE_GAMOS_GENER_DIST_ENERGY(GmGenerDistEnergyBetaDecay);
+DEFINE_GAMOS_GENER_DIST_ENERGY(GmGenerDistEnergyConstantIsotopeDecay);
+DEFINE_GAMOS_GENER_DIST_ENERGY(GmGenerDistEnergyRandomFlat);
+DEFINE_GAMOS_GENER_DIST_ENERGY(GmGenerDistEnergyGaussian);
+DEFINE_GAMOS_GENER_DIST_ENERGY(GmGenerDistEnergyFromFile);
+DEFINE_GAMOS_GENER_DIST_ENERGY(GmGenerDistEnergyIsolethargical);
+DEFINE_GAMOS_GENER_DIST_ENERGY(GmGenerDistEnergyMCNPisolethargical);
+
+DEFINE_GAMOS_GENER_DIST_TIME(GmGenerDistTimeConstant);
+DEFINE_GAMOS_GENER_DIST_TIME(GmGenerDistTimeDecay);
+DEFINE_GAMOS_GENER_DIST_TIME(GmGenerDistTimeConstantChange);
+
+DEFINE_GAMOS_GENER_DIST_POSITION(GmGenerDistPositionPoint);
+DEFINE_GAMOS_GENER_DIST_POSITION(GmGenerDistPositionInG4VolumesGeneral);
+DEFINE_GAMOS_GENER_DIST_POSITION(GmGenerDistPositionInG4Volumes);
+DEFINE_GAMOS_GENER_DIST_POSITION(GmGenerDistPositionInUserVolumes);
+DEFINE_GAMOS_GENER_DIST_POSITION(GmGenerDistPositionInG4Surfaces);
+DEFINE_GAMOS_GENER_DIST_POSITION(GmGenerDistPositionInUserSurfaces);
+DEFINE_GAMOS_GENER_DIST_POSITION(GmGenerDistPositionLineSteps);
+DEFINE_GAMOS_GENER_DIST_POSITION(GmGenerDistPositionSquare);
+DEFINE_GAMOS_GENER_DIST_POSITION(GmGenerDistPositionRectangle);
+DEFINE_GAMOS_GENER_DIST_POSITION(GmGenerDistPositionDisc);
+DEFINE_GAMOS_GENER_DIST_POSITION(GmGenerDistPositionDiscGaussian);
+DEFINE_GAMOS_GENER_DIST_POSITION(GmGenerDistPositionDiscFromFile);
+DEFINE_GAMOS_GENER_DIST_POSITION(GmGenerDistPositionVoxelPhantomMaterials);
+DEFINE_GAMOS_GENER_DIST_POSITION(GmGenerDistPositionInVoxelsFromFile);
+
+DEFINE_GAMOS_GENER_DIST_DIRECTION(GmGenerDistDirectionRandom);
+DEFINE_GAMOS_GENER_DIST_DIRECTION(GmGenerDistDirectionThetaFromFile);
+DEFINE_GAMOS_GENER_DIST_DIRECTION(GmGenerDistDirectionConst);
+DEFINE_GAMOS_GENER_DIST_DIRECTION(GmGenerDistDirectionCone);
+DEFINE_GAMOS_GENER_DIST_DIRECTION(GmGenerDistDirectionCone2D);
+DEFINE_GAMOS_GENER_DIST_DIRECTION(GmGenerDistDirectionGaussian);
+
+DEFINE_GAMOS_GENER_DIST_POSITION(GmGenerDistPositionDirectionInVolumeSurface);
+DEFINE_GAMOS_GENER_DIST_DIRECTION(GmGenerDistPositionDirectionInVolumeSurface);
+DEFINE_GAMOS_GENER_DIST_POSITION(GmGenerDistPositionDirectionTowardsBox);
+DEFINE_GAMOS_GENER_DIST_DIRECTION(GmGenerDistPositionDirectionTowardsBox);
+
+#include "GamosCore/GamosBase/Base/include/GmVerbosityFactory.hh"
+#include "GmGenerVerbosity.hh"
+
+DEFINE_SEAL_PLUGIN(GmVerbosityFactory, GmGenerVerbosity, "GmGenerVerbosity");
+
+#endif

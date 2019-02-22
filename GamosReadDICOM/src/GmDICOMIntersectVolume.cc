@@ -2,31 +2,6 @@
 // ********************************************************************
 // * License and Disclaimer                                           *
 // *                                                                  *
-// * The  GAMOS software  is  copyright of the Copyright  Holders  of *
-// * the GAMOS Collaboration.  It is provided  under  the  terms  and *
-// * conditions of the GAMOS Software License,  included in the  file *
-// * LICENSE and available at  http://fismed.ciemat.es/GAMOS/license .*
-// * These include a list of copyright holders.                       *
-// *                                                                  *
-// * Neither the authors of this software system, nor their employing *
-// * institutes,nor the agencies providing financial support for this *
-// * work  make  any representation or  warranty, express or implied, *
-// * regarding  this  software system or assume any liability for its *
-// * use.  Please see the license in the file  LICENSE  and URL above *
-// * for the full disclaimer and the limitation of liability.         *
-// *                                                                  *
-// * This  code  implementation is the result of  the  scientific and *
-// * technical work of the GAMOS collaboration.                       *
-// * By using,  copying,  modifying or  distributing the software (or *
-// * any work based  on the software)  you  agree  to acknowledge its *
-// * use  in  resulting  scientific  publications,  and indicate your *
-// * acceptance of all terms of the GAMOS Software license.           *
-// ********************************************************************
-//
-//
-// ********************************************************************
-// * License and Disclaimer                                           *
-// *                                                                  *
 // * The  Geant4 software  is  copyright of the Copyright Holders  of *
 // * the Geant4 Collaboration.  It is provided  under  the terms  and *
 // * conditions of the Geant4 Software License,  included in the file *
@@ -50,6 +25,8 @@
 //
 #include "GmDICOMIntersectVolume.hh"
 
+#include "GamosCore/GamosUtils/include/GmGenUtils.hh"
+
 #include "G4UIcmdWithAString.hh"
 #include "G4LogicalVolume.hh"
 #include "G4LogicalVolumeStore.hh"
@@ -61,7 +38,6 @@
 #include "G4Material.hh"
 #include "G4PhantomParameterisation.hh"
 #include "G4PVParameterised.hh"
-#include "G4UIcommand.hh"
 
 //-----------------------------------------------------------------------
 GmDICOMIntersectVolume::GmDICOMIntersectVolume()
@@ -96,7 +72,7 @@ void GmDICOMIntersectVolume::SetNewValue(G4UIcommand * command,
     std::vector<G4String> params = GetWordsInString( newValues );
     if( params.size() < 8 ) {
       G4Exception("GmPositionUserVolumes::SetParams",
-		  " There must be at least 8 parameter: SOLID_TYPE POS_X POS_Y POS_Z ANG_X ANG_Y ANG_Z SOLID_PARAM_1 (SOLID_PARAM_2 ...)",FatalErrorInArgument,G4String("Number of parameters given = " + G4UIcommand::ConvertToString( G4int(params.size()) )).c_str());
+		  " There must be at least 8 parameter: SOLID_TYPE POS_X POS_Y POS_Z ANG_X ANG_Y ANG_Z SOLID_PARAM_1 (SOLID_PARAM_2 ...)",FatalErrorInArgument,G4String("Number of parameters given = " + GmGenUtils::itoa( G4int(params.size()) )).c_str());
       
     }
 
@@ -104,12 +80,12 @@ void GmDICOMIntersectVolume::SetNewValue(G4UIcommand * command,
     BuildUserSolid(params);
 
     //----- Calculate volume inverse 3D transform
-    G4ThreeVector pos = G4ThreeVector( G4UIcommand::ConvertToDouble(params[0]), G4UIcommand::ConvertToDouble(params[1]), G4UIcommand::ConvertToDouble(params[2]) );
+    G4ThreeVector pos = G4ThreeVector( GmGenUtils::GetValue(params[0]), GmGenUtils::GetValue(params[1]), GmGenUtils::GetValue(params[2]) );
     G4RotationMatrix* rotmat = new G4RotationMatrix;
     std::vector<double> angles; 
-    rotmat->rotateX( G4UIcommand::ConvertToDouble(params[3]) );
-    rotmat->rotateY( G4UIcommand::ConvertToDouble(params[4]) );
-    rotmat->rotateY( G4UIcommand::ConvertToDouble(params[5]) );
+    rotmat->rotateX( GmGenUtils::GetValue(params[3]) );
+    rotmat->rotateY( GmGenUtils::GetValue(params[4]) );
+    rotmat->rotateY( GmGenUtils::GetValue(params[5]) );
     theVolumeTransform = G4AffineTransform( rotmat, pos ).Invert();
 
   } else if (command == theG4VolumeCmd) {
@@ -320,7 +296,7 @@ std::vector<G4VPhysicalVolume*> GmDICOMIntersectVolume::GetPhysicalVolumes( cons
 		  G4String("Name corresponds to a touchable " + name).c_str());
     }else { 
       volname = name.substr( 0, ial );
-      volcopy = G4UIcommand::ConvertToInt( name.substr( ial+1, name.length() ).c_str() );
+      volcopy = GmGenUtils::GetInt( name.substr( ial+1, name.length() ).c_str() );
     }
   } else {
     volname = name;
@@ -352,7 +328,7 @@ std::vector<G4VPhysicalVolume*> GmDICOMIntersectVolume::GetPhysicalVolumes( cons
     G4Exception("GmDICOMIntersectVolume::GetLogicalVolumes:",
 		"Wrong number of physical volumes found",
 		FatalErrorInArgument,
-		("Number of physical volumes " + G4UIcommand::ConvertToString(G4int(vvolu.size())) + ", requesting " + G4UIcommand::ConvertToString(nVols)).c_str());
+		("Number of physical volumes " + GmGenUtils::itoa(G4int(vvolu.size())) + ", requesting " + GmGenUtils::itoa(nVols)).c_str());
   } 
 
   return vvolu;
@@ -413,7 +389,7 @@ std::vector<G4LogicalVolume*> GmDICOMIntersectVolume::GetLogicalVolumes( const G
     G4Exception("GmDICOMIntersectVolume::GetLogicalVolumes:",
 		"Wrong number of logical volumes found",
 		FatalErrorInArgument,
-		("Number of logical volumes " + G4UIcommand::ConvertToString(G4int(vvolu.size())) + ", requesting " + G4UIcommand::ConvertToString(nVols)).c_str());
+		("Number of logical volumes " + GmGenUtils::itoa(G4int(vvolu.size())) + ", requesting " + GmGenUtils::itoa(nVols)).c_str());
   } 
 
   return vvolu;

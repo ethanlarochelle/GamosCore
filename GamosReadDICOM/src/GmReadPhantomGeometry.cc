@@ -1,33 +1,9 @@
-//
-// ********************************************************************
-// * License and Disclaimer                                           *
-// *                                                                  *
-// * The  GAMOS software  is  copyright of the Copyright  Holders  of *
-// * the GAMOS Collaboration.  It is provided  under  the  terms  and *
-// * conditions of the GAMOS Software License,  included in the  file *
-// * LICENSE and available at  http://fismed.ciemat.es/GAMOS/license .*
-// * These include a list of copyright holders.                       *
-// *                                                                  *
-// * Neither the authors of this software system, nor their employing *
-// * institutes,nor the agencies providing financial support for this *
-// * work  make  any representation or  warranty, express or implied, *
-// * regarding  this  software system or assume any liability for its *
-// * use.  Please see the license in the file  LICENSE  and URL above *
-// * for the full disclaimer and the limitation of liability.         *
-// *                                                                  *
-// * This  code  implementation is the result of  the  scientific and *
-// * technical work of the GAMOS collaboration.                       *
-// * By using,  copying,  modifying or  distributing the software (or *
-// * any work based  on the software)  you  agree  to acknowledge its *
-// * use  in  resulting  scientific  publications,  and indicate your *
-// * acceptance of all terms of the GAMOS Software license.           *
-// ********************************************************************
-//
 #include "GmReadPhantomGeometry.hh"
 #include "G4PhantomParameterisation.hh"
 #include "GmReadDICOMVerbosity.hh"
 #include "GmDICOMIntersectVolume.hh"
 
+#include "G4GeometryTolerance.hh"
 #include "G4Material.hh"
 #include "G4Box.hh"
 #include "G4LogicalVolume.hh"
@@ -52,16 +28,16 @@
 #include "GamosCore/GamosGeometry/include/GmParallelWorldCreator.hh"
 #include "G4tgbParallelGeomMgr.hh"
 #include "G4VUserParallelWorld.hh"
-#include "G4GeometryTolerance.hh"
 
 //---------------------------------------------------------------------------
 GmReadPhantomGeometry::GmReadPhantomGeometry()
 {
-  new G4tgrMessenger; 
+  new G4tgrMessenger;
 
+  GmParameterMgr* paramMgr = GmParameterMgr::GetInstance();
   parameterisedPhysVolume = 0;
-  
-  std::vector<G4double> inidisp = GmParameterMgr::GetInstance()->GetVNumericValue("GmReadPhantomGeometry:InitialDisplacement", std::vector<G4double>());
+
+  std::vector<G4double> inidisp = paramMgr->GetVNumericValue("GmReadPhantomGeometry:InitialDisplacement", std::vector<G4double>());
   if( inidisp.size() == 0 ){
     theInitialDisp = G4ThreeVector(0.,0.,0.);
   } else if( inidisp.size() == 3 ){
@@ -70,7 +46,7 @@ GmReadPhantomGeometry::GmReadPhantomGeometry()
     G4Exception("GmReadPhantomGeometry","Error in /gamos/setParam GmReadPhantomGeometry:InitialDisp",FatalErrorInArgument,G4String("it must have 3 arguments: POS_X POS_Y POS_Z, and it has "+GmGenUtils::itoa(inidisp.size())).c_str());
   }
 
-  std::vector<G4double> inirot = GmParameterMgr::GetInstance()->GetVNumericValue("GmReadPhantomGeometry:InitialRotAngles", std::vector<G4double>());
+  std::vector<G4double> inirot = paramMgr->GetVNumericValue("GmReadPhantomGeometry:InitialRotAngles", std::vector<G4double>());
   if( inirot.size() == 0 ){
     theInitialRotAngleX = 0.;
     theInitialRotAngleY = 0.;
@@ -83,25 +59,28 @@ GmReadPhantomGeometry::GmReadPhantomGeometry()
     G4Exception("GmReadPhantomGeometry","Error in /gamos/setParam GmReadPhantomGeometry:InitialRotAngles",FatalErrorInArgument,G4String("it must have 3 arguments: ANG_X ANG_Y ANG_Z, and it has "+GmGenUtils::itoa(inirot.size())).c_str());
   }
 
-  bRecalculateMaterialDensities = G4bool(GmParameterMgr::GetInstance()->GetNumericValue("GmReadPhantomGeometry:RecalculateMaterialDensities", 1));
-  
+  bRecalculateMaterialDensities = G4bool(paramMgr->GetNumericValue("GmReadPhantomGeometry:RecalculateMaterialDensities", 1));
+
   new GmDICOMIntersectVolume;
 }
 
 //---------------------------------------------------------------------------
 GmReadPhantomGeometry::~GmReadPhantomGeometry()
 {
+  delete cont_logic;
+  delete parameterisedPhysVolume; 
+
+  //  delete [] theMatePhantom;
+  delete [] theMateIDs;
+  delete [] theMateDensities;
 }
 
 
 //---------------------------------------------------------------------------
 G4VPhysicalVolume* GmReadPhantomGeometry::Construct()
 {
-  G4double surfTol = GmParameterMgr::GetInstance()->GetNumericValue("GmReadPhantomGeometry:SurfaceTolerance",1.e-7*CLHEP::mm);
-  G4GeometryTolerance::GetInstance()->SetSurfaceTolerance(1e11*surfTol);
-
   //------------------- construct g4 geometry
-  G4String filename = GmParameterMgr::GetInstance()->GetStringValue("GmReadPhantomGeometry:FileName", ".geom");
+  G4String filename = GmParameterMgr::GetInstance()->GetStringValue("GmReadPhantomGeometry:FileName", theFileName);
 
   G4String path( getenv( "GAMOS_SEARCH_PATH" ) );
   filename = GmGenUtils::FileInPath( path, filename );
@@ -111,18 +90,19 @@ G4VPhysicalVolume* GmReadPhantomGeometry::Construct()
   volmgr->SetDetectorBuilder( gtb );
   volmgr->AddTextFile(filename);
 
-
   std::vector<G4String> fnamepar;
-  fnamepar = GmParameterMgr::GetInstance()->GetVStringValue("GmGeometryFromText:FileNameParallel", fnamepar);
+  fnamepar = GmParameterMgr::GetInstance()->GetVStringValue("GmReadPhantomGeometry:FileNameParallel", fnamepar);
   if( fnamepar.size() != 0 ){
-    if( fnamepar.size() != 2 ){
-      G4Exception("GmGeometryFromText::Construct",
-		  "Error in number of arguments of parameter 'GmGeometryFromText:FileNameParallel'",
+     if( fnamepar.size()%2 != 0 ){
+      G4Exception("GmReadPhantomGeometry::Construct",
+		  "Error in number of arguments of parameter 'GmReadPhantomGeometry:FileNameParallel'",
 		  FatalException,
-		  (G4String("There should be two: FILE_NAME PARALLEL_WORLD_NUMBER, there are ")
+		  (G4String("There should be a multiple of two: FILE_NAME_1 PARALLEL_WORLD_NUMBER_1 FILE_NAME_2 PARALLEL_WORLD_NUMBER_2 ..., there are ")
 		   +GmGenUtils::itoa(fnamepar.size())).c_str());
     }
-    volmgr->AddTextFileParallel(fnamepar[0],GmGenUtils::GetInteger(fnamepar[1]));
+    for( unsigned int ii = 0; ii < fnamepar.size(); ii+=2 ) {
+      volmgr->AddTextFileParallel(fnamepar[ii],GmGenUtils::GetInteger(fnamepar[ii+1]));
+    }
   }
 
   //  G4VPhysicalVolume* physiWorld = volmgr->ReadAndConstructDetector();
@@ -136,14 +116,14 @@ G4VPhysicalVolume* GmReadPhantomGeometry::Construct()
   std::vector<G4VUserParallelWorld*> parallelWorlds = parallelMgr->CreateParalleWorlds();
   for( size_t ii = 0; ii < parallelWorlds.size(); ii++ ) {
 #ifndef GAMOS_NO_VERBOSE
-      if( ReadDICOMVerb(debugVerb) ) G4cout << "GmReadPhantomGeometry::Construct RegisterParallelWorld " << parallelWorlds[ii]->GetName() << G4endl;
+    if( ReadDICOMVerb(debugVerb) ) G4cout << "GmReadPhantomGeometry::Construct RegisterParallelWorld " << parallelWorlds[ii]->GetName() << G4endl;
 #endif
     RegisterParallelWorld( parallelWorlds[ii] );
    
   }
 
   //------------------------------------------------ 
-  G4String motherName = GmParameterMgr::GetInstance()->GetStringValue("GmReadPhantomGeometry:MotherName","");
+  G4String motherName = GmParameterMgr::GetInstance()->GetStringValue("GmReadPhantomGeometry:MotherName",theMotherName);
   G4VPhysicalVolume* physiWorld = gtb->ConstructDetectorGAMOS(tgrVoltop,-1,0);
   G4VPhysicalVolume* physiMother;
   if( motherName == "" ) {
@@ -335,6 +315,9 @@ G4Material* GmReadPhantomGeometry::BuildMaterialChangingDensity( G4Material* ori
 
 void GmReadPhantomGeometry::ReadVoxelDensities( std::ifstream& fin )
 {
+#ifndef GAMOS_NO_VERBOSE
+    if( ReadDICOMVerb(warningVerb) ) G4cout << " ReadVoxelDensities " << G4endl;
+#endif
   G4String stemp;
   std::map<G4int, std::pair<G4double,G4double> > densiMinMax;
   std::map<G4int, std::pair<G4double,G4double> >::iterator mpite;
@@ -361,17 +344,25 @@ void GmReadPhantomGeometry::ReadVoxelDensities( std::ifstream& fin )
       for( G4int ix = 0; ix < nVoxelX; ix++ ) {
 	//	G4cout << " stemp " << stemp << G4endl;
 	fin >> stemp; 
-	//	G4cout << ix << " " << iy << " " << iz << " density " << stemp << G4endl;
+	//	if( ix == 0 && iy == 0 ) G4cout << ix << " " << iy << " " << iz << " density " << stemp << G4endl; //GDEB
+	if( !bRecalculateMaterialDensities ) {
+	  G4double dens = GmGenUtils::GetValue(stemp.c_str() );
+	  G4int copyNo = ix + (iy)*nVoxelX + (iz)*nVoxelX*nVoxelY;
+	  theMateDensities[copyNo] = dens;
+	  continue;
+	}
+
 	G4int copyNo = ix + (iy)*nVoxelX + (iz)*nVoxelX*nVoxelY;
-	G4double dens = GmGenUtils::GetValue(stemp.c_str() );
-	theMateDensities[copyNo] = dens;
-
-	if( !bRecalculateMaterialDensities ) continue; 
-
+#ifndef GAMOS_NO_VERBOSE
+      if( ReadDICOMVerb(infoVerb)
+	  && copyNo%1000000 == 1 ) G4cout << " Looping ReadVoxelDensities " << copyNo << G4endl; //GDEB
+#endif
 	//--- store the minimum and maximum density for each material (just for printing)
 	mpite = densiMinMax.find( theMateIDs[copyNo] );
+	G4double dens = GmGenUtils::GetValue(stemp.c_str() );
 	if( dens < (*mpite).second.first ) (*mpite).second.first = dens;
 	if( dens > (*mpite).second.second ) (*mpite).second.second = dens;
+
 	//--- Get material from original list of material in file
 	int mateID = theMateIDs[copyNo];
 	std::map<G4int,G4Material*>::const_iterator imite = thePhantomMaterialsOriginal.find(mateID);
@@ -404,11 +395,14 @@ void GmReadPhantomGeometry::ReadVoxelDensities( std::ifstream& fin )
 	  theMateIDs[copyNo] = thePhantomMaterialsOriginal.size()-1 + mi->id;
 	  //	  G4cout << copyNo << " mat new first " << thePhantomMaterialsOriginal.size()-1 + mi->id << G4endl;
 	}
+	theMateDensities[copyNo] = dens;
 	//	G4cout << ix << " " << iy << " " << iz << " filling mateIDs " << copyNo << " = " << atoi(cid)-1 << G4endl;
 				      //	mateIDs[copyNo] = atoi(cid)-1;
       }
     }
   }
+
+  G4cout << " ReadVoxelDensities ENDED " << G4endl; //GDEB
 
   if( bRecalculateMaterialDensities ) { 
     for( mpite = densiMinMax.begin(); mpite != densiMinMax.end(); mpite++ ){
@@ -426,7 +420,7 @@ void GmReadPhantomGeometry::ReadVoxelDensities( std::ifstream& fin )
   }
   // 
   //---- Build and add new materials
-std::map< std::pair<G4Material*,G4int>, matInfo* >::iterator mppite;
+  std::map< std::pair<G4Material*,G4int>, matInfo* >::iterator mppite;
   for( mppite= newMateDens.begin(); mppite != newMateDens.end(); mppite++ ){
     G4double averdens = (*mppite).second->sumdens/(*mppite).second->nvoxels;
     G4double saverdens = G4int(1000.001*averdens)/1000.;

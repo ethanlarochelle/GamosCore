@@ -55,7 +55,6 @@ public:
   {
     fNSplit = splittingFactor;
     fNSplitInv = 1./splittingFactor;
-    G4cout << "SetNSplitAndInverse " << fNSplitInv << " " << GetName() << G4endl;//GDEB 
   }
   G4int GetNSplit() const { return fNSplit; }
   
@@ -67,6 +66,8 @@ protected:
   G4double thePlaneY;
   G4double thePlaneZ;
   G4double theGasDensity;
+
+  G4double theRRZ;
 
 };
 

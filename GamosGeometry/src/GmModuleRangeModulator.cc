@@ -1,29 +1,6 @@
-//
-// ********************************************************************
-// * License and Disclaimer                                           *
-// *                                                                  *
-// * The  GAMOS software  is  copyright of the Copyright  Holders  of *
-// * the GAMOS Collaboration.  It is provided  under  the  terms  and *
-// * conditions of the GAMOS Software License,  included in the  file *
-// * LICENSE and available at  http://fismed.ciemat.es/GAMOS/license .*
-// * These include a list of copyright holders.                       *
-// *                                                                  *
-// * Neither the authors of this software system, nor their employing *
-// * institutes,nor the agencies providing financial support for this *
-// * work  make  any representation or  warranty, express or implied, *
-// * regarding  this  software system or assume any liability for its *
-// * use.  Please see the license in the file  LICENSE  and URL above *
-// * for the full disclaimer and the limitation of liability.         *
-// *                                                                  *
-// * This  code  implementation is the result of  the  scientific and *
-// * technical work of the GAMOS collaboration.                       *
-// * By using,  copying,  modifying or  distributing the software (or *
-// * any work based  on the software)  you  agree  to acknowledge its *
-// * use  in  resulting  scientific  publications,  and indicate your *
-// * acceptance of all terms of the GAMOS Software license.           *
-// ********************************************************************
-//
 #include "GmModuleRangeModulator.hh"
+#include "GmModuleMgr.hh"
+
 #include "G4tgrUtils.hh"
 #include "G4tgrVolumeMgr.hh"
 #include "G4UIcommand.hh"
@@ -42,16 +19,22 @@ GmModuleRangeModulator::GmModuleRangeModulator( const std::vector<G4String>& par
 void GmModuleRangeModulator::BuildObjects()
 {
   G4int ip = 0;
-  theWords["NAME"] = theParams[ip++];
-  theWords["RMIN"] = theParams[ip++];
-  theWords["RIN"] = theParams[ip++];
-  theWords["ROUT"] = theParams[ip++];
-  theWords["ZSIZE"] = theParams[ip++];
-  theWords["NBLADE"] = theParams[ip++];
-  theWords["STEPS"] = theParams[ip++];
-  theWords["ANGLE"] = theParams[ip++];
-  theWords["DANGLE_START"] = theParams[ip++];
-  theWords["DANGLE_DECREASE"] = theParams[ip++];
+  SetWord("NAME",ip++);
+  GmModuleMgr::GetInstance()->RegisterModule(this,theWords["NAME"]);
+  theName = theWords["NAME"];
+    
+#ifndef GAMOS_NO_VERBOSE
+  if( GeomVerb(debugVerb) ) G4cout << " GmModuleRangeModulator::BuildObjects " << PrintW("NAME") << G4endl;
+#endif  
+  SetWord("RMIN",ip++);
+  SetWord("RIN",ip++);
+  SetWord("ROUT",ip++);
+  SetWord("ZSIZE",ip++);
+  SetWord("NBLADE",ip++);
+  SetWord("STEPS",ip++);
+  SetWord("ANGLE",ip++);
+  SetWord("DANGLE_START",ip++);
+  SetWord("DANGLE_DECREASE",ip++);
 
 
 
@@ -89,6 +72,7 @@ void GmModuleRangeModulator::BuildObjects()
 
 
  G4double dangle_aux = 0;
+ G4double z_despl = 0;
  for (int b=0; b<nblade; b++){
 	dangle_aux=angle;
   	for (int s=0;s<steps;s++){
@@ -109,23 +93,40 @@ void GmModuleRangeModulator::BuildObjects()
 		BuildObject( fout );
 		G4cout << ":SOLID " << theWords["NAME"] << "_S" << solid_counter << " CONTROL LL " << G4endl;
 		solid_counter++;
-		  
-		fout    << ":SOLID " << theWords["NAME"] << "_S" << solid_counter << " UNION " 
+
+		z_despl=-zsize/2+zstep/2+(zstep*s);
+
+		if( (s+1>=steps) &  (1+b>=nblade))
+		{
+			G4cout << " Go out to " << G4endl;			
+		}else{
+	  
+			fout    << ":SOLID " << theWords["NAME"] << "_S" << solid_counter << " UNION " 
 				     << theWords["NAME"] << "_S" << solid_counter-2 << " "
 				     << theWords["NAME"] << "_S" << solid_counter-1   << " "
 				     << theWords["NAME"] << "_R00 0 0 "  
 				     << -zsize/2+zstep/2+(zstep*s) ; 			
-		BuildObject( fout );
-		G4cout << ":SOLID " << theWords["NAME"] << "_S" << solid_counter << " CONTROL LL " << G4endl;
-		solid_counter++;
+			BuildObject( fout );
+			G4cout << ":SOLID " << theWords["NAME"] << "_S" << solid_counter << " CONTROL LL " << G4endl;
+			solid_counter++;
+		};
+		if( (s+1>=steps) &  (1+b>=nblade)) { G4cout << G4endl << " BUILD LAST SOLID (MOD:2016/08/17) " << G4endl << G4endl; };
+
   	};
  };
   
-	fout    << ":SOLID " << theWords["NAME"] << " UNION " 
+         fout    << ":SOLID " << theWords["NAME"] << " UNION "
+                                     << theWords["NAME"] << "_S" << solid_counter-2 << " "
                                      << theWords["NAME"] << "_S" << solid_counter-1   << " "
-                                     << theWords["NAME"] << "_S" << solid_counter-1   << " "
-                                     << theWords["NAME"] << "_R00 "
-                                     << " 0 0 0 ";
+                                     << theWords["NAME"] << "_R00 0 0 "
+                                     << z_despl;
+
+
+//	fout    << ":SOLID " << theWords["NAME"] << " UNION " 
+//                                     << theWords["NAME"] << "_S" << "0"   << " "
+//                                     << theWords["NAME"] << "_S" << solid_counter-1   << " "
+//                                     << theWords["NAME"] << "_R00 "
+//                                     << " 0 0 0 ";
 
 	BuildObject( fout );
 

@@ -30,7 +30,7 @@
 #include "G4VModularPhysicsList.hh"
 #include "globals.hh"
 
-class GmPhysicsMessenger;
+class GmEMPhysicsMessenger;
 
 class GmEMPhysics: public G4VModularPhysicsList
 {
@@ -50,7 +50,7 @@ protected:
   G4bool positronIsRegistered;
   G4bool gammaIsRegistered;
 
-  GmPhysicsMessenger* messenger;
+  GmEMPhysicsMessenger* messenger;
 };
 
 #endif

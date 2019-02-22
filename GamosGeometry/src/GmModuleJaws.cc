@@ -1,34 +1,15 @@
-//
-// ********************************************************************
-// * License and Disclaimer                                           *
-// *                                                                  *
-// * The  GAMOS software  is  copyright of the Copyright  Holders  of *
-// * the GAMOS Collaboration.  It is provided  under  the  terms  and *
-// * conditions of the GAMOS Software License,  included in the  file *
-// * LICENSE and available at  http://fismed.ciemat.es/GAMOS/license .*
-// * These include a list of copyright holders.                       *
-// *                                                                  *
-// * Neither the authors of this software system, nor their employing *
-// * institutes,nor the agencies providing financial support for this *
-// * work  make  any representation or  warranty, express or implied, *
-// * regarding  this  software system or assume any liability for its *
-// * use.  Please see the license in the file  LICENSE  and URL above *
-// * for the full disclaimer and the limitation of liability.         *
-// *                                                                  *
-// * This  code  implementation is the result of  the  scientific and *
-// * technical work of the GAMOS collaboration.                       *
-// * By using,  copying,  modifying or  distributing the software (or *
-// * any work based  on the software)  you  agree  to acknowledge its *
-// * use  in  resulting  scientific  publications,  and indicate your *
-// * acceptance of all terms of the GAMOS Software license.           *
-// ********************************************************************
-//
 #include "GmModuleJaws.hh"
+#include "GmModuleMgr.hh"
+
 #include "G4tgrUtils.hh"
 #include "G4tgrVolumeMgr.hh"
 #include "G4UIcommand.hh"
 #include "CLHEP/Units/SystemOfUnits.h"
 #include "GmGeomVerbosity.hh"
+#include "GamosCore/GamosData/Distributions/include/GmNumericDistributionLinLin.hh"
+#include "GamosCore/GamosBase/Base/include/GmParameterMgr.hh"
+#include "GamosCore/GamosBase/Base/include/GmDistributionMgr.hh"
+
 #include <sstream>
 
 //------------------------------------------------------------------------
@@ -40,78 +21,117 @@ GmModuleJaws::GmModuleJaws( const std::vector<G4String>& par ) : GmVModule(par)
 void GmModuleJaws::BuildObjects()
 {
   G4int ip = 0;
-  theWords["NAME"] = theParams[ip++];
-  theWords["ORIENTATION"] = theParams[ip++];
-  theWords["TYPE"] = theParams[ip++];
-  G4cout << " GmModuleJaws::BuildObjects " << PrintW("NAME") << PrintW("ORIENTATION") << PrintW("TYPE") << G4endl;
-  theWords["XDIM"] = theParams[ip++];
-  theWords["YDIM"] = theParams[ip++];
-  theWords["ZDIM"] = theParams[ip++];
-  G4cout << " GmModuleJaws::BuildObjects " << PrintWVal("XDIM") << PrintWVal("YDIM") << PrintWVal("ZDIM") << G4endl;
-  if( theWords["TYPE"] == "ROUND" ) {
-    theWords["PROF_RADIUS"] = theParams[ip++];
-    theWords["PROF_Z"] = "";
-    theWords["HVL"] = theParams[ip++];
-    G4cout << " GmModuleJaws::BuildObjects " << PrintWVal("PROF_RADIUS") << PrintWVal("PROF_Z") << PrintWVal("HVL") << G4endl;
-  } else if( theWords["TYPE"] == "ROUND_DISP" ) {
-    theWords["PROF_RADIUS"] = theParams[ip++];
-    theWords["PROF_Z"] = theParams[ip++];
-    theWords["HVL"] = theParams[ip++];
-    G4cout << " GmModuleJaws::BuildObjects " << PrintWVal("PROF_RADIUS") << PrintWVal("PROF_Z") << PrintWVal("HVL") << G4endl;
-  } else if( theWords["TYPE"] == "STRAIGHT" ) {
+
+  SetWord("NAME",ip++);
+  GmModuleMgr::GetInstance()->RegisterModule(this,theWords["NAME"]);
+  theName = theWords["NAME"];
+
+  SetWord("ORIENTATION",ip++);
+  if( theWords["ORIENTATION"]!="X" &&  theWords["ORIENTATION"]!="Y"){
+    G4Exception("GmModuleJaws::BuildObjects",
+		"Wrong ORIENTATION",
+		FatalErrorInArgument,
+		G4String("It is: "+theWords["ORIENTATION"]+" , while it should be X or Y").c_str());
+  }  
+  SetWord("JAWSTIPTYPE",ip++);
+#ifndef GAMOS_NO_VERBOSE
+    if( GeomVerb(debugVerb) ) G4cout << " GmModuleJaws::BuildObjects " << PrintW("NAME") << PrintW("ORIENTATION") << PrintW("JAWSTIPTYPE") << G4endl;
+#endif
+  SetWord("XHDIM",ip++);
+  SetWord("YHDIM",ip++);
+  SetWord("ZHDIM",ip++);
+#ifndef GAMOS_NO_VERBOSE
+    if( GeomVerb(debugVerb) )  G4cout << " GmModuleJaws::BuildObjects " << PrintWVal("XHDIM") << PrintWVal("YHDIM") << PrintWVal("ZHDIM") << G4endl;
+#endif
+  G4double HVL = 0.;
+  G4double posCircleZ = 0.;
+  if( theWords["JAWSTIPTYPE"] == "ROUND" ) {
+    SetWord("TIP_RADIUS",ip++);
+    SetWord("TIP_CIRCLE_Z",ip++);
+    SetWord("HVL",ip++); HVL = G4tgrUtils::GetDouble(theWords["HVL"]);
+#ifndef GAMOS_NO_VERBOSE
+    if( GeomVerb(debugVerb) ) G4cout << " GmModuleJaws::BuildObjects " << PrintWVal("TIP_RADIUS") << PrintWVal("TIP_CIRCLE_Z") << PrintWVal("HVL") << G4endl;
+#endif
+  } else if( theWords["JAWSTIPTYPE"] == "ROUND_POSFILE" ) {
+    SetWord("TIP_RADIUS",ip++);
+    SetWord("TIP_CIRCLE_Z",ip++);
+    SetWord("TIP_POS_FILE",ip++);
+#ifndef GAMOS_NO_VERBOSE
+    if( GeomVerb(debugVerb) ) G4cout << " GmModuleJaws::BuildObjects " << PrintWVal("TIP_RADIUS") << PrintWVal("TIP_CIRCLE_Z") << theWords["TIP_POS_FILE"] << G4endl;
+#endif
+  } else if( theWords["JAWSTIPTYPE"] == "STRAIGHT" ) {
   } else {
     G4Exception("GmModuleJaws:BuildObjects",
 		"MJ001",
 		FatalException,
-		("JAWS TYPE HAS TO BE STRAIGHT, ROUND OR ROUND_DISP, WHILE IT IS "+theWords["TYPE"]).c_str());
+		("JAWS TYPE HAS TO BE STRAIGHT, ROUND, OR ROUND_POSFILE, WHILE IT IS "+theWords["JAWSTIPTYPE"]).c_str());
   }
-  theWords["Z_FOCUS"] = theParams[ip++];
-  theWords["RADIUS"] = theParams[ip++];
-  theWords["Z_CENTRE"] = theParams[ip++];
-  theWords["Z_PATIENT"] = theParams[ip++];
-  G4cout << " GmModuleJaws::BuildObjects " << PrintWVal("Z_FOCUS") << PrintWVal("RADIUS") << PrintWVal("Z_CENTRE") << PrintWVal("Z_PATIENT") << G4endl;
-  theWords["OPENING_NEG"] = theParams[ip++];
-  theWords["OPENING_POS"] = theParams[ip++];
-  G4cout << " GmModuleJaws::BuildObjects " << PrintWVal("OPENING_NEG") << PrintWVal("OPENING_POS") << G4endl;
-  theWords["MATE"] = theParams[ip++];
-  theWords["WORLD"] = theParams[ip++];
-  G4cout << " GmModuleJaws::BuildObjects " << PrintW("MATE") << PrintW("WORLD") << G4endl;
-
+  SetWord("Z_FOCUS",ip++); G4double Z_FOCUS    = G4tgrUtils::GetDouble(theWords["Z_FOCUS"]);
+  if( theWords["JAWSTIPTYPE"] == "STRAIGHT" ) {
+    SetWord("RADIUS",ip++);
+#ifndef GAMOS_NO_VERBOSE
+    if( GeomVerb(debugVerb) ) G4cout << " GmModuleJaws::BuildObjects " << PrintWVal("RADIUS") << G4endl;
+#endif
+  }
+  SetWord("Z_CENTRE",ip++); 
+  G4double posZ = G4tgrUtils::GetDouble(theWords["Z_CENTRE"]);
+  SetWord("Z_ISOCENTRE",ip++); G4double Z_ISOCENTRE= G4tgrUtils::GetDouble(theWords["Z_ISOCENTRE"]);
+  
+#ifndef GAMOS_NO_VERBOSE
+  if( GeomVerb(debugVerb) ) G4cout << " GmModuleJaws::BuildObjects " << PrintWVal("Z_FOCUS") << PrintWVal("Z_CENTRE") << PrintWVal("Z_ISOCENTRE") << G4endl;
+#endif
+  SetWord("FIELD_NEG",ip++);
+  SetWord("FIELD_POS",ip++);
+  G4double openingNeg = G4tgrUtils::GetDouble(theWords["FIELD_NEG"]);
+  G4double openingPos = G4tgrUtils::GetDouble(theWords["FIELD_POS"]);
+#ifndef GAMOS_NO_VERBOSE
+  if( GeomVerb(debugVerb) ) G4cout << " GmModuleJaws::BuildObjects " << PrintWVal("FIELD_NEG") << PrintWVal("FIELD_POS") << G4endl;
+#endif
+  SetWord("MATE",ip++);
+  SetWord("MOTHER_VOLUME",ip++);
+#ifndef GAMOS_NO_VERBOSE
+  if( GeomVerb(debugVerb) ) G4cout << " GmModuleJaws::BuildObjects " << PrintW("MATE") << PrintW("MOTHER_VOLUME") << G4endl;
+#endif
+  
   std::ostringstream fout;
-  if( theWords["TYPE"] == "STRAIGHT" ) {
+  if( theWords["JAWSTIPTYPE"] == "STRAIGHT" ) {
     fout << ":VOLU " << theWords["NAME"] << " BOX " 
-	 << theWords["XDIM"] << " " 
-	 << theWords["YDIM"] << " " 
-	 << theWords["ZDIM"] << " " 
+       << theWords["XHDIM"] << " " 
+	 << theWords["YHDIM"] << " " 
+	 << theWords["ZHDIM"] << " " 
 	 << theWords["MATE"];
     BuildObject( fout );
-  } else if( theWords["TYPE"] == "ROUND" ||
-	     theWords["TYPE"] == "ROUND_DISP" ) {
+  } else if( theWords["JAWSTIPTYPE"] == "ROUND" 
+	    || theWords["JAWSTIPTYPE"] == "ROUND_POSFILE" ) {
     
     fout << ":SOLID " << theWords["NAME"]+"_a" << " BOX " 
-	 << theWords["XDIM"] << " " 
-	 << theWords["YDIM"] << " " 
-	 << theWords["ZDIM"];
+	 << theWords["XHDIM"] << " " 
+	 << theWords["YHDIM"] << " " 
+	 << theWords["ZHDIM"];
     BuildObject( fout );
     
     if( theWords["ORIENTATION"] == "X" ) {
       fout << ":SOLID " << theWords["NAME"]+"_b" << " TUBE "
-	   << "0. " << theWords["PROF_RADIUS"]
-	   << " " << theWords["YDIM"];
+	   << "0. " << theWords["TIP_RADIUS"]
+	   << " " << theWords["YHDIM"];
       BuildObject( fout );
       fout << ":ROTM RM90X_JAWS 90. 0. 0. ";
       BuildObject( fout );
       fout << ":SOLID " << theWords["NAME"] << " INTERSECTION "
 	   << theWords["NAME"]+"_a" << " "
 	   << theWords["NAME"]+"_b" << " "
-	   << "RM90X_JAWS " << theWords["PROF_RADIUS"] << "-" << theWords["XDIM"]
+	   << "RM90X_JAWS " << theWords["TIP_RADIUS"] << "-" << theWords["XHDIM"]
 	   << " 0. "
-	   << theWords["ZDIM"] << "-" << theWords["PROF_Z"];
+#ifndef BEAMZPOS
+	   << theWords["ZHDIM"] << "-" << theWords["TIP_CIRCLE_Z"];
+#else
+           << "-" << theWords["ZHDIM"] << "+" << theWords["TIP_CIRCLE_Z"];
+#endif
       BuildObject( fout );
     } else if( theWords["ORIENTATION"] == "Y" ) {
       fout << ":SOLID " << theWords["NAME"]+"_b" << " TUBE "
-	   << "0. " << theWords["PROF_RADIUS"]
-	   << " " << theWords["YDIM"];
+	   << "0. " << theWords["TIP_RADIUS"]
+	   << " " << theWords["YHDIM"];
       BuildObject( fout );
       fout << ":ROTM RM90Y_JAWS 0. 90. 0. ";
       BuildObject( fout );
@@ -119,8 +139,12 @@ void GmModuleJaws::BuildObjects()
 	   << theWords["NAME"]+"_a" << " "
 	   << theWords["NAME"]+"_b" << " "
 	   << "RM90Y_JAWS 0. "
-	   << theWords["PROF_RADIUS"] << "-" << theWords["YDIM"] << " "
-	   << theWords["ZDIM"] << "-" << theWords["PROF_Z"];
+	   << theWords["TIP_RADIUS"] << "-" << theWords["YHDIM"] << " "
+#ifndef BEAMZPOS
+	   << theWords["ZHDIM"] << "-" << theWords["TIP_CIRCLE_Z"];
+#else
+           << "-" << theWords["ZHDIM"] << "+" << theWords["TIP_CIRCLE_Z"];
+#endif
       BuildObject( fout );
     }
     
@@ -128,97 +152,323 @@ void GmModuleJaws::BuildObjects()
 	 << " "  << theWords["NAME"]
 	 << " "  << theWords["MATE"];
     BuildObject( fout );
-  }
 
-  G4double angle_1 = atan(G4tgrUtils::GetDouble(theWords["OPENING_NEG"]) / 
-			  (G4tgrUtils::GetDouble(theWords["Z_PATIENT"]) - 
-			   G4tgrUtils::GetDouble(theWords["Z_FOCUS"]) ) );
-  G4double angle_2 = atan(G4tgrUtils::GetDouble(theWords["OPENING_POS"]) / 
-			   (G4tgrUtils::GetDouble(theWords["Z_PATIENT"]) - 
-			    G4tgrUtils::GetDouble(theWords["Z_FOCUS"]) ) );
+// define common things for ROUND and ROUND_POSFILE
+#ifndef BEAMZPOS //#ifdef IEC61217
+    posCircleZ = posZ + G4tgrUtils::GetDouble(theWords["ZHDIM"]) - G4tgrUtils::GetDouble(theWords["TIP_CIRCLE_Z"]);
+    G4cout << " posCircleZ " << posCircleZ << " = " << posZ << " + " << G4tgrUtils::GetDouble(theWords["ZHDIM"]) << " - " << G4tgrUtils::GetDouble(theWords["TIP_CIRCLE_Z"]) << G4endl; //GDEB
+#else
+    posCircleZ = posZ - G4tgrUtils::GetDouble(theWords["ZHDIM"]) + G4tgrUtils::GetDouble(theWords["TIP_CIRCLE_Z"]);
+    G4cout << " posCircleZ " << posCircleZ << " = " << posZ << " - " << G4tgrUtils::GetDouble(theWords["ZHDIM"]) << " + " << G4tgrUtils::GetDouble(theWords["TIP_CIRCLE_Z"]) << G4endl; //GDEB
+#endif 
 
-  G4double radius = G4tgrUtils::GetDouble(theWords["RADIUS"]);
-  G4double posZ = G4tgrUtils::GetDouble(theWords["Z_CENTRE"]);
-  
-#ifndef GAMOS_NO_VERBOSE
-    if( GeomVerb(debugVerb) ) G4cout << " RADIUS " << radius << " angle_1 " << angle_1 << " angle_2 " << angle_2 << " " << radius*sin(angle_1) << " " << radius*cos(angle_1) << " " << radius*sin(angle_2) << " " << radius*cos(angle_2) <<  G4endl;  
+    if( theWords["JAWSTIPTYPE"] == "ROUND" ) {
+#ifndef BEAMZPOS
+      G4double slopeN = openingNeg / (Z_ISOCENTRE-Z_FOCUS);
+      G4double slopeN2 = slopeN*slopeN;
+      G4double hvlXN = HVL*(slopeN2+1)/2/cos(atan(fabs(slopeN)));
+#else 
+      G4double slopeN = (Z_ISOCENTRE-Z_FOCUS) / openingNeg;
+      G4double slopeN2 = slopeN*slopeN;
+      G4double hvlXN = HVL*sin(atan(1./fabs(slopeN)));
 #endif
-  G4String rotname = "RM_" + theWords["NAME"] ;
-  
-  if( theWords["ORIENTATION"] == "X" ) {
-    G4double XDIM = G4tgrUtils::GetDouble(theWords["XDIM"]);
-    G4double thetaX = asin(XDIM/radius);
-    
-    //--- Build first jaw    
-    fout << ":ROTM " << rotname << "_1 " 
-	 << " 0. " << -angle_1/CLHEP::deg << " 0. ";
-    BuildObject( fout );
-    
-    fout << ":PLACE " << theWords["NAME"] << " 1 " 
-	 << theWords["WORLD"] << " " 
- 	 << rotname << "_1 "
-	 << radius*sin(angle_1) - XDIM*cos(angle_1)
-	 << " 0. " 
-      //- 	 << G4tgrUtils::GetDouble(theWords["Z_FOCUS"]) + radius/cos(thetaX)*cos(angle_1-thetaX);
- 	 << posZ+(radius/cos(thetaX)*cos(angle_1-thetaX)-radius);
+      G4double profR = G4tgrUtils::GetDouble(theWords["TIP_RADIUS"]);
+
+  //    G4double CCN = slopeN2*posZ2-(1.+slopeN2)*(posZ2-profR*profR)-hvlXN*hvlXN/4.*(1.+slopeN2)*(1.+slopeN2);
+      
+      //    G4double CCN = profR*(1.+slopeN2)-hvlXN*hvlXN;
+      //    G4cout << " CCN " << CCN << " posZ " << posZ << " slopeN " << slopeN << " < posZ2 " << posZ2 << " :: " << slopeN2*posZ2 << " - " << (1.+slopeN2)*(posZ2-profR*profR) << " - " << hvlXN*hvlXN/4.*(1+slopeN2)*(1+slopeN2) << " ::: " << slopeN2 << " * " << posZ2 << " -(1+ " << slopeN2 << " )*( " << posZ2 << " - " <<profR << " * " << profR << " )- " << hvlXN << " * " << hvlXN << " /4.*(1+ " << slopeN2 << " )*(1+ " << slopeN2 << G4endl; //GDEB
+      G4double posCN = GetPosRound( posCircleZ, slopeN, profR, hvlXN, -1 );
+      //    G4double posCN = posCircleZ*slopeN-sqrt(profR*profR*(1.+slopeN2)-hvlXN*hvlXN);
 #ifndef GAMOS_NO_VERBOSE
-  if( GeomVerb(debugVerb) )  G4cout << " RADIUS POS Z " << G4tgrUtils::GetDouble(theWords["Z_FOCUS"]) + radius*cos(angle_1) - XDIM*sin(angle_1) << " " 
-				    << G4tgrUtils::GetDouble(theWords["Z_FOCUS"]) << " " << radius*cos(angle_1) << " " << XDIM*sin(angle_1) << G4endl;
+      if( GeomVerb(debugVerb) ) G4cout << " POS_CIRCLE_CENTRE " << posCN << " slopeN " << slopeN << " posCircleZ " << posCircleZ  <<  G4endl;  
 #endif
+      
+#ifndef BEAMZPOS
+      G4double slopeP = openingPos / (Z_ISOCENTRE-Z_FOCUS);
+      G4double slopeP2 = slopeP*slopeP;
+      G4double hvlXP = HVL*(slopeP2+1)/2/cos(atan(fabs(slopeP)));
+#else 
+      G4double slopeP = (Z_ISOCENTRE-Z_FOCUS) / openingPos;
+      G4double slopeP2 = slopeP*slopeP;
+      G4double hvlXP = HVL*sin(atan(1./fabs(slopeP)));
+#endif
+      G4double posCP = GetPosRound( posCircleZ, slopeP, profR, hvlXP, 1 );
+      //    G4double posCP = posCircleZ*slopeP+sqrt(profR*profR*(1.+slopeP2)-hvlXP*hvlXP);
+      
+#ifndef GAMOS_NO_VERBOSE
+      if( GeomVerb(debugVerb) ) G4cout << " POS_CIRCLE_CENTRE " << posCP << " slopeP " << slopeP << " posCircleZ " << posCircleZ  <<  G4endl;  
+#endif
+      
+      fout << ":ROTM RM180Z_JAWS 0. 0. 180. ";
+      BuildObject( fout );
+      
+      if( theWords["ORIENTATION"] == "X" ) {
+	posCN -= G4tgrUtils::GetDouble(theWords["XHDIM"])-profR;
+	posCP += G4tgrUtils::GetDouble(theWords["XHDIM"])-profR;
+#ifndef GAMOS_NO_VERBOSE
+	if( GeomVerb(debugVerb) ) G4cout << " posCP FINAL " << posCP << " posCN FINAL " << posCN << " XHDIM "<<  G4tgrUtils::GetDouble(theWords["XHDIM"]) << " profR " << profR << G4endl;  
+#endif
+	//--- Build first jaw    
+	fout << ":PLACE " << theWords["NAME"] << " 2 " 
+	     << theWords["MOTHER_VOLUME"] << " " 
+	     << "RM180Z_JAWS "
+	     << posCN << "  "
+	     << " 0. "
+	     << theWords["Z_CENTRE"];
+	BuildObject( fout );
+	//--- Build second jaw    
+	fout << ":PLACE " << theWords["NAME"] << " 1 " 
+	     << theWords["MOTHER_VOLUME"] << " " 
+	     << "RM0 "
+	   << posCP << " "
+	     << " 0. "
+	     << theWords["Z_CENTRE"];
+	BuildObject( fout );
+	
+      } else if( theWords["ORIENTATION"] == "Y" ) {
+	posCN -= G4tgrUtils::GetDouble(theWords["YHDIM"])-profR;
+	posCP += G4tgrUtils::GetDouble(theWords["YHDIM"])-profR;
+#ifndef GAMOS_NO_VERBOSE
+	if( GeomVerb(debugVerb) ) G4cout << " posCP FINAL " << posCP << " posCN FINAL " << posCN << " XHDIM "<<  G4tgrUtils::GetDouble(theWords["XHDIM"]) << " profR " << profR << G4endl;  
+#endif
+	//--- Build first jaw    
+	fout << ":PLACE " << theWords["NAME"] << " 2 " 
+	     << theWords["MOTHER_VOLUME"] << " "
+	     << "RM180Z_JAWS "	
+	     << " 0. "
+	     << posCN << " "
+	     << theWords["Z_CENTRE"];
+	BuildObject( fout );
+	
+	//--- Build second jaw    
+	fout << ":PLACE " << theWords["NAME"] << " 1 " 
+	     << theWords["MOTHER_VOLUME"] << " "
+	     << "RM0 "
+	     << " 0. "
+	     << posCP << " "
+	     << theWords["Z_CENTRE"];
+	BuildObject( fout );
+	
+      } else {
+	G4Exception("GmModuleJaws::BuildObjects",
+		    "Wrong orientation type of JAWS",
+		    FatalErrorInArgument,
+		    G4String("It is: "+theWords["ORIENTATION"]+" , while it should be X or Y").c_str());
+      }
+     
+    } else if( theWords["JAWSTIPTYPE"] == "ROUND_POSFILE" ) {
+      //    G4double profR = G4tgrUtils::GetDouble(theWords["TIP_RADIUS"]);
+      
+      GmParameterMgr::GetInstance()->AddParam("leafPosJawsDist:FileName " + theWords["TIP_POS_FILE"]);
+      GmParameterMgr::GetInstance()->AddParam("leafPosJawsDist:Data InitialPosX"); // dummy data
+      std::vector<G4String> paramDist;
+      paramDist.push_back("leafPosJawsDist");
+      paramDist.push_back("GmNumericDistributionLinLin");
+      GmNumericDistributionLinLin* posLeafDist = (GmNumericDistributionLinLin*)(GmDistributionMgr::GetInstance()->FindOrBuildDistribution(paramDist));
+      posLeafDist->Initialize();
+      
+      G4double posCN = -posLeafDist->GetNumericValueFromIndex(-G4tgrUtils::GetDouble(theWords["FIELD_NEG"]));
+#ifndef GAMOS_NO_VERBOSE
+      if( GeomVerb(debugVerb) ) G4cout << " posCN " << posCN << " = ( " << G4tgrUtils::GetDouble(theWords["FIELD_NEG"]) << G4endl;
+#endif
+      posCN *= posCircleZ/G4tgrUtils::GetDouble(theWords["Z_ISOCENTRE"]);
+#ifndef GAMOS_NO_VERBOSE
+      if( GeomVerb(debugVerb) ) G4cout << " posCN rescaled " << posCN << " *= " << posCircleZ << " / " << G4tgrUtils::GetDouble(theWords["Z_ISOCENTRE"]) << G4endl;
+#endif
+      
+      G4double posCP = posLeafDist->GetNumericValueFromIndex(G4tgrUtils::GetDouble(theWords["FIELD_POS"]));
+#ifndef GAMOS_NO_VERBOSE
+      if( GeomVerb(debugVerb) ) G4cout << " posCP " << posCP << " = ( " << G4tgrUtils::GetDouble(theWords["FIELD_POS"]) << G4endl;
+#endif
+      
+      posCP *= posCircleZ/G4tgrUtils::GetDouble(theWords["Z_ISOCENTRE"]);
+#ifndef GAMOS_NO_VERBOSE
+      if( GeomVerb(debugVerb) ) G4cout << " posCP rescaled " << posCP << " *= " << posCircleZ << " / " << G4tgrUtils::GetDouble(theWords["Z_ISOCENTRE"]) << G4endl; //GDEB
+#endif
+      
+      fout << ":ROTM RM180Z_JAWS 0. 0. 180. ";
+      BuildObject( fout );
+      
+      if( theWords["ORIENTATION"] == "X" ) {
+	G4double angle = asin( fabs(G4tgrUtils::GetDouble(theWords["ZHDIM"])-G4tgrUtils::GetDouble(theWords["TIP_CIRCLE_Z"]))/G4tgrUtils::GetDouble(theWords["TIP_RADIUS"]));
+#ifndef GAMOS_NO_VERBOSE
+	if( GeomVerb(testVerb) )  G4cout << " ZHDIM-TIP_CIRCLE_Z ANGLE " << angle << " " << cos(angle) << G4endl;
+#endif
+	G4double xlen = G4tgrUtils::GetDouble(theWords["XHDIM"])*cos(angle);
+	//	posCN -= G4tgrUtils::GetDouble(theWords["XHDIM"]);
+	posCN -= xlen;
+	posCP += xlen;
+	//      G4cout << "FINAL posCN " << posCN << " -= " << G4tgrUtils::GetDouble(theWords["XHDIM"]) << " - " << profR << G4endl; //GDEB
+	//--- Build first jaw    
+	fout << ":PLACE " << theWords["NAME"] << " 2 " 
+	     << theWords["MOTHER_VOLUME"] << " " 
+	     << "RM180Z_JAWS "
+	     << posCN << "  "
+	     << " 0. "
+	     << theWords["Z_CENTRE"];
+	BuildObject( fout );
 
-    BuildObject( fout );
+	//--- Build second jaw    
+	fout << ":PLACE " << theWords["NAME"] << " 1 " 
+	     << theWords["MOTHER_VOLUME"] << " " 
+	     << "RM0 "
+	     << posCP << " "
+	     << " 0. "
+	     << theWords["Z_CENTRE"];
+	BuildObject( fout );
+	
+      } else if( theWords["ORIENTATION"] == "Y" ) {
+	G4double angle = asin( fabs(G4tgrUtils::GetDouble(theWords["ZHDIM"])-G4tgrUtils::GetDouble(theWords["TIP_CIRCLE_Z"]))/G4tgrUtils::GetDouble(theWords["TIP_RADIUS"]));
+#ifndef GAMOS_NO_VERBOSE
+	if( GeomVerb(testVerb) )  G4cout << " ZHDIM-TIP_CIRCLE_Z ANGLE " << angle << " " << cos(angle) << G4endl;
+#endif
+	G4double xlen = G4tgrUtils::GetDouble(theWords["YHDIM"])*cos(angle);
+	posCN -= xlen;
+	posCP += xlen;
+	//-	posCN -= G4tgrUtils::GetDouble(theWords["YHDIM"]);
 
-    //--- Build second jaw    
-    fout << ":ROTM " << rotname << "_2 " 
-	 << " 0. " << -angle_2/CLHEP::deg << " 0. " ;
-    BuildObject( fout );
-
-    fout << ":PLACE " << theWords["NAME"] << " 2 " 
-	 << theWords["WORLD"] << " " 
-	 << rotname << "_2 "
-	 << radius*sin(angle_2) + XDIM*cos(angle_2)
-	 << " 0. " 
- 	 << posZ+( radius/cos(thetaX)*cos(angle_2+thetaX) - radius);
-    BuildObject( fout );
-  } else 
-  if( theWords["ORIENTATION"] == "Y" ) {
-    G4double YDIM = G4tgrUtils::GetDouble(theWords["YDIM"]);
-    G4double thetaY = asin(YDIM/radius);
-
-    //--- Build first jaw    
-    fout << ":ROTM " << rotname << "_1 " 
-	 << angle_1/CLHEP::deg << " 0. 0. " ;
-    BuildObject( fout );
-    
-    fout << ":PLACE " << theWords["NAME"] << " 1 " 
-	 << theWords["WORLD"] << " " 
-	 << rotname << "_1 "
-	 << " 0. " 
-	 << radius*sin(angle_1) - YDIM*cos(angle_1) << " " 
-      // 	 << G4tgrUtils::GetDouble(theWords["Z_FOCUS"]) + radius*cos(angle_1) + YDIM*tan(angle_1); 
- 	 << posZ+ (radius/cos(thetaY)*cos(angle_1-thetaY) - radius);
-    BuildObject( fout );
-
-    //--- Build second jaw    
-    fout << ":ROTM " << rotname << "_2 " 
-	 << angle_2/CLHEP::deg-180. << " 0. 0. " ;
-    BuildObject( fout );
-
-    fout << ":PLACE " << theWords["NAME"] << " 2 " 
-	 << theWords["WORLD"] << " " 
-	 << rotname << "_2 "
-	 << " 0. " 
-	 << radius*sin(angle_2) + YDIM*cos(angle_2) << " " 	
- 	 << posZ + (radius/cos(thetaY)*cos(angle_2+thetaY) - radius);
-    BuildObject( fout );
-
-  } else {
-    G4Exception("GmModuleJaws::BuildObjects",
-		"Wrong type of JAWS",
-		FatalErrorInArgument,
-		G4String("It is: "+theWords["ORIENTATION"]+" , while it should be X or Y").c_str());
+	//--- Build first jaw    
+	fout << ":PLACE " << theWords["NAME"] << " 2 " 
+	     << theWords["MOTHER_VOLUME"] << " "
+	     << "RM180Z_JAWS "	
+	     << " 0. "
+	     << posCN << " "
+	     << theWords["Z_CENTRE"];
+	BuildObject( fout );
+      
+	//--- Build second jaw    
+	fout << ":PLACE " << theWords["NAME"] << " 1 " 
+	     << theWords["MOTHER_VOLUME"] << " "
+	     << "RM0 "
+	     << " 0. "
+	     << posCP << " "
+	     << theWords["Z_CENTRE"];
+	BuildObject( fout );
+	
+      } else {
+	G4Exception("GmModuleJaws::BuildObjects",
+		    "Wrong orientation type of JAWS",
+		    FatalErrorInArgument,
+		    G4String("It is: "+theWords["ORIENTATION"]+" , while it should be X or Y").c_str());
+      }
+    }
   }
+  //@@@@@ PLACEMENT "STRAIGHT" : rotate JAWS with FOCUS as centre
+  if( theWords["JAWSTIPTYPE"] == "STRAIGHT" ) {
+    G4double angleN = atan(openingNeg / 
+			   (Z_ISOCENTRE - Z_FOCUS));
+    G4double angleP = atan(openingPos /
+      (Z_ISOCENTRE - Z_FOCUS));
+    
+    G4double RADIUS = G4tgrUtils::GetDouble(theWords["RADIUS"]);
+    
+#ifndef GAMOS_NO_VERBOSE
+    if( GeomVerb(debugVerb) ) G4cout << " RADIUS " << RADIUS << " angleN " << angleN << " angleP " << angleP << " " << RADIUS*sin(angleN) << " " << RADIUS*cos(angleN) << " " << RADIUS*sin(angleP) << " " << RADIUS*cos(angleP) <<  G4endl;  
+#endif
+    G4String rotname = "RMJ_" + theWords["NAME"] ;
+    
+    if( theWords["ORIENTATION"] == "X" ) {
+      G4double XHDIM = G4tgrUtils::GetDouble(theWords["XHDIM"]);
+      G4double thetaX = asin(XHDIM/RADIUS);
+      
+      //--- Build first jaw    
+      fout << ":ROTM " << rotname << "_1 " 
+	   << " 0. " << -angleN/CLHEP::deg << " 0. ";
+      BuildObject( fout );
 
+      G4double angle0 = atan(XHDIM/posZ);
+#ifndef BEAMZPOS 
+      G4double angleNRot = -angle0 + angleN;
+#else
+      G4double angleNRot = angle0 + angleN;
+#endif
+      G4double rotRADIUS = sqrt(posZ*posZ+XHDIM*XHDIM);
+      fout << ":PLACE " << theWords["NAME"] << " 1 " 
+	   << theWords["MOTHER_VOLUME"] << " " 
+	   << rotname << "_1 "
+	//	   << RADIUS*sin(angleN) - XHDIM*cos(angleN)
+	   << rotRADIUS*sin(angleNRot) << " " 
+	   << " 0. " 
+	//- 	 << G4tgrUtils::GetDouble(theWords["Z_FOCUS"]) + RADIUS/cos(thetaX)*cos(angleN-thetaX);
+	   << posZ+(RADIUS/cos(thetaX)*cos(angleN-thetaX)-RADIUS);
+#ifndef GAMOS_NO_VERBOSE
+      if( GeomVerb(debugVerb) )  G4cout << " RADIUS POS Z " << G4tgrUtils::GetDouble(theWords["Z_FOCUS"]) + RADIUS*cos(angleN) - XHDIM*sin(angleN) << " " 
+					<< G4tgrUtils::GetDouble(theWords["Z_FOCUS"]) << " " << RADIUS*cos(angleN) << " " << XHDIM*sin(angleN) << G4endl;
+#endif
+      BuildObject( fout );
+      
+      //--- Build second jaw    
+#ifndef BEAMZPOS 
+      G4double anglePRot = angle0 + angleP;
+#else
+      G4double anglePRot = -angle0 + angleP;
+#endif
+      fout << ":ROTM " << rotname << "_2 " 
+	   << " 0. " << -angleP/CLHEP::deg << " 0. " ;
+      BuildObject( fout );
+      
+      fout << ":PLACE " << theWords["NAME"] << " 2 " 
+	   << theWords["MOTHER_VOLUME"] << " " 
+	   << rotname << "_2 "
+	   << rotRADIUS*sin(anglePRot) << " " 
+	   << " 0. " 
+	   << posZ+( RADIUS/cos(thetaX)*cos(angleP+thetaX) - RADIUS);
+      BuildObject( fout );
+    } else if( theWords["ORIENTATION"] == "Y" ) {
+      G4double YHDIM = G4tgrUtils::GetDouble(theWords["YHDIM"]);
+      G4double thetaY = asin(YHDIM/RADIUS);
+      
+      //--- Build first jaw    
+      fout << ":ROTM " << rotname << "_1 " 
+	   << angleN/CLHEP::deg << " 0. 0. " ;
+      BuildObject( fout );
+
+#ifndef BEAMZPOS 
+      G4double angle0 = atan(YHDIM/posZ);
+      G4double angleNRot = -angle0 + angleN;
+#else
+      G4double angle0 = atan(-YHDIM/posZ);
+      G4double angleNRot = angle0 + angleN;
+#endif
+      G4double rotRADIUS = sqrt(posZ*posZ+YHDIM*YHDIM);
+      G4cout << YHDIM << " ANGLEN_ROT " << angleNRot << " 0: " << angle0 << " N: " <<angleN << "   " << rotRADIUS*sin(angle0) << " " << rotRADIUS*sin(angleNRot) << G4endl; //GDEB
+      fout << ":PLACE " << theWords["NAME"] << " 1 " 
+	   << theWords["MOTHER_VOLUME"] << " " 
+	   << rotname << "_1 "
+	   << " 0. " 
+	//	   << RADIUS*sin(angleN) - YHDIM*cos(angleN) << " " 
+	   << rotRADIUS*sin(angleNRot) << " " 
+	// 	 << G4tgrUtils::GetDouble(theWords["Z_FOCUS"]) + RADIUS*cos(angleN) + YHDIM*tan(angleN); 
+	   << posZ+ (RADIUS/cos(thetaY)*cos(angleN-thetaY) - RADIUS);
+      BuildObject( fout );
+
+      //--- Build second jaw    
+#ifndef BEAMZPOS 
+      G4double anglePRot = angle0 + angleP;
+#else
+      G4double anglePRot = -angle0 + angleP;
+#endif      
+      fout << ":ROTM " << rotname << "_2 " 
+	   << angleP/CLHEP::deg-180. << " 0. 0. " ;
+      BuildObject( fout );
+      
+      fout << ":PLACE " << theWords["NAME"] << " 2 " 
+	   << theWords["MOTHER_VOLUME"] << " " 
+	   << rotname << "_2 "
+	   << " 0. " 
+	   << rotRADIUS*sin(anglePRot) << " " 
+	   << posZ + (RADIUS/cos(thetaY)*cos(angleP+thetaY) - RADIUS);
+      BuildObject( fout );
+      
+    } else {
+      G4Exception("GmModuleJaws::BuildObjects",
+		  "Wrong orientation type of JAWS",
+		  FatalErrorInArgument,
+		  G4String("It is: "+theWords["ORIENTATION"]+" , while it should be X or Y").c_str());
+    }
+   
+  }
 }
 
 //------------------------------------------------------------------------

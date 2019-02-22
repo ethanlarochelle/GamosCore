@@ -1,28 +1,3 @@
-//
-// ********************************************************************
-// * License and Disclaimer                                           *
-// *                                                                  *
-// * The  GAMOS software  is  copyright of the Copyright  Holders  of *
-// * the GAMOS Collaboration.  It is provided  under  the  terms  and *
-// * conditions of the GAMOS Software License,  included in the  file *
-// * LICENSE and available at  http://fismed.ciemat.es/GAMOS/license .*
-// * These include a list of copyright holders.                       *
-// *                                                                  *
-// * Neither the authors of this software system, nor their employing *
-// * institutes,nor the agencies providing financial support for this *
-// * work  make  any representation or  warranty, express or implied, *
-// * regarding  this  software system or assume any liability for its *
-// * use.  Please see the license in the file  LICENSE  and URL above *
-// * for the full disclaimer and the limitation of liability.         *
-// *                                                                  *
-// * This  code  implementation is the result of  the  scientific and *
-// * technical work of the GAMOS collaboration.                       *
-// * By using,  copying,  modifying or  distributing the software (or *
-// * any work based  on the software)  you  agree  to acknowledge its *
-// * use  in  resulting  scientific  publications,  and indicate your *
-// * acceptance of all terms of the GAMOS Software license.           *
-// ********************************************************************
-//
 #include "GmGenUtils.hh"
 
 #include "G4tgrFileIn.hh"
@@ -33,6 +8,7 @@
 #include <sstream>
 G4bool GmGenUtils::bCheckTimeUnits = true;
 std::set<G4String> GmGenUtils::theUnits;
+G4double GmGenUtils::thePrecision = 1.e-6;
 
 //------------------------------------------------------------------------
 G4bool GmGenUtils::IsNumber( const G4String& str)
@@ -67,7 +43,7 @@ G4bool GmGenUtils::IsNumber( const G4String& str)
 //------------------------------------------------------------------------
 G4bool GmGenUtils::IsNumberWithUnit( const G4String& str)
 {
-  //-  G4cout << " GmGenUtils::IsNumberWithUnit( " << str << G4endl;
+  //  G4cout << " GmGenUtils::IsNumberWithUnit( " << str << G4endl; //GDEB
   if( str == "false" || str == "FALSE" ) return 1;
   if( str == "true" || str == "TRUE" ) return 1;
 
@@ -86,8 +62,9 @@ G4bool GmGenUtils::IsNumberWithUnit( const G4String& str)
   for( il = 0; il < str.length(); il++ ) {
     //    char chara = str.at(il);
     if( symbols.find(str.at(il)) != symbols.end() ) {
+      if( il != 0 && (str.at(il) == '-' || str.at(il) == '+' ) && (str.at(il-1) == 'e' || str.at(il-1) == 'E' ) ) continue;
       symbolPositions.insert(il);
-      //      G4cout << " symbolPositions " << il << " = " << str[il] << G4endl;
+      //           G4cout << " symbolPositions " << il << " = " << str[il] << G4endl; //GDEB
     }
   }
   symbolPositions.insert(il);
@@ -98,11 +75,14 @@ G4bool GmGenUtils::IsNumberWithUnit( const G4String& str)
   for( ;; ite1++, ite2++ ){
     int ipos1 = *ite1;
     int ipos2 = *ite2;
-    //-    G4cout << " IPOS  " << ipos1 << " " << ipos2 << G4endl;
+    //    G4cout << " IPOS  " << ipos1 << " " << ipos2 << G4endl; //GDEB
     if( ipos2-ipos1 != 1 ) { ; //not contiguous 
       G4String word = str.substr(ipos1+1, ipos2-ipos1-1);
-      //-      G4cout << " WORD " << word << " " << ipos1 << " " << ipos2 << G4endl;
-      if( !IsNumber(word) && !IsUnit(word) && !G4tgrUtils::WordIsFunction(word) ) return 0;
+      //      G4cout << " WORD " << word << " " << ipos1 << " " << ipos2 << G4endl; //GDEB
+      if( !IsNumber(word) && !IsUnit(word) && !G4tgrUtils::WordIsFunction(word) ) {
+	//	G4cout << " return 0 " << word << " IsNumber(word) " << IsNumber(word) << " IsUnit(word) " << IsUnit(word) << " G4tgrUtils::WordIsFunction(word) " << G4tgrUtils::WordIsFunction(word) << G4endl; //GDEB
+	return 0;
+      }
     }
     if( ipos2 == int(il) ) break;
   }
@@ -354,7 +334,7 @@ std::vector<G4String> GmGenUtils::GetWordsInString( const G4String& stemp)
 }
 
 //------------------------------------------------------------------------
-G4String GmGenUtils::itoa(int val)
+G4String GmGenUtils::itoa(int val, int nChars )
 {
   const char theDigits[11] = "0123456789";
   G4String result;
@@ -369,6 +349,12 @@ G4String GmGenUtils::itoa(int val)
   while(valAbs!=0);
   if( val < 0 ) result = "-" + result;
 
+  if( nChars != -1 && G4int(result.length()) < nChars ) {
+    for( size_t ii = 0; ii < nChars-result.length(); ii++ ) {
+      result = "0" + result;
+    }
+  }
+  
   return result;
 }
 
@@ -459,11 +445,10 @@ G4bool GmGenUtils::CheckNWords( const G4String& line, G4int nWords, const G4Stri
 //-----------------------------------------------------------------------
 G4bool GmGenUtils::AreWordsEquivalent( const G4String& word1, const G4String& word2 )
 {
-//---- Looks if word1 and word2 are equivalent, considering that word1 may have '*', meaning 'any character'
+  //---- Looks if word1 and word2 are equivalent, considering that word1 may have '*', meaning 'any character'
   G4bool bEqual = TRUE;
   std::vector< std::pair< std::string::size_type, std::string::size_type> > stringPairs; //start of substring, number of characters
-
-  //  G4cout << " GmGenUtils::AreWordsEquivalent " << word1 << " =?= " << word2 << G4endl;
+  //  G4cout << "START GmGenUtils::AreWordsEquivalent " << word1 << " =?= " << word2 << G4endl; //GDEB
 
   //--- Get string limits between asterisks in word1
   std::string::size_type cStart = 0;
@@ -483,7 +468,7 @@ G4bool GmGenUtils::AreWordsEquivalent( const G4String& word1, const G4String& wo
 	}
       }     
       if( cAster!= cStart ) stringPairs.push_back( std::pair<G4int,G4int>(cStart, cAster-cStart) );
-      //      G4cout << " GmGenUtils::AreWordsEquivalent stringPair " << cStart << " to " << cAster << " " <<  G4endl;
+      //      G4cout << " GmGenUtils::AreWordsEquivalent string limits between asterisks stringPair " << cStart << " to " << cAster << " " <<  G4endl; //GDEB
       cStart = cAster+1;
     } else {
       if( cStart == 0 ){
@@ -498,7 +483,7 @@ G4bool GmGenUtils::AreWordsEquivalent( const G4String& word1, const G4String& wo
   //---- Add characters after last asterisk as string pair 
   if( cStart <= word1.length() ) {
     if( word1.length() != cStart ) stringPairs.push_back( std::pair<G4int,G4int>(cStart, word1.length()-cStart) );
-    //    G4cout << " GmGenUtils::AreWordsEquivalent stringPair " << word1.length() << " " << cStart << " " <<  G4endl;
+    //    G4cout << " GmGenUtils::AreWordsEquivalent characters after last asterisk stringPair " << cStart << " " << word1.length()-cStart << " " << G4endl; //GDEB
   }
 
   //--- If there are not asterisk, simple comparison
@@ -528,25 +513,32 @@ G4bool GmGenUtils::AreWordsEquivalent( const G4String& word1, const G4String& wo
   for( unsigned int ii = 0; ii < stringPairs.size(); ii++ ){
     std::pair< std::string::size_type, std::string::size_type> spair = stringPairs[ii];
     std::string::size_type sFound = word2.find(word1.substr(spair.first, spair.second),cStart);
-    //    G4cout << " GmGenUtils::AreWordsEquivalent word  Found:  " << word1.substr(spair.first, spair.second) << " at pos " << sFound << " in " << word2 << G4endl;
-    if( sFound  == std::string::npos ) {
+    //    G4cout << ii << " GmGenUtils::AreWordsEquivalent word  Found:  " << spair.first << ":" <<spair.second << ":" << cStart << " " << word1.substr(spair.first, spair.second) << " at pos " << sFound << " in " << word2 << G4endl; //GDEB
+    if( sFound == std::string::npos ) {
       bEqual = FALSE;
       break;
     } else {
-      //---- If there is no asterisk before first character, the fisrt string pair found has to start at the first character
-      //      G4cout << " GmGenUtils::AreWordsEquivalent chk end " <<  spair.first << " " << spair.second  << " " << spair.first+spair.second << " " << word1.length() << " " << sFound+spair.second << " " << word2.length()<< G4endl;
+      bEqual = TRUE;
+      //---- If there is no asterisk before first character, the first string pair found has to start at the first character
+      //      G4cout << " GmGenUtils::AreWordsEquivalent chk end " << spair.first << " " << spair.second  << " " << spair.first+spair.second << " " << word1.length() << " " << sFound+spair.second << " " << word2.length()<< G4endl; //GDEB
       if( spair.first == 0 && sFound != 0 ) {
 	bEqual = FALSE;
 	break;
 	//---- If there is no asterisk after last character, the last string pair found has to end at the last character
-      } else if( spair.first+spair.second-1 == word1.length() && 
-		 sFound+spair.second-1 != word2.length() ) {
+      } else if( spair.first+spair.second == word1.length() && 
+		 sFound+spair.second != word2.length() ) {
+	//	G4cout << " GmGenUtils::AreWordsEquivalent word1 end, word2 not end " << spair.second  << " " << sFound+spair.second << " " << word2.length()<< G4endl; //GDEB	
 	bEqual = FALSE;
-	break;
+	//---- Check next occurence
+	ii--;
+	cStart += sFound-spair.second+1; // look after bFound
+	//	break;
       }
       cStart += spair.second;
     } 
   }
+
+  //  G4cout << " GmGenUtils::AreWordsEquivalent RETURN " << bEqual << G4endl; //GDEB
 
   return bEqual;
 }
@@ -686,7 +678,7 @@ void GmGenUtils::ReadUnits()
     wl =  GmGenUtils::GetWordsInString( G4String(ltemp) );
     if( wl.size() >= 7 ) {
       // wl[0] is blank because line start with blank! 
-      if( wl[1] == "static" && wl[2] == "const"){
+      if( wl[1] == "static" && wl[2] == "constexpr"){
 	//	G4cout << "UNIT inserted " << wl[4] << " " << theUnits.size() << G4endl;
 	    theUnits.insert( wl[4] );
       }
@@ -719,6 +711,9 @@ G4bool GmGenUtils::IsUnit( const G4String str )
   if( theUnits.find(str) != theUnits.end() ) {
     return true;
   } else {
+    /*    for( std::set<G4String>::const_iterator ite = theUnits.begin(); ite != theUnits.end(); ite++ ) {
+      G4cout << " UNIT " << *ite << G4endl; //GDEB
+      } */
     return false;
   }
 }
@@ -865,6 +860,83 @@ std::vector<G4String> GmGenUtils::StringSplit( const G4String& theString, const 
   return theStringVector;
 }
 
-template <typename T> int  GmGenUtils::sgn(T val) {
-    return (T(0) < val) - (val < T(0));
+//----------------------------------------------------------------
+std::string::size_type GmGenUtils::GetNextSeparator( G4int iSeparator, G4String dataName )
+{
+  if( iSeparator >= G4int(dataName.length()) ) return std::string::npos;
+
+  const char* separators("+-*/()");
+  std::string::size_type isepF = std::string::npos;
+  for( G4int ii = 0; ii < 6; ii++ ){
+    std::string::size_type isepFt = dataName.find(separators[ii],iSeparator);
+    //-    G4cout  << " separator " << separators[ii] << " " << isepFt << G4endl;
+    // check for case of exponential
+    if( ii < 2 && G4int(isepFt) >= 2 ) {
+      if( ( dataName[isepFt-1] == 'e' || dataName[isepFt-1] == 'E' )
+	  && ( GmGenUtils::IsNumber( dataName[isepFt-2] ) || dataName[isepFt-2] == '.' )
+	  && ( GmGenUtils::IsNumber( dataName[isepFt+1] ) ) ){
+	 isepFt = dataName.find(isepFt+1,iSeparator);
+      }
+    }
+
+    if( isepFt != std::string::npos ) {
+      isepF = std::min( isepF, isepFt );
+    }
+  }
+
+  //  G4cout << " GmVDataUser::GetNextSeparator( " <<  G4int(isepF) << " " << dataName << " " << iSeparator << " LEN " << dataName.length() << G4endl;
+  return isepF;
 }
+
+
+//----------------------------------------------------------------
+G4bool GmGenUtils::IsSeparator( const G4String word )
+{
+  
+  if( G4tgrUtils::WordIsFunction( word ) || GmGenUtils::IsNumber( word ) || GmGenUtils::IsUnit(word) ){
+    return true;
+  } else {	
+    return false;
+  }
+}
+
+//----------------------------------------------------------------
+void GmGenUtils::WriteStringToBinaryFile(std::ofstream& fout, G4String dat, size_t nChars )
+{
+  if( dat.length() > nChars ) {
+    G4Exception("GmGenUtils::WriteStringToBinaryFile",
+		"",
+		JustWarning,
+		("String length is " + itoa(dat.length()) + " only " + itoa(nChars) + " will be written : " + dat).c_str());
+  }
+
+  fout.write((char*)&dat,sizeof(char)*nChars );
+}
+
+#include <ctime>
+#include <chrono>
+
+//----------------------------------------------------------------
+void GmGenUtils::DateAndTimeNow( G4String& date, G4String& time )
+{
+  std::chrono::system_clock::time_point now = std::chrono::system_clock::now();
+  time_t tt = std::chrono::system_clock::to_time_t(now);
+  //  tm utc_tm = *gmtime(&tt);
+  tm local_tm = *localtime(&tt);
+  date = itoa(local_tm.tm_year+1900,2) + itoa(local_tm.tm_mon,2) + itoa(local_tm.tm_mday,2);
+  time = itoa(local_tm.tm_hour,2) + itoa(local_tm.tm_min,2) + itoa(local_tm.tm_sec,2);
+}
+
+//------------------------------------------------------------------------
+G4int GmGenUtils::GetAboveInt( G4double val, G4double precision )
+{
+  //  G4cout << " GetAboveInt " << val << " " << val + 1. - GmGenUtils::thePrecision << " " << G4int( val + 1. - GmGenUtils::thePrecision ) << " " << val-G4int(val) << G4endl; //GDEB
+  return G4int( val + 1. - precision )-1*(val<0); // return integer above (if val is not already an integer)
+} 
+
+//------------------------------------------------------------------------
+G4int GmGenUtils::GetBelowInt( G4double val, G4double precision )
+{
+  //  G4cout << " GetAboveInt " << val << " " << val + 1. - GmGenUtils::thePrecision << " " << G4int( val + 1. - GmGenUtils::thePrecision ) << " " << val-G4int(val) << G4endl; //GDEB
+  return G4int( val + precision )-1*(val<0); // return integer below (if val is not already an integer)
+} 

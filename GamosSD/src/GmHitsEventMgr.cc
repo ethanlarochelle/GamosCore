@@ -1,28 +1,3 @@
-//
-// ********************************************************************
-// * License and Disclaimer                                           *
-// *                                                                  *
-// * The  GAMOS software  is  copyright of the Copyright  Holders  of *
-// * the GAMOS Collaboration.  It is provided  under  the  terms  and *
-// * conditions of the GAMOS Software License,  included in the  file *
-// * LICENSE and available at  http://fismed.ciemat.es/GAMOS/license .*
-// * These include a list of copyright holders.                       *
-// *                                                                  *
-// * Neither the authors of this software system, nor their employing *
-// * institutes,nor the agencies providing financial support for this *
-// * work  make  any representation or  warranty, express or implied, *
-// * regarding  this  software system or assume any liability for its *
-// * use.  Please see the license in the file  LICENSE  and URL above *
-// * for the full disclaimer and the limitation of liability.         *
-// *                                                                  *
-// * This  code  implementation is the result of  the  scientific and *
-// * technical work of the GAMOS collaboration.                       *
-// * By using,  copying,  modifying or  distributing the software (or *
-// * any work based  on the software)  you  agree  to acknowledge its *
-// * use  in  resulting  scientific  publications,  and indicate your *
-// * acceptance of all terms of the GAMOS Software license.           *
-// ********************************************************************
-//
 #include "GmHitsEventMgr.hh"
 #include "GmVSDList.hh"
 #include "GmHitList.hh"
@@ -36,7 +11,13 @@
 
 #include "G4Event.hh"
 
+#ifdef ROOT5
 #include "Reflex/PluginService.h"
+#else
+#include "GmDigitizerFactory.hh"
+#include "GmRecHitBuilderFactory.hh"
+#include "GamosCore/GamosUserActionMgr/include/GmUserActionFactory.hh"
+#endif
 
 //------------------------------------------------------------------------
 GmHitsEventMgr* GmHitsEventMgr::theInstance = 0;
@@ -57,7 +38,11 @@ GmHitsEventMgr::GmHitsEventMgr()
 {
   theEventTime = -1.; // if it is not reset, time is not taken into account (only hits of current event are considered)
   
+#ifdef ROOT5
   Reflex::PluginService::Create<GmUserAction*>("GmCheckOriginalGamma");
+#else
+  GmUserActionFactory::get()->create("GmCheckOriginalGamma");
+#endif
   //  G4cout << this << " theEventTimeExtractor " << theEventTimeExtractor << G4endl;
   theEventTimeExtractor = new GmEventTimeExtractorFromFirstTrack();
 
@@ -95,7 +80,11 @@ void GmHitsEventMgr::AddDigitizer( G4String& name, G4String& sdtype )
     G4cerr << "!!! WARNING at GmHitsEventMgr:::AddDigitizer  no sensitive detector of type " << sdtype << " is defined, no hits will be created (and then no hits will be digitized). Please check your input command " << G4endl;
   }
   
+#ifdef ROOT5
   GmVDigitizer* digi = Reflex::PluginService::Create<GmVDigitizer*>(name);
+#else
+  GmVDigitizer* digi = GmDigitizerFactory::get()->create(name);
+#endif
   digi->SetName( name + "_" + sdtype );
   digi->SetParams();
   digi->SetSDType( sdtyp );
@@ -121,7 +110,11 @@ void GmHitsEventMgr::AddRecHitBuilder( G4String& name, G4String& sdtype )
     G4cerr << "!!! WARNING at GmHitsEventMgr::AddRecHitBuilder:  no sensitive detector of type " << sdtype << " is defined, no hits will be created (and then no hits will be reconstructed). Please check your input command " << G4endl;
   }
 
+#ifdef ROOT5
   GmVRecHitBuilder* rhB = Reflex::PluginService::Create<GmVRecHitBuilder*>(name);
+#else
+  GmVRecHitBuilder* rhB = GmRecHitBuilderFactory::get()->create(name);
+#endif
   rhB->SetName( name + "_" + sdtype );
   rhB->SetParams();
   rhB->SetSDType( sdtyp );
@@ -210,9 +203,12 @@ void GmHitsEventMgr::DigitizeAndReconstructHits()
       iterh = theRecHitBuilders.find( (*iteh).first );
       if( iterh != theRecHitBuilders.end() ) {
 	GmVRecHitBuilderFromDigits* rhitBuilder = dynamic_cast<GmVRecHitBuilderFromDigits*>((*iterh).second);
-	theRecHits[ (*iteh).first] = rhitBuilder->ReconstructDigits( &(theDigits[(*iteh).first]) );
-	rhitBuilder->SmearRecHitsEnergy();
-	rhitBuilder->SmearRecHitsTime();
+	std::vector<GmRecHit*> recHits = rhitBuilder->ReconstructDigits(&(theDigits[(*iteh).first]) );
+	rhitBuilder->CheckRecHitsMinEnergy(recHits);
+	rhitBuilder->SmearRecHitsEnergy(recHits);
+	rhitBuilder->SmearRecHitsTime(recHits);
+	rhitBuilder->CheckEnergyEfficiency(recHits);
+	theRecHits[ (*iteh).first] = recHits;
       }
       
       //----- If no digitizer found, reconstruct hits
@@ -225,12 +221,13 @@ void GmHitsEventMgr::DigitizeAndReconstructHits()
 	GmVRecHitBuilderFromHits* rhitBuilder = dynamic_cast<GmVRecHitBuilderFromHits*>((*iterh).second);
 	const std::vector<GmHit*>* hitsCompatible = hitlist->GetHitsCompatibleInTime();
 	if( hitsCompatible->size() != 0 ) {
-	  theRecHits[ (*iteh).first] = rhitBuilder->ReconstructHits( hitsCompatible );
+	  std::vector<GmRecHit*> recHits = rhitBuilder->ReconstructHits( hitsCompatible );
+	  rhitBuilder->CheckRecHitsMinEnergy(recHits);
+	  rhitBuilder->SmearRecHitsEnergy(recHits);
+	  rhitBuilder->SmearRecHitsTime(recHits);
+	  rhitBuilder->CheckEnergyEfficiency(recHits);
+	  theRecHits[ (*iteh).first] = recHits;
 	}
-	rhitBuilder->CheckRecHitsMinEnergy();
-	rhitBuilder->SmearRecHitsEnergy();
-	rhitBuilder->SmearRecHitsTime();
-	rhitBuilder->CheckEnergyEfficiency();
       }
     }
 
@@ -405,11 +402,6 @@ void GmHitsEventMgr::CleanDigitsAndRecHits()
   }
   theDigits.clear();
   
-  std::map< G4String, GmVRecHitBuilder* >::const_iterator iterh; 
-  for( iterh = theRecHitBuilders.begin(); iterh != theRecHitBuilders.end(); iterh++ ){
-    ((*iterh).second)->CleanRecHits();
-  }
-
   theRecHits.clear();
 }
 
@@ -459,8 +451,6 @@ void GmHitsEventMgr::DeleteHits( GmRecHit* rhit )
     theRecHits.erase( iterhToDelete[ii] );
   }
   
-  std::map< G4String, GmVRecHitBuilder* >::iterator iterhb = theRecHitBuilders.find( rhit->GetSDType() );
-  (*iterhb).second->DeleteHit( rhit );
 }
 
 

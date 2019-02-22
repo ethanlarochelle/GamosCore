@@ -1,28 +1,3 @@
-//
-// ********************************************************************
-// * License and Disclaimer                                           *
-// *                                                                  *
-// * The  GAMOS software  is  copyright of the Copyright  Holders  of *
-// * the GAMOS Collaboration.  It is provided  under  the  terms  and *
-// * conditions of the GAMOS Software License,  included in the  file *
-// * LICENSE and available at  http://fismed.ciemat.es/GAMOS/license .*
-// * These include a list of copyright holders.                       *
-// *                                                                  *
-// * Neither the authors of this software system, nor their employing *
-// * institutes,nor the agencies providing financial support for this *
-// * work  make  any representation or  warranty, express or implied, *
-// * regarding  this  software system or assume any liability for its *
-// * use.  Please see the license in the file  LICENSE  and URL above *
-// * for the full disclaimer and the limitation of liability.         *
-// *                                                                  *
-// * This  code  implementation is the result of  the  scientific and *
-// * technical work of the GAMOS collaboration.                       *
-// * By using,  copying,  modifying or  distributing the software (or *
-// * any work based  on the software)  you  agree  to acknowledge its *
-// * use  in  resulting  scientific  publications,  and indicate your *
-// * acceptance of all terms of the GAMOS Software license.           *
-// ********************************************************************
-//
 #include "GmPDSInteractionAngleManager.hh"
 #include "GamosCore/GamosScoring/Management/include/GmScoringVerbosity.hh"
 #include "GamosCore/GamosUtils/include/GmGenUtils.hh"
@@ -113,7 +88,7 @@ GmPDSInteractionAngleManager::GmPDSInteractionAngleManager( const G4String& file
       msmds::const_iterator itepe = theEnergies.find(procname);
       if( itepe == theEnergies.end() ) {
 	theEnergies[procname] = new std::map<G4double,G4String>;
-	G4cout << " probE filling procname " << procname << G4endl;
+	if( ScoringVerb(infoVerb) ) G4cout << " probE filling procname " << procname << G4endl;
 	itepe = theEnergies.find(procname);
       } 
       energies = (*itepe).second;
@@ -144,14 +119,17 @@ G4double GmPDSInteractionAngleManager::GetHistoValue(const G4String& procname, c
 {
   msmds::const_iterator itepe = theEnergies.find(procname);
   if( itepe == theEnergies.end() ) {
-    for( itepe = theEnergies.begin() ; itepe != theEnergies.end(); itepe++ ) {
-      G4cout << " ENERGIES " << (*itepe).first << " = " << procname << "XX" << G4endl;
-  }
 #ifndef GAMOS_NO_VERBOSE
-    if( ScoringVerb(debugVerb) ) G4cerr << " GmPDSInteractionAngleManager::GetHistoValue:  no histogram found with enough entries, RETURNING 0.5 " << procname << " " << theEnergies.size() << G4endl;
+    if( ScoringVerb(infoVerb) ) {
+      G4cerr << " GmPDSInteractionAngleManager::GetHistoValue:  no histogram found with enough entries, RETURNING 0.5 " << procname << " " << theEnergies.size() << G4endl;
+      for( itepe = theEnergies.begin() ; itepe != theEnergies.end(); itepe++ ) {
+	G4cerr << " ENERGIES " << (*itepe).first << " = " << procname << G4endl;
+      }
+    }
 #endif
     return 0.5;
   }
+  
   std::map<G4double,G4String>* energies = (*itepe).second;
   if( energies->size() == 0 ) {
 #ifndef GAMOS_NO_VERBOSE
@@ -208,21 +186,16 @@ G4double GmPDSInteractionAngleManager::GetHistoValue(const G4String& procname, c
       val = binCEN1 +  ( log10(ener) - (*ite1).first )/diffE *(binCEN2-binCEN1);
       //      G4cout << "log_VAL_NOTNORM " << val << " " << binCEN1 << " + " << (log10(ener) - (*ite1).first) << " / " << diffE << " * " << (binCEN2-binCEN1) << G4endl;  //GDEB
     } else {
-      
       val = binCEN1 +  ( ener - (*ite1).first )/diffE *(binCEN2-binCEN1);
-      //           G4cout << "lin_VAL_NOTNORM " << val << " " << binCEN1 << " + " << (ener - (*ite1).first) << " / " << diffE << " * " << (binCEN2-binCEN1) << G4endl;  //GDEB
+      //      G4cout << "lin_VAL_NOTNORM " << val << " " << binCEN1 << " + " << (ener - (*ite1).first) << " / " << diffE << " * " << (binCEN2-binCEN1) << G4endl; //GDEB
     }
     val /= theBinStep; 
     //-    val = ( binCEN1 * ( ener - (*ite1).first ) + binCEN2 * ( (*ite2).first - ener ) ) 
     if( val < 0 ) {
-      G4cerr << " @@@ Getting value for PROC= " << procname << " MATE= " << matname << " ENER= " << ener << " COSANG= " << cosang << G4endl;
       G4Exception("GmPDSInteractionAngleManager::GetHistoValue",
-		  "Error",
+		  "",
 		  JustWarning,
-		  "NEGATIVE ANGLE PROBABILITY, SHOULD NOT HAPPEN");
-      G4cerr << " @@@ Check if angleDeviation.root file has been writting in logarithmic scale and is being read in linear scale or viceversa " << G4endl;
-      G4cerr << " @@@ Check if number of entries in histograms is low and it is being interpolated to values much smaller than smallest energy with enough statistics, or much bigger than biggest energy with enought statistics. You may change the parameter: GmPDS:InteractionAngleManager:MinimumNumberOfEntries (default value is 1000) " << G4endl;
-      val = 0.;
+		  "NEGATIVE ANGLE PROBABILITY, SHOULD NOT HAPPEN, PROBABLY ANGLE HISTOGRAMS DO NOT HAVE ENOUGH ENTRIES.Try changing parameter /gamos/setParam GmPDS:InteractionAngleManager:MinimumNumberOfEntries VAL (default is 1000)");
     }
 #ifndef GAMOS_NO_VERBOSE
     if( ScoringVerb(debugVerb) ) G4cout << " GmPDSInteractionAngleManager::GetHistoValue " << val << " proc " << procname << " mat " << matname << " ener " << ener << " cosang " << cosang << " binstep " << theBinStep << " ENERS " <<  ener <<  " " << (*ite1).first << " " << (*ite2).first <<  G4endl;
@@ -242,9 +215,7 @@ std::map<G4double,G4String>::iterator GmPDSInteractionAngleManager::GetEnergyRan
   std::map<G4double,G4String>::iterator ite;
   if( bEnergyLog ) ener = log10(ener);
   for( ite = energies->begin(); ite != energies->end(); ite++ ){
-    //    G4cout << "GetEnergyRange ener " << ener << " < " << (*ite).first << G4endl;
     if( ener < (*ite).first ) { 
-      //      G4cout << "GetEnergyRange " << (*ite).first << " = " << (*ite).second << " from ener " << ener << G4endl;
       ite--;
       break;
     }
@@ -252,11 +223,17 @@ std::map<G4double,G4String>::iterator GmPDSInteractionAngleManager::GetEnergyRan
 
   if( ite == energies->end() ) {
 #ifndef GAMOS_NO_VERBOSE
-    if( ScoringVerb(infoVerb) )  G4Exception("GmPDSInteractionAngleManager::GetEnergyRange",
-					     "",
-					     JustWarning,
-					     ("Energy is bigger than maximum energy" + GmGenUtils::ftoa( (*(--ite)).first) ).c_str());
+    if( ScoringVerb(infoVerb) ) {
+      G4cerr << "LOOKING FOR ENERGY: " << pow(10.,ener) << " log " << ener << G4endl;
+      for( ite = energies->begin(); ite != energies->end(); ite++ ){
+	G4cerr << " ENER: " << pow(10.,(*ite).first) << " log " << (*ite).first << G4endl;
+      }
+      G4Exception("GmPDSInteractionAngleManager::GetEnergyRange",
+		  "",
+		  JustWarning,
+		  ("Energy is bigger than maximum energy" + GmGenUtils::ftoa( (*(--ite)).first) ).c_str());
 #endif
+    }
     ite--;
   } 
   

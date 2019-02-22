@@ -1,30 +1,3 @@
-//
-// ********************************************************************
-// * License and Disclaimer                                           *
-// *                                                                  *
-// * The  GAMOS software  is  copyright of the Copyright  Holders  of *
-// * the GAMOS Collaboration.  It is provided  under  the  terms  and *
-// * conditions of the GAMOS Software License,  included in the  file *
-// * LICENSE and available at  http://fismed.ciemat.es/GAMOS/license .*
-// * These include a list of copyright holders.                       *
-// *                                                                  *
-// * Neither the authors of this software system, nor their employing *
-// * institutes,nor the agencies providing financial support for this *
-// * work  make  any representation or  warranty, express or implied, *
-// * regarding  this  software system or assume any liability for its *
-// * use.  Please see the license in the file  LICENSE  and URL above *
-// * for the full disclaimer and the limitation of liability.         *
-// *                                                                  *
-// * This  code  implementation is the result of  the  scientific and *
-// * technical work of the GAMOS collaboration.                       *
-// * By using,  copying,  modifying or  distributing the software (or *
-// * any work based  on the software)  you  agree  to acknowledge its *
-// * use  in  resulting  scientific  publications,  and indicate your *
-// * acceptance of all terms of the GAMOS Software license.           *
-// ********************************************************************
-//
-#include "Reflex/PluginService.h"
-
 #include "GmCountTracksUA.hh"
 #include "GmTrackingVerboseUA.hh"
 #include "GmCountProcessesUA.hh"
@@ -34,6 +7,7 @@
 #include "GmKillAtStackingActionUA.hh"
 #include "GmKillAtSteppingActionUA.hh"
 #include "GmKillAtTrackingActionUA.hh"
+#include "GmKillTooManyStepsUA.hh"
 //#include "GmPrintEMPhysicsParamsUA.hh"
 #include "GmMaterialBudgetUA.hh"
 #include "GmTimeStudyUA.hh"
@@ -45,6 +19,10 @@
 #include "GmCopyWeightToRDSecondaryUA.hh"
 #include "GmStopRunAfterTimeUA.hh"
 #include "GmSaveHistosAfterNEvents.hh"
+#include "GmPrintEMParamsUA.hh"
+
+#ifdef ROOT5
+#include "Reflex/PluginService.h"
 
 PLUGINSVC_FACTORY(GmCountTracksUA,GmUserAction*())
 PLUGINSVC_FACTORY(GmTrackingVerboseUA,GmUserAction*())
@@ -55,6 +33,7 @@ PLUGINSVC_FACTORY(GmKillAllUA,GmUserAction*())
 PLUGINSVC_FACTORY(GmKillAtStackingActionUA,GmUserAction*())
 PLUGINSVC_FACTORY(GmKillAtSteppingActionUA,GmUserAction*())
 PLUGINSVC_FACTORY(GmKillAtTrackingActionUA,GmUserAction*())
+PLUGINSVC_FACTORY(GmKillTooManyStepsUA,GmUserAction*())
 //PLUGINSVC_FACTORY(GmPrintEMPhysicsParamsUA,GmUserAction*())
 PLUGINSVC_FACTORY(GmMaterialBudgetUA,GmUserAction*())
 PLUGINSVC_FACTORY(GmTimeStudyUA,GmUserAction*())
@@ -66,6 +45,42 @@ PLUGINSVC_FACTORY(GmCopyWeightToSecondaryUA,GmUserAction*())
 PLUGINSVC_FACTORY(GmCopyWeightToRDSecondaryUA,GmUserAction*())
 PLUGINSVC_FACTORY(GmStopRunAfterTimeUA,GmUserAction*())
 PLUGINSVC_FACTORY(GmSaveHistosAfterNEvents,GmUserAction*())
+PLUGINSVC_FACTORY(GmPrintEMParamsUA,GmUserAction*())
 
 #include "GmUtilsUAVerbosity.hh"
 PLUGINSVC_FACTORY(GmUtilsUAVerbosity,GmVVerbosity*())
+
+#else
+#include "PluginManager/ModuleDef.h"
+#include "GamosCore/GamosUserActionMgr/include/GmUserActionFactory.hh"
+
+DEFINE_SEAL_MODULE ();
+
+DEFINE_GAMOS_USER_ACTION(GmCountTracksUA);
+DEFINE_GAMOS_USER_ACTION(GmTrackingVerboseUA);
+DEFINE_GAMOS_USER_ACTION(GmCountProcessesUA);
+DEFINE_GAMOS_USER_ACTION(GmCountTracksAndStepsUA);
+DEFINE_GAMOS_USER_ACTION(GmGenerHistosUA);
+DEFINE_GAMOS_USER_ACTION(GmKillAllUA);
+DEFINE_GAMOS_USER_ACTION(GmKillAtStackingActionUA);
+DEFINE_GAMOS_USER_ACTION(GmKillAtSteppingActionUA);
+DEFINE_GAMOS_USER_ACTION(GmKillAtTrackingActionUA);
+DEFINE_GAMOS_USER_ACTION(GmKillTooManyStepsUA);
+//DEFINE_GAMOS_USER_ACTION(GmPrintEMPhysicsParamsUA);
+DEFINE_GAMOS_USER_ACTION(GmMaterialBudgetUA);
+DEFINE_GAMOS_USER_ACTION(GmTimeStudyUA);
+DEFINE_GAMOS_USER_ACTION(GmTimeStudyEventUA);
+DEFINE_GAMOS_USER_ACTION(GmShowerShapeUA);
+DEFINE_GAMOS_USER_ACTION(GmGamosVerboseByEventUA);
+DEFINE_GAMOS_USER_ACTION(GmChangeWeightUA);
+DEFINE_GAMOS_USER_ACTION(GmCopyWeightToSecondaryUA);
+DEFINE_GAMOS_USER_ACTION(GmCopyWeightToRDSecondaryUA);
+DEFINE_GAMOS_USER_ACTION(GmStopRunAfterTimeUA);
+DEFINE_GAMOS_USER_ACTION(GmSaveHistosAfterNEvents);
+DEFINE_GAMOS_USER_ACTION(GmPrintEMParamsUA);
+
+#include "GamosCore/GamosBase/Base/include/GmVerbosityFactory.hh"
+#include "GmUtilsUAVerbosity.hh"
+DEFINE_GAMOS_VERBOSITY(GmUtilsUAVerbosity);
+
+#endif

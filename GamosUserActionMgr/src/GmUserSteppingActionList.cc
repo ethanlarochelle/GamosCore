@@ -1,28 +1,3 @@
-//
-// ********************************************************************
-// * License and Disclaimer                                           *
-// *                                                                  *
-// * The  GAMOS software  is  copyright of the Copyright  Holders  of *
-// * the GAMOS Collaboration.  It is provided  under  the  terms  and *
-// * conditions of the GAMOS Software License,  included in the  file *
-// * LICENSE and available at  http://fismed.ciemat.es/GAMOS/license .*
-// * These include a list of copyright holders.                       *
-// *                                                                  *
-// * Neither the authors of this software system, nor their employing *
-// * institutes,nor the agencies providing financial support for this *
-// * work  make  any representation or  warranty, express or implied, *
-// * regarding  this  software system or assume any liability for its *
-// * use.  Please see the license in the file  LICENSE  and URL above *
-// * for the full disclaimer and the limitation of liability.         *
-// *                                                                  *
-// * This  code  implementation is the result of  the  scientific and *
-// * technical work of the GAMOS collaboration.                       *
-// * By using,  copying,  modifying or  distributing the software (or *
-// * any work based  on the software)  you  agree  to acknowledge its *
-// * use  in  resulting  scientific  publications,  and indicate your *
-// * acceptance of all terms of the GAMOS Software license.           *
-// ********************************************************************
-//
 #include "GmUserSteppingActionList.hh"
 #include "GmUserSteppingAction.hh"
 
@@ -31,6 +6,7 @@
 #include <iostream>
 #include "GamosCore/GamosUserActionMgr/include/GmUAVerbosity.hh"
 #include "GamosCore/GamosBase/Base/include/GmVFilter.hh"
+#include "GamosCore/GamosGeometry/include/GmGeometryUtils.hh"
 #include "GmFutureFilter.hh"
 #include "GmStepMgr.hh"
 
@@ -95,9 +71,20 @@ void GmUserSteppingActionList::UserSteppingAction(const G4Step* aStep)
 	    //-	    stepMgr->SaveStep( aStep ); // it is not saved by GmFutureFilterUA yet
 	    std::vector<G4Step*> steps = stepMgr->GetSteps( futureFilter, aStep );
 	    std::vector<G4Step*>::const_iterator ites;
-	    for( ites = steps.begin(); ites != steps.end(); ites++ ) {
+	    
+#ifdef DOSE_REWEIGHT
+	    //-- Reweight by dose of current step
+	    G4double density = aStep->GetTrack()->GetMaterial()->GetDensity();
+	    G4double dose = aStep->GetTotalEnergyDeposit()/ ( density * GmGeometryUtils::GetInstance()->GetCubicVolume( aStep->GetTrack()->GetVolume() ));
+#endif
+  	    for( ites = steps.begin(); ites != steps.end(); ites++ ) {
 #ifndef GAMOS_NO_VERBOSE
-	  if( UAVerb(infoVerb) ) G4cout << " GmUserSteppingActionList::UserSteppingAction futureFilter invoking action for step " << G4endl;
+	      if( UAVerb(infoVerb) ) G4cout << " GmUserSteppingActionList::UserSteppingAction futureFilter invoking action for step " << G4endl;
+#endif
+#ifdef DOSE_REWEIGHT
+	      //-- Reweight by dose of current step
+	      //	  G4cout << " PAST STEP WEIGHT " << (*ites)->GetTrack()->GetWeight() << G4endl; //GDEB
+	      (*ites)->GetTrack()->SetWeight(3.999999762527295e-07*dose);
 #endif
 	      (*aite)->UserSteppingAction(*ites);
 	    }

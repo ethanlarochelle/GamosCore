@@ -1,28 +1,3 @@
-//
-// ********************************************************************
-// * License and Disclaimer                                           *
-// *                                                                  *
-// * The  GAMOS software  is  copyright of the Copyright  Holders  of *
-// * the GAMOS Collaboration.  It is provided  under  the  terms  and *
-// * conditions of the GAMOS Software License,  included in the  file *
-// * LICENSE and available at  http://fismed.ciemat.es/GAMOS/license .*
-// * These include a list of copyright holders.                       *
-// *                                                                  *
-// * Neither the authors of this software system, nor their employing *
-// * institutes,nor the agencies providing financial support for this *
-// * work  make  any representation or  warranty, express or implied, *
-// * regarding  this  software system or assume any liability for its *
-// * use.  Please see the license in the file  LICENSE  and URL above *
-// * for the full disclaimer and the limitation of liability.         *
-// *                                                                  *
-// * This  code  implementation is the result of  the  scientific and *
-// * technical work of the GAMOS collaboration.                       *
-// * By using,  copying,  modifying or  distributing the software (or *
-// * any work based  on the software)  you  agree  to acknowledge its *
-// * use  in  resulting  scientific  publications,  and indicate your *
-// * acceptance of all terms of the GAMOS Software license.           *
-// ********************************************************************
-//
 #include "GmVEWBiasingOperation.hh"
 #include "GmBiasingVerbosity.hh"
 #include "GamosCore/GamosBase/Base/include/GmParameterMgr.hh"
@@ -36,8 +11,8 @@
 GmVEWBiasingOperation::GmVEWBiasingOperation(G4String name)
 : G4VBiasingOperation(name),
   fNSplit(1),
-  fNSplitInv(1.),
-  fParticleChange()
+  fNSplitInv(1.)
+  //t, fParticleChange()
 {
   thePlaneX = GmParameterMgr::GetInstance()->GetNumericValue(GetName()+":XDim",100.*CLHEP::mm);
   thePlaneY = GmParameterMgr::GetInstance()->GetNumericValue(GetName()+":YDim",100.*CLHEP::mm);
@@ -51,6 +26,7 @@ GmVEWBiasingOperation::GmVEWBiasingOperation(G4String name)
 
 GmVEWBiasingOperation::~GmVEWBiasingOperation()
 {
+  fParticleChange.Clear();
 }
 
 //---------------------------------------------------------------------------------------
@@ -77,7 +53,7 @@ G4bool GmVEWBiasingOperation::IsInPlane(const G4ThreeVector dir, const G4ThreeVe
   //G4double xInPlane = pos.x()+diffZ*(std::tan(std::acos(dir.z())));
   G4double xInPlane = pos.x()+diffZ*dir.x()/dir.z();
 #ifndef GAMOS_NO_VERBOSE
-  if( BiasingVerb(testVerb) ) G4cout << "GmVEWBiasingOperation::IsInPlane xInPlane / posX / dirX  " << xInPlane << " <? " << thePlaneX << G4endl;
+  if( BiasingVerb(testVerb) ) G4cout << "GmVEWBiasingOperation::IsInPlane xInPlane / posX / dirX  " << xInPlane << " / " << pos.x() << " / " << dir.x() << " " << thePlaneX << G4endl;
 #endif
 
   if ( fabs(xInPlane) > thePlaneX ) {

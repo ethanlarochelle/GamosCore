@@ -1,28 +1,3 @@
-//
-// ********************************************************************
-// * License and Disclaimer                                           *
-// *                                                                  *
-// * The  GAMOS software  is  copyright of the Copyright  Holders  of *
-// * the GAMOS Collaboration.  It is provided  under  the  terms  and *
-// * conditions of the GAMOS Software License,  included in the  file *
-// * LICENSE and available at  http://fismed.ciemat.es/GAMOS/license .*
-// * These include a list of copyright holders.                       *
-// *                                                                  *
-// * Neither the authors of this software system, nor their employing *
-// * institutes,nor the agencies providing financial support for this *
-// * work  make  any representation or  warranty, express or implied, *
-// * regarding  this  software system or assume any liability for its *
-// * use.  Please see the license in the file  LICENSE  and URL above *
-// * for the full disclaimer and the limitation of liability.         *
-// *                                                                  *
-// * This  code  implementation is the result of  the  scientific and *
-// * technical work of the GAMOS collaboration.                       *
-// * By using,  copying,  modifying or  distributing the software (or *
-// * any work based  on the software)  you  agree  to acknowledge its *
-// * use  in  resulting  scientific  publications,  and indicate your *
-// * acceptance of all terms of the GAMOS Software license.           *
-// ********************************************************************
-//
 #include "GmParticleSource.hh"
 #include "GmVGenerDistTime.hh"
 #include "GmVGenerDistEnergy.hh"
@@ -41,7 +16,11 @@
 #include "G4ParticleDefinition.hh"
 #include "CLHEP/Random/RandFlat.h"
  
+#ifdef ROOT5
 #include "Reflex/PluginService.h"
+#else
+#include "GmGeneratorDistributionFactories.hh"
+#endif
 
 //-----------------------------------------------------------------------
 GmParticleSource::GmParticleSource( const G4String& name )
@@ -72,7 +51,12 @@ void GmParticleSource::CheckDistributionsExist()
 //-----------------------------------------------------------------------
 void GmParticleSource::SetDistributionTime( const G4String& distName, const std::vector<G4String>& wl )
 {
+#ifdef ROOT5
   theTimeDistribution = Reflex::PluginService::Create<GmVGenerDistTime*>(distName);
+#else
+  theTimeDistribution = GmGenerDistTimeFactory::get()->create(distName);
+#endif
+  
   if( !theTimeDistribution ) {
     G4Exception("GmParticleSource::SetDistributionTime","Fatal error in argument",FatalErrorInArgument,G4String(" Distribution does not exist, check documentation").c_str());
   }
@@ -88,7 +72,11 @@ void GmParticleSource::SetDistributionTime( const G4String& distName, const std:
 //-----------------------------------------------------------------------
 void GmParticleSource::SetDistributionEnergy( const G4String& distName, const std::vector<G4String>& wl )
 {
+#ifdef ROOT5
   theEnergyDistribution = Reflex::PluginService::Create<GmVGenerDistEnergy*>(distName);
+#else
+  theEnergyDistribution = GmGenerDistEnergyFactory::get()->create(distName);
+#endif
   if( !theEnergyDistribution ) {
     G4Exception("GmParticleSource::SetDistributionEnergy","Fatal error in argument",FatalErrorInArgument,G4String(" Distribution does not exist, check documentation ").c_str());
   }
@@ -102,7 +90,12 @@ void GmParticleSource::SetDistributionEnergy( const G4String& distName, const st
 //-----------------------------------------------------------------------
 void GmParticleSource::SetDistributionPosition( const G4String& distName, const std::vector<G4String>& wl )
 {
+#ifdef ROOT5
   thePositionDistribution = Reflex::PluginService::Create<GmVGenerDistPosition*>(distName);
+#else
+  thePositionDistribution = GmGenerDistPositionFactory::get()->create(distName);
+#endif
+  
   if(  !thePositionDistribution ) {
     G4Exception("GmParticleSource::SetDistributionPosition","Fatal error in argument",FatalErrorInArgument,G4String(" Distribution does not exist, check documentation ").c_str());
   }
@@ -116,7 +109,11 @@ void GmParticleSource::SetDistributionPosition( const G4String& distName, const 
 //-----------------------------------------------------------------------
 void GmParticleSource::SetDistributionDirection( const G4String& distName, const std::vector<G4String>& wl )
 {
+#ifdef ROOT5
   theDirectionDistribution = Reflex::PluginService::Create<GmVGenerDistDirection*>(distName);
+#else
+  theDirectionDistribution = GmGenerDistDirectionFactory::get()->create(distName);
+#endif
   if(  !theDirectionDistribution ) {
     G4Exception("GmParticleSource::SetDistributionDirection","Fatal error in argument",FatalErrorInArgument,G4String(" Distribution does not exist, check documentaiton ").c_str());
   }

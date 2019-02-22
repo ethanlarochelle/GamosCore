@@ -1,28 +1,3 @@
-//
-// ********************************************************************
-// * License and Disclaimer                                           *
-// *                                                                  *
-// * The  GAMOS software  is  copyright of the Copyright  Holders  of *
-// * the GAMOS Collaboration.  It is provided  under  the  terms  and *
-// * conditions of the GAMOS Software License,  included in the  file *
-// * LICENSE and available at  http://fismed.ciemat.es/GAMOS/license .*
-// * These include a list of copyright holders.                       *
-// *                                                                  *
-// * Neither the authors of this software system, nor their employing *
-// * institutes,nor the agencies providing financial support for this *
-// * work  make  any representation or  warranty, express or implied, *
-// * regarding  this  software system or assume any liability for its *
-// * use.  Please see the license in the file  LICENSE  and URL above *
-// * for the full disclaimer and the limitation of liability.         *
-// *                                                                  *
-// * This  code  implementation is the result of  the  scientific and *
-// * technical work of the GAMOS collaboration.                       *
-// * By using,  copying,  modifying or  distributing the software (or *
-// * any work based  on the software)  you  agree  to acknowledge its *
-// * use  in  resulting  scientific  publications,  and indicate your *
-// * acceptance of all terms of the GAMOS Software license.           *
-// ********************************************************************
-//
 //#define VERBOSE_DOSEDEP
 #include "G4VPrimitiveScorer.hh"
 #include "G4EnergyLossForExtrapolator.hh"
@@ -66,14 +41,16 @@ G4bool GmG4PSDoseDeposit::ProcessHits(G4Step* aStep,G4TouchableHistory*)
 
   G4double density = aStep->GetTrack()->GetMaterial()->GetDensity();
   G4double weight = aStep->GetPreStepPoint()->GetWeight(); 
+
 #ifndef GAMOS_NO_VERBOSE
   if( ScoringVerb(debugVerb) ) 
     G4cout << "GmG4PSDoseDeposit::ProcessHits edep " << edep 
-	   << " density " << density / (CLHEP::g/CLHEP::cm3)
+	   << " density " << density / (CLHEP::g/CLHEP::cm3) << "=" << density 
 	   << " volume " << volume << G4endl;
 #endif
 
 #ifndef GAMOS_NO_VERBOSE
+  if( ScoringVerb(debugVerb) ) G4cout << "GmG4PSDoseDeposit::ProcessHits  EvtMap " << EvtMap << G4endl;
   if( ScoringVerb(debugVerb) ) G4cout << "GmG4PSDoseDeposit::ProcessHits  EvtMap Number of entries " << EvtMap->entries() << " tmp " << theSumV_tmp.size() << G4endl;
 #endif
 
@@ -107,31 +84,3 @@ G4double GmG4PSDoseDeposit::GetGeom2TrueStepLength( G4double kinEnergy )
   return g2tratio;
 }
 
-//--------------------------------------------------------------------
-void GmG4PSDoseDeposit::EndOfEvent(G4HCofThisEvent*)
-{
-}
-
-//--------------------------------------------------------------------
-void GmG4PSDoseDeposit::DrawAll()
-{;}
-
-//--------------------------------------------------------------------
-void GmG4PSDoseDeposit::PrintAll()
-{
-  G4cout <<" GmG4PSDoseDeposit::PrintAllDefault() " << G4endl;
-  G4cout << " MultiFunctionalDet  " << detector->GetName() << G4endl;
-  G4cout << " PrimitiveScorer " << GetName() << G4endl;
-  G4cout << " Number of entries " << EvtMap->entries() << G4endl;
-  std::map<G4int,G4double*>::iterator itr = EvtMap->GetMap()->begin();
-  for(; itr != EvtMap->GetMap()->end(); itr++) {
-    G4cout << "  copy no.: " << itr->first
-	   << "  dose deposit: " << G4BestUnit(*(itr->second),"Dose")
-	   << G4endl;
-  } 
-}
- #include "GamosCore/GamosBase/Base/include/GmVClassifier.hh" 
-G4int GmG4PSDoseDeposit::GetIndex(G4Step* aStep ) 
- { 
- return theClassifier->GetIndexFromStep( aStep ); 
-} 

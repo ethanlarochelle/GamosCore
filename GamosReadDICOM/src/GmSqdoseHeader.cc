@@ -1,30 +1,6 @@
-//
-// ********************************************************************
-// * License and Disclaimer                                           *
-// *                                                                  *
-// * The  GAMOS software  is  copyright of the Copyright  Holders  of *
-// * the GAMOS Collaboration.  It is provided  under  the  terms  and *
-// * conditions of the GAMOS Software License,  included in the  file *
-// * LICENSE and available at  http://fismed.ciemat.es/GAMOS/license .*
-// * These include a list of copyright holders.                       *
-// *                                                                  *
-// * Neither the authors of this software system, nor their employing *
-// * institutes,nor the agencies providing financial support for this *
-// * work  make  any representation or  warranty, express or implied, *
-// * regarding  this  software system or assume any liability for its *
-// * use.  Please see the license in the file  LICENSE  and URL above *
-// * for the full disclaimer and the limitation of liability.         *
-// *                                                                  *
-// * This  code  implementation is the result of  the  scientific and *
-// * technical work of the GAMOS collaboration.                       *
-// * By using,  copying,  modifying or  distributing the software (or *
-// * any work based  on the software)  you  agree  to acknowledge its *
-// * use  in  resulting  scientific  publications,  and indicate your *
-// * acceptance of all terms of the GAMOS Software license.           *
-// ********************************************************************
-//
 #include "GmSqdoseHeader.hh"
 #include "Gm3ddoseHeader.hh"
+#include "GmReadDICOMVerbosity.hh"
 #include "GamosCore/GamosUtils/include/GmFileIn.hh"
 #include "GamosCore/GamosUtils/include/GmGenUtils.hh"
 
@@ -64,11 +40,32 @@ GmSqdoseHeader::GmSqdoseHeader(const Gm3ddoseHeader& dh3d)
   theVoxelLimitsX = dh3d.GetVoxelLimitsX();
   theVoxelLimitsY = dh3d.GetVoxelLimitsY();
   theVoxelLimitsZ = dh3d.GetVoxelLimitsZ();
+  for( size_t ii = 0; ii < theNoVoxelX+1; ii++ ){
+    theVoxelLimitsX[ii] *= CLHEP::cm;
+  }
+  for( size_t ii = 0; ii < theNoVoxelY+1; ii++ ){
+    theVoxelLimitsY[ii] *= CLHEP::cm;
+  }
+  for( size_t ii = 0; ii < theNoVoxelZ+1; ii++ ){
+    theVoxelLimitsZ[ii] *= CLHEP::cm;
+  } 
+#ifndef GAMOS_NO_VERBOSE
+    if( ReadDICOMVerb(warningVerb) ) G4cout << "GmSqdoseHeader(3ddose)  VoxelDim " <<theVoxelLimitsX[1]-theVoxelLimitsX[0] << " " << theVoxelLimitsY[1]-theVoxelLimitsY[0] << " " << theVoxelLimitsZ[1]-theVoxelLimitsZ[0] << G4endl;
+#endif
+  //  G4cout << "GmSqdoseHeader(3ddose)  VoxelLimits " << theVoxelLimitsZ[0] << " " << theVoxelLimitsZ[1] << " " << theVoxelLimitsZ[2] << G4endl;
+
+  // check first Z voxel
+  if( theVoxelLimitsZ[1]-theVoxelLimitsZ[0] != theVoxelLimitsZ[2]-theVoxelLimitsZ[1] ) {
+    G4cerr << "!! GmSqdoseHeader(const Gm3ddoseHeader) First Z voxel is different " << theVoxelLimitsZ[1]-theVoxelLimitsZ[0] << " != " << theVoxelLimitsZ[2]-theVoxelLimitsZ[1] << " V0 " << theVoxelLimitsZ[0] << " V1 " << theVoxelLimitsZ[1] << " V2 " << theVoxelLimitsZ[2] << G4endl;
+    theVoxelLimitsZ[0] = theVoxelLimitsZ[1] - (theVoxelLimitsZ[2]-theVoxelLimitsZ[1]);
+    //    G4cout << "GmSqdoseHeader(3ddose) NEW VoxelLimits " << theVoxelLimitsZ[0] << " " << theVoxelLimitsZ[1] << " " << theVoxelLimitsZ[2] << G4endl;
+  }
 
 }
 //-----------------------------------------------------------------------
 void GmSqdoseHeader::Read( FILE* fin )
 {
+  theNoEvent = 1E9;
   if( fread(&theNoEvent, sizeof(float),  1, fin) != 1) {
     G4Exception("GmSqdoseHeader::Read",
 		"Error",
@@ -76,8 +73,10 @@ void GmSqdoseHeader::Read( FILE* fin )
 		"Problem reading number of events");
   }
 
-  //G4cout << " GmSqdoseHeader::Read NEvent " << theNoEvent << G4endl;
-
+#ifndef GAMOS_NO_VERBOSE
+  if( ReadDICOMVerb(warningVerb) ) G4cout << " GmSqdoseHeader::Read NEvent " << theNoEvent << G4endl; 
+#endif
+  
   if( fread(&theNoVoxelX, sizeof(size_t),  1, fin) != 1) {
     G4Exception("GmSqdoseHeader::Read",
 		"Error",
@@ -96,7 +95,9 @@ void GmSqdoseHeader::Read( FILE* fin )
 		FatalException,
 		"Problem reading number of voxels Z");
   }
-  G4cout << "GmSqdoseHeader::Read NVoxels " << theNoVoxelX << " " << theNoVoxelY << " " << theNoVoxelZ << G4endl;
+#ifndef GAMOS_NO_VERBOSE
+  if( ReadDICOMVerb(warningVerb) ) G4cout << " GmSqdoseHeader::Read NVoxels " << theNoVoxelX << " " << theNoVoxelY << " " << theNoVoxelZ << G4endl;
+#endif
   
   float vlim;
   for( size_t ii = 0; ii < theNoVoxelX+1; ii++ ){
@@ -107,7 +108,7 @@ void GmSqdoseHeader::Read( FILE* fin )
 		  "Problem reading number of voxel limits X");
     }
     theVoxelLimitsX.push_back( vlim );
-    //    G4cout << ii << " READ theVoxelLimitsX " << vlim << G4endl;
+    //    G4cout << ii << " READ theVoxelLimitsX " << vlim << G4endl; //GDEB
   }
   for( size_t ii = 0; ii < theNoVoxelY+1; ii++ ){
     if( fread(&vlim, sizeof(float),  1, fin) != 1) {
@@ -117,7 +118,7 @@ void GmSqdoseHeader::Read( FILE* fin )
 		  "Problem reading number of voxel limits Y");
     }
     theVoxelLimitsY.push_back( vlim );
-    //    G4cout << ii << " READ theVoxelLimitsY " << vlim << G4endl;
+    //    G4cout << ii << " READ theVoxelLimitsY " << vlim << G4endl; //GDEB
   }
   for( size_t ii = 0; ii < theNoVoxelZ+1; ii++ ) {
     if( fread(&vlim, sizeof(float),  1, fin) != 1) {
@@ -127,8 +128,15 @@ void GmSqdoseHeader::Read( FILE* fin )
 		  "Problem reading number of voxel limits Z");
     }
     theVoxelLimitsZ.push_back( vlim );
-    //    G4cout << ii << " READ theVoxelLimitsZ " << vlim << G4endl;
+    //    G4cout << ii << " READ theVoxelLimitsZ " << vlim << G4endl; //GDEB
   }
+
+#ifndef GAMOS_NO_VERBOSE
+  if( ReadDICOMVerb(warningVerb) ) {
+    G4cout << " GmSqdoseHeader::Read VoxelDims " <<theVoxelLimitsX[1]-theVoxelLimitsX[0] << " " << theVoxelLimitsY[1]-theVoxelLimitsY[0] << " " << theVoxelLimitsZ[1]-theVoxelLimitsZ[0] << G4endl;
+    G4cout << " GmSqdoseHeader::Read Limits X: " <<theVoxelLimitsX[0] << " " << theVoxelLimitsX[theVoxelLimitsX.size()-1] << " Y: " << theVoxelLimitsY[0] << " " << theVoxelLimitsY[theVoxelLimitsY.size()-1] << " Z: " << theVoxelLimitsZ[0] << "  " << theVoxelLimitsZ[theVoxelLimitsZ.size()-1] << G4endl;
+  }
+#endif
 
   float rotxx, rotxy, rotxz, rotyx, rotyy, rotyz, rotzx, rotzy, rotzz;
   if( fread(&rotxx, sizeof(float),  1, fin) != 1) {
@@ -226,7 +234,7 @@ void GmSqdoseHeader::Print( FILE* fout )
   float* vlimx = new float[theNoVoxelX+1];
   for( size_t ii = 0; ii < theNoVoxelX+1; ii++ ){
     vlimx[ii] = theVoxelLimitsX[ii];
-    //    G4cout << ii << " limx " << vlimx[ii] << " = " << theVoxelLimitsX[ii] << G4endl;
+    // G4cout << ii << " limx " << vlimx[ii] << " = " << theVoxelLimitsX[ii] << G4endl; //GDEB
   }
   if(fwrite(vlimx, sizeof(float),theNoVoxelX+1,fout)!=theNoVoxelX+1)
     printf("\n Error writing VoxelLimitsX. \n");
@@ -234,7 +242,7 @@ void GmSqdoseHeader::Print( FILE* fout )
   float* vlimy = new float[theNoVoxelY+1];
   for( size_t ii = 0; ii < theNoVoxelY+1; ii++ ){
     vlimy[ii] = theVoxelLimitsY[ii];
-    //    G4cout << ii << " limy " << vlimy[ii] << " = " << theVoxelLimitsY[ii] << G4endl;
+    //       G4cout << ii << " limy " << vlimy[ii] << " = " << theVoxelLimitsY[ii] << G4endl; //GDEB
   }
   if(fwrite(vlimy, sizeof(float),theNoVoxelY+1,fout)!=theNoVoxelY+1)
     printf("\n Error writing VoxelLimitsY. \n");
@@ -242,7 +250,7 @@ void GmSqdoseHeader::Print( FILE* fout )
   float* vlimz = new float[theNoVoxelZ+1];
   for( size_t ii = 0; ii < theNoVoxelZ+1; ii++ ){
     vlimz[ii] = theVoxelLimitsZ[ii];
-    //    G4cout << ii << " limz " << vlimz[ii] << " = " << theVoxelLimitsZ[ii] << G4endl;
+    //    G4cout << ii << " limz " << vlimz[ii] << " = " << theVoxelLimitsZ[ii] << G4endl; //GDEB
   }
   if(fwrite(vlimz, sizeof(float),theNoVoxelZ+1,fout)!=theNoVoxelZ+1)
     printf("\n Error writing VoxelLimitsZ. \n");
@@ -275,7 +283,7 @@ void GmSqdoseHeader::Print( FILE* fout )
   if(fwrite(&rotzz, sizeof(float),1,fout)!=1)
     printf("\n Error writing rotzz. \n");
 
-  delete vlimx;
-  delete vlimy;
-  delete vlimz;
+  delete [] vlimx;
+  delete [] vlimy;
+  delete [] vlimz;
 }

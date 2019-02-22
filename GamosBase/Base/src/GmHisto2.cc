@@ -250,7 +250,7 @@ int GmHisto2::GetEntries() const
 }
 
 //----------------------------------------------------------------------
-double GmHisto2::GmGenUtils::GetIntegral() const
+double GmHisto2::GetIntegral() const
 {
   return theSumW;
 }

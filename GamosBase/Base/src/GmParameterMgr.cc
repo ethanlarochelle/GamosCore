@@ -1,28 +1,3 @@
-//
-// ********************************************************************
-// * License and Disclaimer                                           *
-// *                                                                  *
-// * The  GAMOS software  is  copyright of the Copyright  Holders  of *
-// * the GAMOS Collaboration.  It is provided  under  the  terms  and *
-// * conditions of the GAMOS Software License,  included in the  file *
-// * LICENSE and available at  http://fismed.ciemat.es/GAMOS/license .*
-// * These include a list of copyright holders.                       *
-// *                                                                  *
-// * Neither the authors of this software system, nor their employing *
-// * institutes,nor the agencies providing financial support for this *
-// * work  make  any representation or  warranty, express or implied, *
-// * regarding  this  software system or assume any liability for its *
-// * use.  Please see the license in the file  LICENSE  and URL above *
-// * for the full disclaimer and the limitation of liability.         *
-// *                                                                  *
-// * This  code  implementation is the result of  the  scientific and *
-// * technical work of the GAMOS collaboration.                       *
-// * By using,  copying,  modifying or  distributing the software (or *
-// * any work based  on the software)  you  agree  to acknowledge its *
-// * use  in  resulting  scientific  publications,  and indicate your *
-// * acceptance of all terms of the GAMOS Software license.           *
-// ********************************************************************
-//
 #include "GmParameterMgr.hh"
 #include "GmParameterMessenger.hh"
 
@@ -80,12 +55,12 @@ G4bool GmParameterMgr::AddParamOfDefinedType( const G4String& name, const std::v
   std::vector<G4int> values;
   std::vector<G4double> valuesd;
 
-  //  G4cout << " AddParamOfDefinedType  " << name << " = " << typ << G4endl;
+  //  G4cout << " AddParamOfDefinedType  " << name << " = " << typ << G4endl; //GDEB
 
   switch ( typ ){
   case PTdouble:
     bExists = theParametersDouble.AddParam( name, GmGenUtils::GetValue(wl[0]));
- //   G4cout <<  theParametersDouble.size() << " theParametersDouble.AddParam  name " << name << " GetVal " << GetVal(wl[0]) << G4endl;
+    //  G4cout <<  theParametersDouble.size() << " theParametersDouble.AddParam  name " << name << " GetVal " << GetVal(wl[0]) << G4endl;
     break;
   case PTstring:
     bExists = theParametersString.AddParam( name, wl[0]);
@@ -106,6 +81,7 @@ G4bool GmParameterMgr::AddParamOfDefinedType( const G4String& name, const std::v
     for( ite = wl.begin(); ite != wl.end(); ite++ ){
       if( !GmGenUtils::IsNumberWithUnit( *ite ) ){
 	noNumber = TRUE;
+	//	G4cout << " AddParamOfDefinedType  noNumber " << noNumber << " = " << typ << G4endl; //GDEB
       }	
     }
     typ = SetParamType( noNumber, wl.size() );
@@ -358,6 +334,9 @@ void GmParameterMgr::PrintParametersUsage( G4int iPrint, std::ostream& out, std:
 	  err << "PARAMETER: " << (*ites).first << std::endl;
 	}
       }
+      err << "%%%   PLEASE PUT THIS COMMAND AT THE END OF YOUR SCRIPT: " << G4endl;
+      err << "%%%   /gamos/base/printParametersUsage 2 " << G4endl;
+      err << "%%%   AND LOOK FOR A SIMILAR PARAMETER " << G4endl;
     }
   }
 

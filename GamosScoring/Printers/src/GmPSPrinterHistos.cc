@@ -1,28 +1,3 @@
-//
-// ********************************************************************
-// * License and Disclaimer                                           *
-// *                                                                  *
-// * The  GAMOS software  is  copyright of the Copyright  Holders  of *
-// * the GAMOS Collaboration.  It is provided  under  the  terms  and *
-// * conditions of the GAMOS Software License,  included in the  file *
-// * LICENSE and available at  http://fismed.ciemat.es/GAMOS/license .*
-// * These include a list of copyright holders.                       *
-// *                                                                  *
-// * Neither the authors of this software system, nor their employing *
-// * institutes,nor the agencies providing financial support for this *
-// * work  make  any representation or  warranty, express or implied, *
-// * regarding  this  software system or assume any liability for its *
-// * use.  Please see the license in the file  LICENSE  and URL above *
-// * for the full disclaimer and the limitation of liability.         *
-// *                                                                  *
-// * This  code  implementation is the result of  the  scientific and *
-// * technical work of the GAMOS collaboration.                       *
-// * By using,  copying,  modifying or  distributing the software (or *
-// * any work based  on the software)  you  agree  to acknowledge its *
-// * use  in  resulting  scientific  publications,  and indicate your *
-// * acceptance of all terms of the GAMOS Software license.           *
-// ********************************************************************
-//
 #include "GmPSPrinterHistos.hh"
 #include "GamosCore/GamosScoring/Management/include/GmVPrimitiveScorer.hh"
 #include "GamosCore/GamosScoring/Management/include/GmScoringVerbosity.hh"
@@ -44,7 +19,6 @@ GmPSPrinterHistos::GmPSPrinterHistos(G4String name) : GmVPSPrinter( name )
 {
 
 }
-
 
 //--------------------------------------------------------------------
 void GmPSPrinterHistos::SetParameters( const std::vector<G4String>& params )
@@ -104,21 +78,21 @@ void GmPSPrinterHistos::SetParameters( const std::vector<G4String>& params )
 
 
 //--------------------------------------------------------------------
-void GmPSPrinterHistos::DumpAll( G4THitsMap<G4double>* RunMap, GmVPrimitiveScorer* theScorer )
+void GmPSPrinterHistos::DumpAll( G4THitsMap<G4double>* RunMap, GmVPrimitiveScorer* scorer )
 {
   if( b2D ) {
-    if( !theScorer->GetClassifier()->IsCompound() ) {
+    if( !scorer->GetClassifier()->IsCompound() ) {
       G4Exception("GmPSPrinterHistos::DumpAll",
-		  G4String("Error in SCORER= " + theScorer->GetName() + "  CLASSIFIER= " +  theScorer->GetClassifier()->GetName()).c_str(),
+		  G4String("Error in SCORER= " + scorer->GetName() + "  CLASSIFIER= " +  scorer->GetClassifier()->GetName()).c_str(),
 		  JustWarning,
-		  G4String("Making a 2D histogram is not possible if you do not use a GmCompoundClassifier. SCORER= " + theScorer->GetName() + "  CLASSIFIER= " +  theScorer->GetClassifier()->GetName()).c_str());
+		  G4String("Making a 2D histogram is not possible if you do not use a GmCompoundClassifier. SCORER= " + scorer->GetName() + "  CLASSIFIER= " +  scorer->GetClassifier()->GetName()).c_str());
       theNShift = theNBinsX;
     } else {
-      GmCompoundClassifier* classif = (GmCompoundClassifier*)(theScorer->GetClassifier());
+      GmCompoundClassifier* classif = (GmCompoundClassifier*)(scorer->GetClassifier());
       theNShift = classif->GetNShift();
       /* if( theNShift != theNBinsY ) {
 	G4Exception("GmPSPrinterHistos::DumpAll",
-		    G4String("Error in SCORER= " + theScorer->GetName() + "  CLASSIFIER= " +  theScorer->GetClassifier()->GetName()).c_str(),
+		    G4String("Error in SCORER= " + scorer->GetName() + "  CLASSIFIER= " +  scorer->GetClassifier()->GetName()).c_str(),
 		    JustWarning,
 		    G4String("Number of values in classifier = " + GmGenUtils::itoa(theNShift) + " is different than in histogram = " + GmGenUtils::itoa(theNBinsY)).c_str());
 		    }*/
@@ -176,15 +150,7 @@ void GmPSPrinterHistos::DumpAll( G4THitsMap<G4double>* RunMap, GmVPrimitiveScore
     }
   }
 
-  theUnit = theScorer->GetUnit();
-
   std::map<G4int,G4double*>::iterator ite;
-  G4double nev;
-  if( bScoreByEvent ) {
-    nev = GmNumberOfEvent::GetNumberOfEvent();
-  } else {
-    nev = 1;
-  }
 
   G4int startWith0 = 0;
   for(ite = RunMap->GetMap()->begin(); ite != RunMap->GetMap()->end(); ite++){
@@ -197,11 +163,7 @@ void GmPSPrinterHistos::DumpAll( G4THitsMap<G4double>* RunMap, GmVPrimitiveScore
 
     G4double sumVal = (*(ite->second));
     G4double aveVal;
-    if( bScoreByEvent ){
-      aveVal = sumVal/nev;
-    } else {
-      aveVal = sumVal;
-    } 
+    aveVal = sumVal;
  
     G4int index;
     if( !b2D ) {
@@ -226,15 +188,15 @@ void GmPSPrinterHistos::DumpAll( G4THitsMap<G4double>* RunMap, GmVPrimitiveScore
 
 #ifndef GAMOS_NO_VERBOSE
     if( ScoringVerb(debugVerb) ) {
-      G4cout << "GmPSPrinterHistos " << theName << " X Add BinContent " << index << " = " << aveVal/theUnit << G4endl;
+      G4cout << "GmPSPrinterHistos " << theName << " X Add BinContent " << index << " = " << aveVal << G4endl;
     }
 #endif
     G4double errorPast = hisX->GetBinError( index );
-    hisX->AddBinContent( index, aveVal/theUnit );
+    hisX->AddBinContent( index, aveVal );
     // MEAN AND RMS?
     
-    if( theScorer->ScoreErrors() ) {
-      G4double error = theScorer->GetErrorRelative( ite->first, sumVal, nev)*aveVal/theUnit;
+    if( scorer->ScoreErrors() ) {
+      G4double error = scorer->GetErrorRelative( ite->first, sumVal)*aveVal;
       hisX->SetBinError( index, sqrt(sqr(error)+sqr(errorPast)));
 #ifndef GAMOS_NO_VERBOSE
       if( ScoringVerb(debugVerb) ) {
@@ -269,13 +231,13 @@ void GmPSPrinterHistos::DumpAll( G4THitsMap<G4double>* RunMap, GmVPrimitiveScore
 #endif
       
       G4double errorPastY = hisY->GetBinError( indexY );
-      hisY->AddBinContent( indexY, aveVal/theUnit );
+      hisY->AddBinContent( indexY, aveVal );
       G4double errorPastXY = hisXY->GetBinError( indexX, indexY );
-      hisXY->SetBinContent( indexX, indexY, aveVal/theUnit + hisXY->GetBinContent(indexX,indexY) );
+      hisXY->SetBinContent( indexX, indexY, aveVal + hisXY->GetBinContent(indexX,indexY) );
 #ifndef GAMOS_NO_VERBOSE
       if( ScoringVerb(debugVerb) ) {
-	G4cout << "GmPSPrinterHistos " << theName << " Y Add BinContent " << indexY << " = " << aveVal/theUnit << " TOTAL= " << hisY->GetBinContent( indexY ) << G4endl;
-	G4cout << "GmPSPrinterHistos " << theName << " XY Set BinContent " << indexX << " , " << indexY << " = " << aveVal/theUnit << G4endl;
+	G4cout << "GmPSPrinterHistos " << theName << " Y Add BinContent " << indexY << " = " << aveVal << " TOTAL= " << hisY->GetBinContent( indexY ) << G4endl;
+	G4cout << "GmPSPrinterHistos " << theName << " XY Set BinContent " << indexX << " , " << indexY << " = " << aveVal << G4endl;
       }
 #endif
       GmHisto1* hisY1 = 0;
@@ -286,13 +248,13 @@ void GmPSPrinterHistos::DumpAll( G4THitsMap<G4double>* RunMap, GmVPrimitiveScore
 	  G4Exception("GmPSPrinterHistos::DumpAll",
 		      "Out of limits",
 		      JustWarning,
-		      G4String("Index X is out of limits, histo per row will not be filled. Index= " + GmGenUtils::itoa(indexX) + " Value skipped="+GmGenUtils::ftoa(aveVal/theUnit)).c_str());
+		      G4String("Index X is out of limits, histo per row will not be filled. Index= " + GmGenUtils::itoa(indexX) + " Value skipped="+GmGenUtils::ftoa(aveVal)).c_str());
 	} else {
 	  hisY1 = theAnaMgr->GetHisto1(theHistoNumber+10000+indexX);
-	  hisY1->AddBinContent( indexY, aveVal/theUnit );
+	  hisY1->AddBinContent( indexY, aveVal );
 #ifndef GAMOS_NO_VERBOSE
           if( ScoringVerb(debugVerb) ) {
-            G4cout << "GmPSPrinterHistos " << theName << " Y1 Add BinContent " << indexY << " = " << aveVal/theUnit << " TOTAL= " << hisY1->GetBinContent( indexY ) << G4endl;
+            G4cout << "GmPSPrinterHistos " << theName << " Y1 Add BinContent " << indexY << " = " << aveVal << " TOTAL= " << hisY1->GetBinContent( indexY ) << G4endl;
           }
 #endif
         }
@@ -302,22 +264,21 @@ void GmPSPrinterHistos::DumpAll( G4THitsMap<G4double>* RunMap, GmVPrimitiveScore
 	  G4Exception("GmPSPrinterHistos::DumpAll",
 		      "Out of limits",
 		      JustWarning,
-		      G4String("Index Y is out of limits, histo per row will not be filled. Index= " + GmGenUtils::itoa(index) + " Value skipped="+GmGenUtils::ftoa(aveVal/theUnit)).c_str());
+		      G4String("Index Y is out of limits, histo per row will not be filled. Index= " + GmGenUtils::itoa(index) + " Value skipped="+GmGenUtils::ftoa(aveVal)).c_str());
 	} else {
    	  hisX1 = theAnaMgr->GetHisto1(theHistoNumber+20000+indexY);
-	  hisX1->AddBinContent( indexX, aveVal/theUnit ); 
+	  hisX1->AddBinContent( indexX, aveVal ); 
 #ifndef GAMOS_NO_VERBOSE
 	  if( ScoringVerb(debugVerb) ) {
-	    G4cout << "GmPSPrinterHistos " << theName << " X1 Add BinContent " << indexX << " = " << aveVal/theUnit << " TOTAL= " << hisX1->GetBinContent( indexX ) << G4endl;
+	    G4cout << "GmPSPrinterHistos " << theName << " X1 Add BinContent " << indexX << " = " << aveVal << " TOTAL= " << hisX1->GetBinContent( indexX ) << G4endl;
 	  }
 #endif
         }
       }
 
 
-      if( theScorer->ScoreErrors() ) {
-	//	G4double error = theScorer->GetError( ite->first, sumVal, nev )*aveVal/theUnit;
-	G4double error = theScorer->GetErrorRelative( ite->first, sumVal, nev )*aveVal/theUnit;
+      if( scorer->ScoreErrors() ) {
+	G4double error = scorer->GetErrorRelative( ite->first, sumVal )*aveVal;
 	hisY->SetBinError( indexY, sqrt(sqr(error)+sqr(errorPastY)));
 	hisXY->SetBinError( indexX, indexY, sqrt(sqr(error)+sqr(errorPastXY)));
 #ifndef GAMOS_NO_VERBOSE

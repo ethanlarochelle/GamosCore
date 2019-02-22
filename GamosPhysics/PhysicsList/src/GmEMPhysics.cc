@@ -24,7 +24,7 @@
 // ********************************************************************
 //
 #include "GmEMPhysics.hh"
-#include "GmPhysicsMessenger.hh"
+#include "GmEMPhysicsMessenger.hh"
 #include "GmPhysicsGammaStandard.hh"
 #include "GmPhysicsGammaLowEner.hh"
 #include "GmPhysicsGammaPenelope.hh"
@@ -59,7 +59,7 @@ GmEMPhysics::GmEMPhysics(): G4VModularPhysicsList()
   // The threshold of production of secondaries is fixed to 10. mm
   // for all the particles, in all the experimental set-up
   defaultCutValue = 0.1 * CLHEP::mm;
-  messenger = new GmPhysicsMessenger(this);
+  messenger = new GmEMPhysicsMessenger(this);
   SetVerboseLevel(1);
   ConstructParticles();
 
@@ -97,9 +97,10 @@ void GmEMPhysics::ConstructParticles()
   G4MuonMinus::MuonMinusDefinition();
   G4MuonPlus::MuonPlusDefinition();
 
-  theParticleIterator->reset();
-  while( (*theParticleIterator)() ){
-    theParticleIterator->value();
+  auto particleIterator=GetParticleIterator();
+  particleIterator->reset();
+  while( (*particleIterator)() ){
+    particleIterator->value();
   }
 
 }
@@ -117,67 +118,36 @@ G4bool GmEMPhysics::ReplacePhysicsList(const G4String& name)
   G4bool bFound = true;
 
   // Replace standard processes for gammas
-  if (name == "gamma-standard") 
-    {
-      G4cout << "GmEMPhysics::ReplacePhysicsList: " << name 
-	     << " is registered" << G4endl;
-      ReplacePhysics( new GmPhysicsGammaStandard(name,22) );
-  
-      // Replace LowE-EPDL processes for gammas
-    } else if (name == "gamma-lowener"  
-    || name == "gamma-epdl") 
-    {
-      G4cout << "GmEMPhysics::ReplacePhysicsList: " << name 
-	     << " is registered" << G4endl;
-      ReplacePhysics( new GmPhysicsGammaLowEner(name,22) );
+  if (name == "gamma-standard") {
+    ReplacePhysics( new GmPhysicsGammaStandard(name,22) );
 
-  // Replace processes a' la Penelope for gammas
-    } else if (name == "gamma-penelope")
-    {
-      G4cout << "GmEMPhysics::ReplacePhysicsList: " << name 
-	     << " is registered" << G4endl;
-      ReplacePhysics( new GmPhysicsGammaPenelope(name,22) );
+  } else if (name == "gamma-lowener" || name == "gamma-epdl") {
+    ReplacePhysics( new GmPhysicsGammaLowEner(name,22) );
+
+  } else if (name == "gamma-penelope") {
+    ReplacePhysics( new GmPhysicsGammaPenelope(name,22) );
   
-      // Replace standard processes for electrons
-    } else if (name == "electron-standard") 
-    {
-      G4cout << "GmEMPhysics::ReplacePhysicsList: " << name 
-	     << " is registered" << G4endl;
-      ReplacePhysics( new GmPhysicsElectronStandard(name,11) );
+  } else if (name == "electron-standard") {
+    ReplacePhysics( new GmPhysicsElectronStandard(name,11) );
+
+  } else if (name == "electron-lowener" || name == "electron-eedl") {
+    ReplacePhysics( new GmPhysicsElectronLowEner(name,11) );
       
-      // Replace LowE-EEDL processes for electrons
-    } else if (name == "electron-lowener"  
-      || name == "electron-eedl") 
-    {
-      G4cout << "GmEMPhysics::ReplacePhysicsList: " << name 
-	     << " is registered" << G4endl;
-      ReplacePhysics( new GmPhysicsElectronLowEner(name,11) );
+  } else if (name == "electron-penelope") {
+    ReplacePhysics( new GmPhysicsElectronPenelope(name,11) );
       
-      // Replace processes a' la Penelope for electrons
-    } else if (name == "electron-penelope")
-    {
-      G4cout << "GmEMPhysics::ReplacePhysicsList: " << name 
-	     << " is registered" << G4endl;
-      ReplacePhysics( new GmPhysicsElectronPenelope(name,11) );
-      
-      // Replace standard processes for positrons
-    } else if (name == "positron-standard") 
-    {
-      G4cout << "GmEMPhysics::ReplacePhysicsList: " << name 
-	     << " is registered" << G4endl;
-      ReplacePhysics( new GmPhysicsPositronStandard(name,111) );
-      
-      // Replace penelope processes for positrons
-    } else if (name == "positron-penelope") 
-    {
-      G4cout << "GmEMPhysics::ReplacePhysicsList: " << name 
-	     << " is registered" << G4endl;
-      ReplacePhysics( new GmPhysicsPositronPenelope(name,111) );
+  } else if (name == "positron-standard") {
+    ReplacePhysics( new GmPhysicsPositronStandard(name,111) );
+
+  } else if (name == "positron-penelope") {
+    ReplacePhysics( new GmPhysicsPositronPenelope(name,111) );
 
   } else {
     bFound = false;
   }  
-  
+
+  if( bFound ) G4cout << "GmEMPhysics::ReplacePhysicsList: " << name << " is registered" << G4endl;
+
   return bFound;
 }
 

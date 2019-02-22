@@ -231,7 +231,7 @@ double GmHisto1::GetEffectiveEntries() const
 }
 
 //----------------------------------------------------------------------
-double GmHisto1::GmGenUtils::GetIntegral() const
+double GmHisto1::GetIntegral() const
 {
   return theSumW;
 }

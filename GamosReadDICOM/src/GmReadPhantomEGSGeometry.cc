@@ -1,28 +1,3 @@
-//
-// ********************************************************************
-// * License and Disclaimer                                           *
-// *                                                                  *
-// * The  GAMOS software  is  copyright of the Copyright  Holders  of *
-// * the GAMOS Collaboration.  It is provided  under  the  terms  and *
-// * conditions of the GAMOS Software License,  included in the  file *
-// * LICENSE and available at  http://fismed.ciemat.es/GAMOS/license .*
-// * These include a list of copyright holders.                       *
-// *                                                                  *
-// * Neither the authors of this software system, nor their employing *
-// * institutes,nor the agencies providing financial support for this *
-// * work  make  any representation or  warranty, express or implied, *
-// * regarding  this  software system or assume any liability for its *
-// * use.  Please see the license in the file  LICENSE  and URL above *
-// * for the full disclaimer and the limitation of liability.         *
-// *                                                                  *
-// * This  code  implementation is the result of  the  scientific and *
-// * technical work of the GAMOS collaboration.                       *
-// * By using,  copying,  modifying or  distributing the software (or *
-// * any work based  on the software)  you  agree  to acknowledge its *
-// * use  in  resulting  scientific  publications,  and indicate your *
-// * acceptance of all terms of the GAMOS Software license.           *
-// ********************************************************************
-//
 #include "G4Box.hh"
 #include "G4LogicalVolume.hh"
 #include "G4VPhysicalVolume.hh"
@@ -56,13 +31,14 @@ GmReadPhantomEGSGeometry::GmReadPhantomEGSGeometry()
 //---------------------------------------------------------------------------
 GmReadPhantomEGSGeometry::~GmReadPhantomEGSGeometry()
 {
+    thePhantomFileName = "test.egsphant";
 }
 
 
 //---------------------------------------------------------------------------
 void GmReadPhantomEGSGeometry::ReadPhantomData()
 {
-  G4String filename = GmParameterMgr::GetInstance()->GetStringValue("GmReadPhantomGeometry:Phantom:FileName", "test.egsphant");
+  G4String filename = GmParameterMgr::GetInstance()->GetStringValue("GmReadPhantomGeometry:Phantom:FileName", thePhantomFileName);
 
   G4String path( getenv( "GAMOS_SEARCH_PATH" ) );
   filename = GmGenUtils::FileInPath( path, filename );
@@ -114,7 +90,7 @@ void GmReadPhantomEGSGeometry::ReadPhantomData()
   if( ReadDICOMVerb(infoVerb) ) G4cout << "GmReadPhantomEGSGeometry::ReadPhantomData dimZ " << dimZ << " offsetZ " << offsetZ << G4endl;
 #endif
 
-  //  mateIDs = new size_t[nVoxelX*nVoxelY*nVoxelZ];
+  //  theMateIDs = new size_t[nVoxelX*nVoxelY*nVoxelZ];
   theMateIDs = new size_t[nVoxelX*nVoxelY*nVoxelZ];
   for( G4int iz = 0; iz < nVoxelZ; iz++ ) {
     for( G4int iy = 0; iy < nVoxelY; iy++ ) { // check if loop in X first???
@@ -124,8 +100,8 @@ void GmReadPhantomEGSGeometry::ReadPhantomData()
       //      G4cout << " stemp " << stemp << G4endl;
 	G4int nnew = ix + (iy)*nVoxelX + (iz)*nVoxelX*nVoxelY;
 	G4String cid = stemp.substr(ix,1).c_str();
-		//if( nnew % 10000 == 0 ) G4cout << stemp << " " << ix << " " << iy << " " << iz << " filling mateIDs " << nnew << " = " << atoi(cid.c_str())-1 << G4endl;
-		//if( nnew > nVoxelX*nVoxelY*nVoxelZ-10000 ) G4cout << ix << " " << iy << " " << iz << " filling mateIDs " << nnew << " = " << atoi(cid)-1 << G4endl;
+		//if( nnew % 10000 == 0 ) G4cout << stemp << " " << ix << " " << iy << " " << iz << " filling theMateIDs " << nnew << " = " << atoi(cid.c_str())-1 << G4endl;
+		//if( nnew > nVoxelX*nVoxelY*nVoxelZ-10000 ) G4cout << ix << " " << iy << " " << iz << " filling theMateIDs " << nnew << " = " << atoi(cid)-1 << G4endl;
 	G4int mateID = atoi(cid)-1;
 	if( mateID < 0 || mateID >= nMaterials ) {
 	  G4Exception("GmReadPhantomEGSGeometry::ReadPhantomData",
@@ -137,14 +113,14 @@ void GmReadPhantomEGSGeometry::ReadPhantomData()
 			       + GmGenUtils::itoa(mateID)).c_str());
 	}
 	theMateIDs[nnew] = mateID;
-	//	mateIDs[nnew] = 1-1;
+	//	theMateIDs[nnew] = 1-1;
       }
     }
   }
 
   ReadVoxelDensities( *fin );
 
-  ReadPS( fing );
+  ReadPV( fing );
 
   fin->close();
 

@@ -1,28 +1,3 @@
-//
-// ********************************************************************
-// * License and Disclaimer                                           *
-// *                                                                  *
-// * The  GAMOS software  is  copyright of the Copyright  Holders  of *
-// * the GAMOS Collaboration.  It is provided  under  the  terms  and *
-// * conditions of the GAMOS Software License,  included in the  file *
-// * LICENSE and available at  http://fismed.ciemat.es/GAMOS/license .*
-// * These include a list of copyright holders.                       *
-// *                                                                  *
-// * Neither the authors of this software system, nor their employing *
-// * institutes,nor the agencies providing financial support for this *
-// * work  make  any representation or  warranty, express or implied, *
-// * regarding  this  software system or assume any liability for its *
-// * use.  Please see the license in the file  LICENSE  and URL above *
-// * for the full disclaimer and the limitation of liability.         *
-// *                                                                  *
-// * This  code  implementation is the result of  the  scientific and *
-// * technical work of the GAMOS collaboration.                       *
-// * By using,  copying,  modifying or  distributing the software (or *
-// * any work based  on the software)  you  agree  to acknowledge its *
-// * use  in  resulting  scientific  publications,  and indicate your *
-// * acceptance of all terms of the GAMOS Software license.           *
-// ********************************************************************
-//
 #include "GmRegularParamUtils.hh"
 #include "GamosCore/GamosGeometry/include/GmGeometryUtils.hh"
 #include "GamosCore/GamosGeometry/include/GmTouchable.hh"
@@ -43,6 +18,34 @@ GmRegularParamUtils* GmRegularParamUtils::GetInstance()
 
   return theInstance;
 
+}
+
+//-----------------------------------------------------------------------
+std::vector<G4PhantomParameterisation*> GmRegularParamUtils::GetPhantomParams(G4bool bMustExist)
+{
+  std::vector<G4PhantomParameterisation*> paramregs;
+
+  G4PhysicalVolumeStore* pvs = G4PhysicalVolumeStore::GetInstance();
+  std::vector<G4VPhysicalVolume*>::iterator cite;
+  for( cite = pvs->begin(); cite != pvs->end(); cite++ ) {
+    //    G4cout << " PV " << (*cite)->GetName() << " " << (*cite)->GetTranslation() << G4endl;
+    if( IsPhantomVolume( *cite ) ) {
+      const G4PVParameterised* pvparam = static_cast<const G4PVParameterised*>(*cite);
+      G4VPVParameterisation* param = pvparam->GetParameterisation();
+      //    if( static_cast<const G4PhantomParameterisation*>(param) ){
+      //    if( static_cast<const G4PhantomParameterisation*>(param) ){
+      //      G4cout << "G4PhantomParameterisation volume found  " << (*cite)->GetName() << G4endl;
+      paramregs.push_back( static_cast<G4PhantomParameterisation*>(param) );
+    }
+  }
+  
+  if( paramregs.size() == 0 && bMustExist ) G4Exception("GmRegularParamUtils::GetPhantomParam",
+					    "Wrong argument",
+					    FatalErrorInArgument,
+					    "No G4PhantomParameterisation found ");
+  
+  return paramregs;
+  
 }
 
 //-----------------------------------------------------------------------
@@ -104,7 +107,7 @@ G4bool GmRegularParamUtils::IsPhantomVolume( G4VPhysicalVolume* pv )
   EAxis axis;
   G4int nReplicas;
   G4double width,offset;
-  G4bool consuming;
+  G4bool consuming = false;
   pv->GetReplicationData(axis,nReplicas,width,offset,consuming);
   EVolume type = (consuming) ? kReplica : kParameterised;
   if( type == kParameterised && pv->GetRegularStructureId() == 1 ) {  

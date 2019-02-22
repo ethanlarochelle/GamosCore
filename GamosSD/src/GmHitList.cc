@@ -1,28 +1,3 @@
-//
-// ********************************************************************
-// * License and Disclaimer                                           *
-// *                                                                  *
-// * The  GAMOS software  is  copyright of the Copyright  Holders  of *
-// * the GAMOS Collaboration.  It is provided  under  the  terms  and *
-// * conditions of the GAMOS Software License,  included in the  file *
-// * LICENSE and available at  http://fismed.ciemat.es/GAMOS/license .*
-// * These include a list of copyright holders.                       *
-// *                                                                  *
-// * Neither the authors of this software system, nor their employing *
-// * institutes,nor the agencies providing financial support for this *
-// * work  make  any representation or  warranty, express or implied, *
-// * regarding  this  software system or assume any liability for its *
-// * use.  Please see the license in the file  LICENSE  and URL above *
-// * for the full disclaimer and the limitation of liability.         *
-// *                                                                  *
-// * This  code  implementation is the result of  the  scientific and *
-// * technical work of the GAMOS collaboration.                       *
-// * By using,  copying,  modifying or  distributing the software (or *
-// * any work based  on the software)  you  agree  to acknowledge its *
-// * use  in  resulting  scientific  publications,  and indicate your *
-// * acceptance of all terms of the GAMOS Software license.           *
-// ********************************************************************
-//
 #include "GamosCore/GamosSD/include/GmHitList.hh"
 #include "GamosCore/GamosSD/include/GmHitsEventMgr.hh"
 #include "GamosCore/GamosSD/include/GmSDVerbosity.hh"
@@ -261,7 +236,7 @@ void GmHitList::CleanDeadTimeDetUnitList(G4double time)
 void GmHitList::BuildHitsCompatibleInTime( G4double currentTime )
 {
   if( currentTime == -1. || currentTime == 0. || theMeasuringTime == 0. ) {
-    BuildHitsAll();
+    BuildHitsAll( currentTime );
     return;
   }
 
@@ -278,15 +253,29 @@ void GmHitList::BuildHitsCompatibleInTime( G4double currentTime )
 }
 
 //----------------------------------------------------------------------
-void GmHitList::BuildHitsAll()
+void GmHitList::BuildHitsAll( G4double currentTime )
 {
   iterator ite;
   for( ite = begin(); ite != end(); ite++ ){
-    theHitsCompatibleInTime.push_back( *ite );
+    G4bool bOK = true;
     G4double hitTime = (*ite)->GetTime();
+    G4double lowestTime = currentTime - theMeasuringTime;
+    G4bool bDeadDU = theDeadTimeDetUnitList->FindDetUnit(*ite,theDeadTime); 
+    if( bDeadDU ) {
+      bOK = false;
+      (*ite)->SetDeadTimeFound(true);
+    }
+    if( hitTime < lowestTime ) {
+      bOK = false;
+    }
+    
+    if( bOK == true) {
+      theHitsCompatibleInTime.push_back( *ite );
+    }
 #ifndef GAMOS_NO_VERBOSE
     if( SDVerb(infoVerb) ) G4cout << "GmHitList::BuildHitsCompatibleInTime added hit, because all are added " << hitTime << G4endl;
 #endif
+    
   }
 }
 

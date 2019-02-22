@@ -1,28 +1,3 @@
-//
-// ********************************************************************
-// * License and Disclaimer                                           *
-// *                                                                  *
-// * The  GAMOS software  is  copyright of the Copyright  Holders  of *
-// * the GAMOS Collaboration.  It is provided  under  the  terms  and *
-// * conditions of the GAMOS Software License,  included in the  file *
-// * LICENSE and available at  http://fismed.ciemat.es/GAMOS/license .*
-// * These include a list of copyright holders.                       *
-// *                                                                  *
-// * Neither the authors of this software system, nor their employing *
-// * institutes,nor the agencies providing financial support for this *
-// * work  make  any representation or  warranty, express or implied, *
-// * regarding  this  software system or assume any liability for its *
-// * use.  Please see the license in the file  LICENSE  and URL above *
-// * for the full disclaimer and the limitation of liability.         *
-// *                                                                  *
-// * This  code  implementation is the result of  the  scientific and *
-// * technical work of the GAMOS collaboration.                       *
-// * By using,  copying,  modifying or  distributing the software (or *
-// * any work based  on the software)  you  agree  to acknowledge its *
-// * use  in  resulting  scientific  publications,  and indicate your *
-// * acceptance of all terms of the GAMOS Software license.           *
-// ********************************************************************
-//
 #include "GmBOptnEWAnnihilation.hh"
 #include "GmBiasingVerbosity.hh"
 
@@ -67,6 +42,7 @@ ApplyFinalStateBiasing( const G4BiasingProcessInterface* callingProcess,
   // -- Now deal with the gamma's:
   // -- their common weight:
   G4int nSplit = fNSplit;
+  // --- Only split fat positrons
   if( track->GetWeight() < 1. ) {
 #ifndef GAMOS_NO_VERBOSE
     if( BiasingVerb(testVerb) ) history += "_FAT";
@@ -86,7 +62,7 @@ ApplyFinalStateBiasing( const G4BiasingProcessInterface* callingProcess,
     
     // ( note: we don't need to cast to actual type here, as methods for accessing
     //   secondary particles are from base class G4VParticleChange )
-    G4VParticleChange* processFinalState = callingProcess->GetWrappedProcess()->AtRestDoIt(*track, *step);
+    G4VParticleChange* processFinalState = callingProcess->GetWrappedProcess()->PostStepDoIt(*track, *step);
     if( nCalls == 1 ) {
       //-      if ( processFinalState->GetNumberOfSecondaries() == 0 )  return processFinalState;
       // --   - the electron state will be taken as the first one produced by the 
@@ -158,8 +134,7 @@ ApplyFinalStateBiasing( const G4BiasingProcessInterface* callingProcess,
     }
     processFinalState->Clear();
 
-    // --- Only split fat positrons
-    if( track->GetWeight() < 1. ) break; 
+    //-    if( track->GetWeight() < 1. ) break; 
     
     nCalls++;
     

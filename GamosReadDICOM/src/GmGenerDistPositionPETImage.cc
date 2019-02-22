@@ -1,28 +1,3 @@
-//
-// ********************************************************************
-// * License and Disclaimer                                           *
-// *                                                                  *
-// * The  GAMOS software  is  copyright of the Copyright  Holders  of *
-// * the GAMOS Collaboration.  It is provided  under  the  terms  and *
-// * conditions of the GAMOS Software License,  included in the  file *
-// * LICENSE and available at  http://fismed.ciemat.es/GAMOS/license .*
-// * These include a list of copyright holders.                       *
-// *                                                                  *
-// * Neither the authors of this software system, nor their employing *
-// * institutes,nor the agencies providing financial support for this *
-// * work  make  any representation or  warranty, express or implied, *
-// * regarding  this  software system or assume any liability for its *
-// * use.  Please see the license in the file  LICENSE  and URL above *
-// * for the full disclaimer and the limitation of liability.         *
-// *                                                                  *
-// * This  code  implementation is the result of  the  scientific and *
-// * technical work of the GAMOS collaboration.                       *
-// * By using,  copying,  modifying or  distributing the software (or *
-// * any work based  on the software)  you  agree  to acknowledge its *
-// * use  in  resulting  scientific  publications,  and indicate your *
-// * acceptance of all terms of the GAMOS Software license.           *
-// ********************************************************************
-//
 #include "GmGenerDistPositionPETImage.hh"
 #include "GmReadDICOMVerbosity.hh"
 #include "GmReadPETDicom.hh"
@@ -47,7 +22,7 @@ void GmGenerDistPositionPETImage::Initialise()
 
   size_t* activities = petData->GetActivities();
   G4double probSUM = 0.;
-  G4int nvox = petData->GetNVoxels();
+  G4int nvox = petData->GetNoVoxels();
   std::multiset<G4double> probT;
   for( G4int ii = 0; ii < nvox; ii++ ) {
     probSUM += activities[ii];
@@ -61,28 +36,28 @@ void GmGenerDistPositionPETImage::Initialise()
     //    G4cout << std::distance(probT.begin(),ite) << " THEPROB " << (*ite)/probSUM << " " << *ite << G4endl; //GDEB
     
   }
-  theNVoxelX = petData->GetNVoxelX();
-  theNVoxelY = petData->GetNVoxelY();
-  theNVoxelZ = petData->GetNVoxelZ();
+  theNVoxelX = petData->GetNoVoxelX();
+  theNVoxelY = petData->GetNoVoxelY();
+  theNVoxelZ = petData->GetNoVoxelZ();
   theMinX = petData->GetMinX();
   theMinY = petData->GetMinY();
   theMinZ = petData->GetMinZ();
-  theVoxelDimX = petData->GetVoxelHalfX()*2.;
-  theVoxelDimY = petData->GetVoxelHalfY()*2.;
-  theVoxelDimZ = petData->GetVoxelHalfZ()*2.;
+  theVoxelDimX = petData->GetVoxelHalfX()*2;
+  theVoxelDimY = petData->GetVoxelHalfY()*2;
+  theVoxelDimZ = petData->GetVoxelHalfZ()*2;
 
-  for( G4int ii = 0; ii < nvox; ii++ ) {
+  /*  for( G4int ii = 0; ii < nvox; ii++ ) {
     G4int copyNo = ii;
     G4int nvx = copyNo % theNVoxelX;
     G4int nvy = copyNo/theNVoxelX % theNVoxelY;
     G4int nvz = copyNo/theNVoxelX/theNVoxelY % theNVoxelZ;
-    //    G4cout << " PIXEL " << copyNo << " " << nvx << " " << nvy << " " << nvz << " " << activities[ii] << " " << G4endl; //GDEB
-  }
+       G4cout << " PIXEL " << copyNo << " " << nvx << " " << nvy << " " << nvz << " " << activities[ii] << " " << G4endl; //GDEB
+       } 
   std::multiset<G4double>::iterator ite2;
   for( ite = theProb.begin(); ite != theProb.end(); ite++ ) {
     ite2 = ite; ite2--;
     //    if( ite != theProb.begin() )   G4cout << "  PROBSUM " << std::distance(theProb.begin(),ite) << " " << *ite << " > " << *ite-*ite2 << G4endl;//GDEB
-  }
+    } */
 } 
 
 
@@ -140,9 +115,9 @@ G4ThreeVector GmGenerDistPositionPETImage::GeneratePosition( const GmParticleSou
 {
   
   //----- Get x,y,z coordinates in voxel
-  G4ThreeVector pos( -theVoxelDimX + 2*CLHEP::RandFlat::shoot()*theVoxelDimX,
-		     -theVoxelDimY + 2*CLHEP::RandFlat::shoot()*theVoxelDimY,
-		     -theVoxelDimZ + 2*CLHEP::RandFlat::shoot()*theVoxelDimZ );
+  G4ThreeVector pos( -theVoxelDimX/2. + CLHEP::RandFlat::shoot()*theVoxelDimX,
+		     -theVoxelDimY/2. + CLHEP::RandFlat::shoot()*theVoxelDimY,
+		     -theVoxelDimZ/2. + CLHEP::RandFlat::shoot()*theVoxelDimZ );
   //----- Select randomly a voxel
   G4double randN = CLHEP::RandFlat::shoot();
   std::multiset<G4double>::iterator ite = theProb.upper_bound( randN );
@@ -153,15 +128,20 @@ G4ThreeVector GmGenerDistPositionPETImage::GeneratePosition( const GmParticleSou
   G4int nvz = copyNo/theNVoxelX/theNVoxelY % theNVoxelZ;
   
 #ifndef GAMOS_NO_VERBOSE
-  if( ReadDICOMVerb(infoVerb) ) G4cout << "GmGenerDistPositionPETImage::GeneratePosition  pos before transformation " << pos << G4endl;
+  if( ReadDICOMVerb(debugVerb) ) G4cout << "GmGenerDistPositionPETImage::GeneratePosition  pos before transformation " << pos << G4endl;
 #endif
 
-  pos += G4ThreeVector(theMinX + theVoxelDimX*nvx, theMinY + theVoxelDimY*nvy, theMinZ + theVoxelDimZ*nvz );
+  pos += G4ThreeVector(theMinX + theVoxelDimX*(nvx+0.5), theMinY + theVoxelDimY*(nvy+0.5), theMinZ + theVoxelDimZ*(nvz+0.5) );
 
-  //  G4cout << randN << " theMinX " << theMinX << " theVoxelDimX " << theVoxelDimX << "nvx  " << nvx << " = " << theMinX + theVoxelDimX*nvx << " copyNo " << copyNo << G4endl; //GDEB
-  //  G4cout << " theMinY " << theMinY << " theVoxelDimY " << theVoxelDimY << "nvy  " << nvy << " = " << theMinY + theVoxelDimY*nvy << " copyNo " << copyNo << G4endl; //GDEB
 #ifndef GAMOS_NO_VERBOSE
-  if( ReadDICOMVerb(infoVerb) ) G4cout << "GmGenerDistPositionPETImage::GeneratePosition  pos after voxel transformation " << pos << G4endl;
+  if( ReadDICOMVerb(testVerb) )  {
+    G4cout << randN << " theMinX " << theMinX << " theVoxelDimX " << theVoxelDimX << "nvx  " << nvx << " = " << theMinX + theVoxelDimX*nvx << " copyNo " << copyNo << G4endl; 
+    G4cout << " theMinY " << theMinY << " theVoxelDimY " << theVoxelDimY << "nvy  " << nvy << " = " << theMinY + theVoxelDimY*nvy << " copyNo " << copyNo << G4endl;
+    G4cout << " theMinZ " << theMinZ << " theVoxelDimZ " << theVoxelDimZ << "nvz  " << nvz << " = " << theMinZ + theVoxelDimZ*nvz << " copyNo " << copyNo << G4endl;
+  }
+#endif
+#ifndef GAMOS_NO_VERBOSE
+  if( ReadDICOMVerb(debugVerb) ) G4cout << "GmGenerDistPositionPETImage::GeneratePosition  pos after voxel transformation " << pos << G4endl;
 #endif
 
     pos = theRotation * pos;

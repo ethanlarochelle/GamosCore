@@ -1,28 +1,3 @@
-//
-// ********************************************************************
-// * License and Disclaimer                                           *
-// *                                                                  *
-// * The  GAMOS software  is  copyright of the Copyright  Holders  of *
-// * the GAMOS Collaboration.  It is provided  under  the  terms  and *
-// * conditions of the GAMOS Software License,  included in the  file *
-// * LICENSE and available at  http://fismed.ciemat.es/GAMOS/license .*
-// * These include a list of copyright holders.                       *
-// *                                                                  *
-// * Neither the authors of this software system, nor their employing *
-// * institutes,nor the agencies providing financial support for this *
-// * work  make  any representation or  warranty, express or implied, *
-// * regarding  this  software system or assume any liability for its *
-// * use.  Please see the license in the file  LICENSE  and URL above *
-// * for the full disclaimer and the limitation of liability.         *
-// *                                                                  *
-// * This  code  implementation is the result of  the  scientific and *
-// * technical work of the GAMOS collaboration.                       *
-// * By using,  copying,  modifying or  distributing the software (or *
-// * any work based  on the software)  you  agree  to acknowledge its *
-// * use  in  resulting  scientific  publications,  and indicate your *
-// * acceptance of all terms of the GAMOS Software license.           *
-// ********************************************************************
-//
 #include "GmVPhysicsElectron.hh"
 #include "GmPhysicsVerbosity.hh"
 
@@ -55,9 +30,9 @@ GmVPhysicsElectron::~GmVPhysicsElectron()
 { }
 
 //----------------------------------------------------------------------
-void GmVPhysicsElectron::SelectBremssAngularDist(G4SeltzerBergerModel* bremsModel )
+void GmVPhysicsElectron::SelectBremssAngularDist(G4SeltzerBergerModel* bremsModel, G4String part )
 {
-  G4String angularDist = GmParameterMgr::GetInstance()->GetStringValue("GmPhysicsElectron:Bremsstrahlung:AngularDistribution","");
+  G4String angularDist = GmParameterMgr::GetInstance()->GetStringValue("GmPhysics"+part+":Bremsstrahlung:AngularDistribution","");
 
   if( angularDist == "dipBust" ) {
     bremsModel->SetAngularDistribution( new G4DipBustGenerator() );
@@ -74,13 +49,14 @@ void GmVPhysicsElectron::SelectBremssAngularDist(G4SeltzerBergerModel* bremsMode
 		FatalErrorInArgument,
 		G4String("Available distributions are dipBust / tsai / 2bn / 2bs , you have set it to "+angularDist).c_str());
   }
-  
+ 
+  G4cout << "  SelectBremssAngularDist " << angularDist << G4endl; //GDEB 
 }
 
 //----------------------------------------------------------------------
-void GmVPhysicsElectron::SelectBremssAngularDist(G4LivermoreBremsstrahlungModel* bremsModel )
+void GmVPhysicsElectron::SelectBremssAngularDist(G4LivermoreBremsstrahlungModel* bremsModel, G4String part  )
 {
-  G4String angularDist = GmParameterMgr::GetInstance()->GetStringValue("GmPhysicsElectron:Bremsstrahlung:AngularDistribution","");
+  G4String angularDist = GmParameterMgr::GetInstance()->GetStringValue("GmPhysics"+part+":Bremsstrahlung:AngularDistribution","");
   if( angularDist == "tsai" ) {
     bremsModel->SetAngularDistribution( new G4ModifiedTsai() );
   }else if( angularDist == "2bn" ) {

@@ -1,28 +1,3 @@
-//
-// ********************************************************************
-// * License and Disclaimer                                           *
-// *                                                                  *
-// * The  GAMOS software  is  copyright of the Copyright  Holders  of *
-// * the GAMOS Collaboration.  It is provided  under  the  terms  and *
-// * conditions of the GAMOS Software License,  included in the  file *
-// * LICENSE and available at  http://fismed.ciemat.es/GAMOS/license .*
-// * These include a list of copyright holders.                       *
-// *                                                                  *
-// * Neither the authors of this software system, nor their employing *
-// * institutes,nor the agencies providing financial support for this *
-// * work  make  any representation or  warranty, express or implied, *
-// * regarding  this  software system or assume any liability for its *
-// * use.  Please see the license in the file  LICENSE  and URL above *
-// * for the full disclaimer and the limitation of liability.         *
-// *                                                                  *
-// * This  code  implementation is the result of  the  scientific and *
-// * technical work of the GAMOS collaboration.                       *
-// * By using,  copying,  modifying or  distributing the software (or *
-// * any work based  on the software)  you  agree  to acknowledge its *
-// * use  in  resulting  scientific  publications,  and indicate your *
-// * acceptance of all terms of the GAMOS Software license.           *
-// ********************************************************************
-//
 #include "G4VPrimitiveScorer.hh"
 #include "G4EnergyLossForExtrapolator.hh"
 #include "GmG4PSDoseDeposit_SkipEqualMateSimple.hh"
@@ -152,7 +127,7 @@ G4bool GmG4PSDoseDeposit_SkipEqualMateSimple::FillScorer(G4Step* aStep, G4double
 	G4double valwei = valStep*wei;
 	EvtMap->add(index,valwei);
 #ifndef GAMOS_NO_VERBOSE
-	//	G4cout << ScoringVerb(-debugVerb) << GetName() << " " << index << " val "<< val << " valStep " << valStep << " stepl " << sl << " TOTALstepLength " << stepLength << " slSum " << slSum << " old sl " << G4RegularNavigationHelper::theStepLengths[ii].second << " " << G4RegularNavigationHelper::theStepLengths[ii].second-stepLength << G4endl;
+	//	G4cout << ScoringVerb(debugVerb) << GetName() << " " << index << " val "<< val << " valStep " << valStep << " stepl " << sl << " TOTALstepLength " << stepLength << " slSum " << slSum << " old sl " << G4RegularNavigationHelper::theStepLengths[ii].second << " " << G4RegularNavigationHelper::theStepLengths[ii].second-stepLength << G4endl;
 #endif
 	
 	if( bScoreErrors ) {
@@ -194,32 +169,3 @@ G4double GmG4PSDoseDeposit_SkipEqualMateSimple::GetGeom2TrueStepLength( G4double
 
   return g2tratio;
 }
-
-//--------------------------------------------------------------------
-void GmG4PSDoseDeposit_SkipEqualMateSimple::EndOfEvent(G4HCofThisEvent*)
-{
-}
-
-//--------------------------------------------------------------------
-void GmG4PSDoseDeposit_SkipEqualMateSimple::DrawAll()
-{;}
-
-//--------------------------------------------------------------------
-void GmG4PSDoseDeposit_SkipEqualMateSimple::PrintAll()
-{
-  G4cout <<" GmG4PSDoseDeposit_NoSkipEqualMate::PrintAllDefault() " << G4endl;
-  G4cout << " MultiFunctionalDet  " << detector->GetName() << G4endl;
-  G4cout << " PrimitiveScorer " << GetName() << G4endl;
-  G4cout << " Number of entries " << EvtMap->entries() << G4endl;
-  std::map<G4int,G4double*>::iterator itr = EvtMap->GetMap()->begin();
-  for(; itr != EvtMap->GetMap()->end(); itr++) {
-    G4cout << "  copy no.: " << itr->first
-	   << "  dose deposit: " << G4BestUnit(*(itr->second),"Dose")
-	   << G4endl;
-  }
-}
- #include "GamosCore/GamosBase/Base/include/GmVClassifier.hh" 
-G4int GmG4PSDoseDeposit_SkipEqualMateSimple::GetIndex(G4Step* aStep ) 
- { 
- return theClassifier->GetIndexFromStep( aStep ); 
-} 

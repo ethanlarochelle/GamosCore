@@ -26,6 +26,7 @@
 #ifndef GmHisto2_hh
 #define GmHisto2_hh
 #ifdef GAMOS_NO_ROOT
+#include "GamosCore/GamosUtils/include/GmGenUtils.hh"
 
 #include <string>
 #include <map>
@@ -70,7 +71,7 @@ public:
   int GetEntries() const;
   void SetEntries( int ent ) { theEntries = ent;}
 
-  double GmGenUtils::GetIntegral() const;
+  double GetIntegral() const;
   int GetBinX(float binx ) const;
   int GetBinY(float biny ) const;
 

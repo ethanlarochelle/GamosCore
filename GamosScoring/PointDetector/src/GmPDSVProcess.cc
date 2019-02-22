@@ -1,28 +1,3 @@
-//
-// ********************************************************************
-// * License and Disclaimer                                           *
-// *                                                                  *
-// * The  GAMOS software  is  copyright of the Copyright  Holders  of *
-// * the GAMOS Collaboration.  It is provided  under  the  terms  and *
-// * conditions of the GAMOS Software License,  included in the  file *
-// * LICENSE and available at  http://fismed.ciemat.es/GAMOS/license .*
-// * These include a list of copyright holders.                       *
-// *                                                                  *
-// * Neither the authors of this software system, nor their employing *
-// * institutes,nor the agencies providing financial support for this *
-// * work  make  any representation or  warranty, express or implied, *
-// * regarding  this  software system or assume any liability for its *
-// * use.  Please see the license in the file  LICENSE  and URL above *
-// * for the full disclaimer and the limitation of liability.         *
-// *                                                                  *
-// * This  code  implementation is the result of  the  scientific and *
-// * technical work of the GAMOS collaboration.                       *
-// * By using,  copying,  modifying or  distributing the software (or *
-// * any work based  on the software)  you  agree  to acknowledge its *
-// * use  in  resulting  scientific  publications,  and indicate your *
-// * acceptance of all terms of the GAMOS Software license.           *
-// ********************************************************************
-//
 #define _USE_MATH_DEFINES
 #include <cmath>
 
@@ -174,95 +149,39 @@ G4VParticleChange* GmPDSVProcess::PostStepDoIt( const G4Track& aTrack, const G4S
       FillHistoEachStep( aStep );
     }
 
-  }
-  
-  if( DR == -1 ) {
-    //----- Get neutron/gamma secondary track 
-    std::map<G4int,G4int> detIDs = theCurrentHelper->GetDetectorIDs();
-    std::map<G4int,G4int>::const_iterator iteid;
-    std::vector< G4Track*> secoTracks = GetSecondaryAndPrimaryTracks(&aTrack);
-    std::vector< G4Track*>::const_iterator itetrk;
-    
-    //---- Get process defining step
-    G4String procDefStepName = GetProcessDefiningStepName(aStep);
-    for( iteid = detIDs.begin(); iteid != detIDs.end(); iteid++ ){
-      for( itetrk = secoTracks.begin(); itetrk != secoTracks.end(); itetrk++ ){
-	//----- check filters first
-	std::vector<GmVFilter*>::const_iterator itef;
-	G4bool bAccepted = true;
-	for( itef = theFilters.begin(); itef != theFilters.end(); itef++ ) {
-#ifndef GAMOS_NO_VERBOSE
-		if( ScoringVerb(debugVerb) ) G4cout << "GmPDSVProcess::PostStepDoIt checking filter " << (*itef)->GetName()  << " : " << theOriginalParticle->GetParticleName() << G4endl;
-#endif
-	  if( bFiltersOnTrack ) {
-	    if( !(*itef)->AcceptTrack( &aTrack ) ) {
-#ifndef GAMOS_NO_VERBOSE
-		if( ScoringVerb(debugVerb) ) G4cout << "GmPDSVProcess::PostStepDoIt track rejected by filter " << (*itef)->GetName() << G4endl;
-#endif
-	      bAccepted = false; 
-	      break;
-	    }
-	  } else {
-	    if( !(*itef)->AcceptStep( &aStep ) ) {
-#ifndef GAMOS_NO_VERBOSE
-		if( ScoringVerb(debugVerb) ) G4cout << "GmPDSVProcess::PostStepDoIt step rejected by filter " << (*itef)->GetName() << G4endl;
-#endif
-	      bAccepted = false; 
-	      break;
-	    }
-	  }
-	}
-	
-	if( bAccepted) {
-#ifndef GAMOS_NO_VERBOSE
-	  if( ScoringVerb(debugVerb) ) G4cout << "GmPDSVProcess::PostStepDoIt accepted by all filters : " << theOriginalParticle->GetParticleName() << G4endl;
-#endif
-	  //--- Get the classification index
-	  G4int index = -1;
-	  if( theClassifier) {
-	    if(bClassifierOnTrack ) {
-	      index = theClassifier->GetIndexFromTrack(&aTrack); // beware which classifier can be applied, as some of these are secondary tracks
-#ifndef GAMOS_NO_VERBOSE
-		if( ScoringVerb(debugVerb) ) G4cout << "GmPDSVProcess::PostStepDoIt track classified by " << theClassifier->GetName() << " = " << index << G4endl;
-#endif
-	    } else {
-	      index = theClassifier->GetIndexFromStep(&aStep); // beware which classifier can be applied, as some of these are secondary tracks
-#ifndef GAMOS_NO_VERBOSE
-		if( ScoringVerb(debugVerb) ) G4cout << "GmPDSVProcess::PostStepDoIt step classified by " << theClassifier->GetName() << " = " << index << G4endl;
-#endif
-	    }
-	  }
-	  
-	  CreateGeantino( aTrack, aStep.GetPreStepPoint()->GetKineticEnergy(), aStep.GetPostStepPoint(), (*itetrk)->GetKineticEnergy() ,(*iteid).second, procDefStepName, index );
-	}
-      }
+ 
+    if( DR == -1 ) {
+      //----- Get neutron/gamma secondary track 
+      std::map<G4int,G4int> detIDs = theCurrentHelper->GetDetectorIDs();
+      std::map<G4int,G4int>::const_iterator iteid;
+      std::vector< G4Track*> secoTracks = GetSecondaryAndPrimaryTracks(&aTrack);
+      std::vector< G4Track*>::const_iterator itetrk;
       
-      if( particle == theOriginalParticle ) {
-	//----- Create a geantino for primary neutrons/gammas at first track step 
-	if( aTrack.GetParentID() == 0 
-	    && aTrack.GetCurrentStepNumber() == 1 ) {
-	  
+      //---- Get process defining step
+      G4String procDefStepName = GetProcessDefiningStepName(aStep);
+      for( iteid = detIDs.begin(); iteid != detIDs.end(); iteid++ ){
+	for( itetrk = secoTracks.begin(); itetrk != secoTracks.end(); itetrk++ ){
 	  //----- check filters first
 	  std::vector<GmVFilter*>::const_iterator itef;
 	  G4bool bAccepted = true;
 	  for( itef = theFilters.begin(); itef != theFilters.end(); itef++ ) {
 #ifndef GAMOS_NO_VERBOSE
-		if( ScoringVerb(debugVerb) ) G4cout << "GmPDSVProcess::PostStepDoIt checking filter " << (*itef)->GetName() << " : " << theOriginalParticle->GetParticleName() << G4endl;
+	    if( ScoringVerb(debugVerb) ) G4cout << "GmPDSVProcess::PostStepDoIt checking filter " << (*itef)->GetName()  << " : " << theOriginalParticle->GetParticleName() << G4endl;
 #endif
 	    if( bFiltersOnTrack ) {
 	      if( !(*itef)->AcceptTrack( &aTrack ) ) {
-		bAccepted = false; 
 #ifndef GAMOS_NO_VERBOSE
 		if( ScoringVerb(debugVerb) ) G4cout << "GmPDSVProcess::PostStepDoIt track rejected by filter " << (*itef)->GetName() << G4endl;
 #endif
+		bAccepted = false; 
 		break;
 	      }
 	    } else {
 	      if( !(*itef)->AcceptStep( &aStep ) ) {
-		bAccepted = false; 
 #ifndef GAMOS_NO_VERBOSE
 		if( ScoringVerb(debugVerb) ) G4cout << "GmPDSVProcess::PostStepDoIt step rejected by filter " << (*itef)->GetName() << G4endl;
 #endif
+		bAccepted = false; 
 		break;
 	      }
 	    }
@@ -270,7 +189,7 @@ G4VParticleChange* GmPDSVProcess::PostStepDoIt( const G4Track& aTrack, const G4S
 	  
 	  if( bAccepted) {
 #ifndef GAMOS_NO_VERBOSE
-	  if( ScoringVerb(debugVerb) ) G4cout << "GmPDSVProcess::PostStepDoIt accepted by all filters : " << theOriginalParticle->GetParticleName() << G4endl;
+	    if( ScoringVerb(debugVerb) ) G4cout << "GmPDSVProcess::PostStepDoIt accepted by all filters : " << theOriginalParticle->GetParticleName() << G4endl;
 #endif
 	    //--- Get the classification index
 	    G4int index = -1;
@@ -288,14 +207,70 @@ G4VParticleChange* GmPDSVProcess::PostStepDoIt( const G4Track& aTrack, const G4S
 	      }
 	    }
 	    
-	    CreateGeantino( aTrack, aStep.GetPreStepPoint()->GetKineticEnergy(), aStep.GetPreStepPoint(), aStep.GetPreStepPoint()->GetKineticEnergy(), (*iteid).second, "Primary", index );
+	    CreateGeantino( aTrack, aStep.GetPreStepPoint()->GetKineticEnergy(), aStep.GetPostStepPoint(), (*itetrk)->GetKineticEnergy() ,(*iteid).second, procDefStepName, index );
 	  }
-	  
+	}
+	
+	if( particle == theOriginalParticle ) {
+	  //----- Create a geantino for primary neutrons/gammas at first track step 
+	  if( aTrack.GetParentID() == 0 
+	      && aTrack.GetCurrentStepNumber() == 1 ) {
+	    
+	    //----- check filters first
+	    std::vector<GmVFilter*>::const_iterator itef;
+	    G4bool bAccepted = true;
+	    for( itef = theFilters.begin(); itef != theFilters.end(); itef++ ) {
+#ifndef GAMOS_NO_VERBOSE
+	      if( ScoringVerb(debugVerb) ) G4cout << "GmPDSVProcess::PostStepDoIt checking filter " << (*itef)->GetName() << " : " << theOriginalParticle->GetParticleName() << G4endl;
+#endif
+	      if( bFiltersOnTrack ) {
+		if( !(*itef)->AcceptTrack( &aTrack ) ) {
+		  bAccepted = false; 
+#ifndef GAMOS_NO_VERBOSE
+		  if( ScoringVerb(debugVerb) ) G4cout << "GmPDSVProcess::PostStepDoIt track rejected by filter " << (*itef)->GetName() << G4endl;
+#endif
+		  break;
+		}
+	      } else {
+		if( !(*itef)->AcceptStep( &aStep ) ) {
+		  bAccepted = false; 
+#ifndef GAMOS_NO_VERBOSE
+		  if( ScoringVerb(debugVerb) ) G4cout << "GmPDSVProcess::PostStepDoIt step rejected by filter " << (*itef)->GetName() << G4endl;
+#endif
+		  break;
+		}
+	      }
+	    }
+	    
+	    if( bAccepted) {
+#ifndef GAMOS_NO_VERBOSE
+	      if( ScoringVerb(debugVerb) ) G4cout << "GmPDSVProcess::PostStepDoIt accepted by all filters : " << theOriginalParticle->GetParticleName() << G4endl;
+#endif
+	      //--- Get the classification index
+	      G4int index = -1;
+	      if( theClassifier) {
+		if(bClassifierOnTrack ) {
+		  index = theClassifier->GetIndexFromTrack(&aTrack); // beware which classifier can be applied, as some of these are secondary tracks
+#ifndef GAMOS_NO_VERBOSE
+		  if( ScoringVerb(debugVerb) ) G4cout << "GmPDSVProcess::PostStepDoIt track classified by " << theClassifier->GetName() << " = " << index << G4endl;
+#endif
+		} else {
+		  index = theClassifier->GetIndexFromStep(&aStep); // beware which classifier can be applied, as some of these are secondary tracks
+#ifndef GAMOS_NO_VERBOSE
+		  if( ScoringVerb(debugVerb) ) G4cout << "GmPDSVProcess::PostStepDoIt step classified by " << theClassifier->GetName() << " = " << index << G4endl;
+#endif
+		}
+	      }
+	      
+	      CreateGeantino( aTrack, aStep.GetPreStepPoint()->GetKineticEnergy(), aStep.GetPreStepPoint(), aStep.GetPreStepPoint()->GetKineticEnergy(), (*iteid).second, "Primary", index );
+	    }
+	    
+	  }
 	}
       }
     }
   }
-  
+
   ClearNumberOfInteractionLengthLeft();
   
   return pParticleChange;

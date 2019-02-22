@@ -1,28 +1,3 @@
-//
-// ********************************************************************
-// * License and Disclaimer                                           *
-// *                                                                  *
-// * The  GAMOS software  is  copyright of the Copyright  Holders  of *
-// * the GAMOS Collaboration.  It is provided  under  the  terms  and *
-// * conditions of the GAMOS Software License,  included in the  file *
-// * LICENSE and available at  http://fismed.ciemat.es/GAMOS/license .*
-// * These include a list of copyright holders.                       *
-// *                                                                  *
-// * Neither the authors of this software system, nor their employing *
-// * institutes,nor the agencies providing financial support for this *
-// * work  make  any representation or  warranty, express or implied, *
-// * regarding  this  software system or assume any liability for its *
-// * use.  Please see the license in the file  LICENSE  and URL above *
-// * for the full disclaimer and the limitation of liability.         *
-// *                                                                  *
-// * This  code  implementation is the result of  the  scientific and *
-// * technical work of the GAMOS collaboration.                       *
-// * By using,  copying,  modifying or  distributing the software (or *
-// * any work based  on the software)  you  agree  to acknowledge its *
-// * use  in  resulting  scientific  publications,  and indicate your *
-// * acceptance of all terms of the GAMOS Software license.           *
-// ********************************************************************
-//
 #include "GmClassifierByNumericData.hh"
 #include "GamosCore/GamosData/Management/include/GmDataVerbosity.hh"
 
@@ -35,8 +10,8 @@
 //---------------------------------------------------------------
 GmClassifierByNumericData::GmClassifierByNumericData(G4String name) : GmVClassifier( name )
 {
-  bAllowOutOfLimits = G4bool(GmParameterMgr::GetInstance()->GetNumericValue(theName+":AllowOutOfLimits",1 ));
-  //  G4cout << " GmClassifierByNumericData AllowOutOfLimits " << theName << " = " << bAllowOutOfLimits << G4endl;
+  theAllowOutOfLimits = GmParameterMgr::GetInstance()->GetNumericValue(theName+":AllowOutOfLimits",1 );
+  //  G4cout << " GmClassifierByNumericData AllowOutOfLimits " << theName << " = " << theAllowOutOfLimits << G4endl;
 }
 
 //---------------------------------------------------------------
@@ -82,9 +57,9 @@ void GmClassifierByNumericData::SetParameters( std::vector<G4String>& params)
       G4Exception(G4String(theName+"::SetParameters").c_str(),
 		  "More than 10000 classifications",
 		  FatalErrorInArgument,
-		  G4String("Check your parameters: min= " + G4UIcommand::ConvertToString(theMin)+ 
-			    " max= " + G4UIcommand::ConvertToString(theMax)+
-			    " step= " + G4UIcommand::ConvertToString(theStep)));
+		  G4String("Check your parameters: min= " + GmGenUtils::ftoa(theMin)+ 
+			    " max= " + GmGenUtils::ftoa(theMax)+
+			    " step= " + GmGenUtils::ftoa(theStep)));
     }
     ii++;
   }
@@ -92,21 +67,21 @@ void GmClassifierByNumericData::SetParameters( std::vector<G4String>& params)
 }
   
 //---------------------------------------------------------------
-G4int GmClassifierByNumericData::GetIndexFromStep(const G4Step* aStep)
+int64_t GmClassifierByNumericData::GetIndexFromStep(const G4Step* aStep)
 {
   G4double val = theData[0]->GetValueFromStep( aStep );
   return GetIndexFromValue(val);
 }
 
 //---------------------------------------------------------------
-G4int GmClassifierByNumericData::GetIndexFromTrack(const G4Track* aTrack)
+int64_t GmClassifierByNumericData::GetIndexFromTrack(const G4Track* aTrack)
 {
   G4double val = theData[0]->GetValueFromTrack( aTrack );
   return GetIndexFromValue(val);
 }
 
 //---------------------------------------------------------------
-G4int GmClassifierByNumericData::GetIndexFromSecoTrack(const G4Track* aTrack1, const G4Track* aTrack2)
+int64_t GmClassifierByNumericData::GetIndexFromSecoTrack(const G4Track* aTrack1, const G4Track* aTrack2)
 {
   G4double val = theData[0]->GetValueFromSecoTrack( aTrack1, aTrack2 );
   //  G4cout << " GmClassifierByNumericData::GetIndexFromSecoTrack( " << val << G4endl; //GDEB
@@ -115,26 +90,29 @@ G4int GmClassifierByNumericData::GetIndexFromSecoTrack(const G4Track* aTrack1, c
 
 
 //---------------------------------------------------------------
-G4int GmClassifierByNumericData::GetIndexFromValue(const G4double val )
+int64_t GmClassifierByNumericData::GetIndexFromValue(const G4double val )
 {
   if( val < theMin || val > theMax ) {
-    if( bAllowOutOfLimits ) {
+    if( theAllowOutOfLimits == 1 ) {
       G4Exception(G4String(theName+"::GetIndexFromValue").c_str(),
 		  "Value out of limits",
 		  JustWarning,
 		  G4String(GmGenUtils::ftoa(theMin)+ " <=? " + GmGenUtils::ftoa(val)+" <=? "+GmGenUtils::ftoa(theMax)).c_str());
       if( val < theMin ) return 0;
       if( val > theMax ) return INT_MAX;
-    } else {
+    } else if( theAllowOutOfLimits == 0 ) {
       G4Exception(G4String(theName+"::GetIndexFromValue").c_str(),
 		  "Value out of limits",
 		  FatalErrorInArgument,
 		  G4String(GmGenUtils::ftoa(theMin)+ " <=? " + GmGenUtils::ftoa(val)+" <=? "+GmGenUtils::ftoa(theMax)).c_str());
+    } else {
+      if( val < theMin ) return 0;
+      if( val > theMax ) return INT_MAX;
     }
   }
 
-  std::map<G4double,G4int>::const_iterator ite = theIndexMap.lower_bound(val);
-  G4int index = (*ite).second;
+  std::map<G4double,int64_t>::const_iterator ite = theIndexMap.lower_bound(val);
+  int64_t index = (*ite).second;
   // Check for precision problems
   if( index == 0 && fabs(val-(*ite).second) < 1.E-6 ) index = 1;
 
@@ -146,15 +124,15 @@ G4int GmClassifierByNumericData::GetIndexFromValue(const G4double val )
 }
 
 //---------------------------------------------------------------
-G4String GmClassifierByNumericData::GetIndexName(G4int index)
+G4String GmClassifierByNumericData::GetIndexName(int64_t index)
 {
   G4String name;
-  std::map<G4double,G4int>::const_iterator ite, ite2;
+  std::map<G4double,int64_t>::const_iterator ite, ite2;
   for( ite = theIndexMap.begin(); ite != theIndexMap.end(); ite++ ){
     if( (*ite).second == index ) {
       ite2 = ite; ite2--;
-      name = G4UIcommand::ConvertToString((*ite2).first)
-	+ "-" + G4UIcommand::ConvertToString((*ite).first);
+      name = GmGenUtils::itoa((*ite2).first)
+	+ "-" + GmGenUtils::itoa((*ite).first);
     }
   }
 
@@ -166,8 +144,8 @@ GmClassifierByNumericData::~GmClassifierByNumericData()
 {
   //print names of each index 
   G4cout << "%%%%% Table of indices for GmClassifierByNumericData " << theName << " " << theIndexMap.size() << G4endl;
-  std::map<G4double,G4int>::const_iterator ite1 = theIndexMap.begin();
-  std::map<G4double,G4int>::const_iterator ite2 = theIndexMap.begin();
+  std::map<G4double,int64_t>::const_iterator ite1 = theIndexMap.begin();
+  std::map<G4double,int64_t>::const_iterator ite2 = theIndexMap.begin();
   ite2++;
   G4int ii = 0;
   for(  ; ite2 != theIndexMap.end(); ite1++,ite2++,ii++ ){
@@ -184,7 +162,7 @@ void GmClassifierByNumericData::SetIndices( std::vector<G4String> wl )
   theIndexMap.clear();
   for( unsigned int ii = 0; ii < wl.size(); ii+=2 ){
     G4double value = GmGenUtils::GetValue(wl[ii]);
-    theIndexMap[value] = G4int(GmGenUtils::GetValue(wl[ii+1]));
+    theIndexMap[value] = int64_t(GmGenUtils::GetValue(wl[ii+1]));
     if( theMin > value ) theMin = value;
     if( theMax < value ) theMax = value;
   }

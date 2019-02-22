@@ -1,29 +1,3 @@
-//
-// ********************************************************************
-// * License and Disclaimer                                           *
-// *                                                                  *
-// * The  GAMOS software  is  copyright of the Copyright  Holders  of *
-// * the GAMOS Collaboration.  It is provided  under  the  terms  and *
-// * conditions of the GAMOS Software License,  included in the  file *
-// * LICENSE and available at  http://fismed.ciemat.es/GAMOS/license .*
-// * These include a list of copyright holders.                       *
-// *                                                                  *
-// * Neither the authors of this software system, nor their employing *
-// * institutes,nor the agencies providing financial support for this *
-// * work  make  any representation or  warranty, express or implied, *
-// * regarding  this  software system or assume any liability for its *
-// * use.  Please see the license in the file  LICENSE  and URL above *
-// * for the full disclaimer and the limitation of liability.         *
-// *                                                                  *
-// * This  code  implementation is the result of  the  scientific and *
-// * technical work of the GAMOS collaboration.                       *
-// * By using,  copying,  modifying or  distributing the software (or *
-// * any work based  on the software)  you  agree  to acknowledge its *
-// * use  in  resulting  scientific  publications,  and indicate your *
-// * acceptance of all terms of the GAMOS Software license.           *
-// ********************************************************************
-//
-#include "Reflex/PluginService.h"
 
 #include "GmG4PSCellCharge.hh"
 #include "GmG4PSCellFlux.hh"
@@ -54,6 +28,8 @@
 #include "GmPSSurfaceFlux.hh"
 #include "GmPSVolumeFlux.hh"
 
+#ifdef ROOT5
+#include "Reflex/PluginService.h"
 
 PLUGINSVC_FACTORY(GmG4PSCellCharge,GmVPrimitiveScorer*(G4String))
 PLUGINSVC_FACTORY(GmG4PSCellFlux,GmVPrimitiveScorer*(G4String))
@@ -81,3 +57,102 @@ PLUGINSVC_FACTORY(GmPSSphericalDoseDeposit,GmVPrimitiveScorer*(G4String))
 PLUGINSVC_FACTORY(GmPSCylindricalRZDoseDeposit,GmVPrimitiveScorer*(G4String))
 PLUGINSVC_FACTORY(GmPSCylindricalRPhiDoseDeposit,GmVPrimitiveScorer*(G4String))
 PLUGINSVC_FACTORY(GmPSCylindricalZPhiDoseDeposit,GmVPrimitiveScorer*(G4String))
+
+#include "GmPSLET.hh"
+#include "GmPSEdep_LET.hh"
+#include "GmPSLETEDepD.hh"
+#include "GmPSLETEDepPhi.hh"
+
+#include "GmPSLETBydEdx.hh"
+#include "GmPSdx_LETBydEdx.hh"
+#include "GmPSEdep_LETBydEdx.hh"
+#include "GmPSLETBydEdxD.hh"
+#include "GmPSLETBydEdxPhi.hh"
+
+#include "GmPSLETByESpect.hh"
+#include "GmPSLET_LETByESpect.hh"
+#include "GmPSLETByESpectD.hh"
+#include "GmPSLETByESpectPhi.hh"
+
+PLUGINSVC_FACTORY(GmPSLET,GmVPrimitiveScorer*(G4String))
+PLUGINSVC_FACTORY(GmPSEdep_LET,GmVPrimitiveScorer*(G4String))
+PLUGINSVC_FACTORY(GmPSLETEDepPhi,GmVPrimitiveScorer*(G4String))
+PLUGINSVC_FACTORY(GmPSLETEDepD,GmVPrimitiveScorer*(G4String))
+
+PLUGINSVC_FACTORY(GmPSLETBydEdx,GmVPrimitiveScorer*(G4String))
+PLUGINSVC_FACTORY(GmPSdx_LETBydEdx,GmVPrimitiveScorer*(G4String))
+PLUGINSVC_FACTORY(GmPSEdep_LETBydEdx,GmVPrimitiveScorer*(G4String))
+PLUGINSVC_FACTORY(GmPSLETBydEdxD,GmVPrimitiveScorer*(G4String))
+PLUGINSVC_FACTORY(GmPSLETBydEdxPhi,GmVPrimitiveScorer*(G4String))
+
+PLUGINSVC_FACTORY(GmPSLETByESpect,GmVPrimitiveScorer*(G4String))
+PLUGINSVC_FACTORY(GmPSLET_LETByESpect,GmVPrimitiveScorer*(G4String))
+PLUGINSVC_FACTORY(GmPSLETByESpectD,GmVPrimitiveScorer*(G4String))
+PLUGINSVC_FACTORY(GmPSLETByESpectPhi,GmVPrimitiveScorer*(G4String))
+
+#else
+
+#include "GamosCore/GamosScoring/Management/include/GmPrimitiveScorerFactory.hh"
+DEFINE_SEAL_MODULE ();
+
+DEFINE_GAMOS_SCORER(GmG4PSCellCharge);
+DEFINE_GAMOS_SCORER(GmG4PSCellFlux);
+DEFINE_GAMOS_SCORER(GmG4PSDoseDeposit_old);
+DEFINE_GAMOS_SCORER(GmG4PSDoseDeposit);
+DEFINE_GAMOS_SCORER(GmG4PSDoseDeposit_NoSkipEqualMate);
+DEFINE_GAMOS_SCORER(GmG4PSDoseDeposit_SkipEqualMateSimple);
+DEFINE_GAMOS_SCORER(GmG4PSEnergyDeposit);
+DEFINE_GAMOS_SCORER(GmG4PSEnergyLost);
+DEFINE_GAMOS_SCORER(GmG4PSMinKinEAtGeneration);
+DEFINE_GAMOS_SCORER(GmG4PSNofCollision);
+DEFINE_GAMOS_SCORER(GmG4PSNofSecondary);
+DEFINE_GAMOS_SCORER(GmG4PSNofStep);
+DEFINE_GAMOS_SCORER(GmG4PSPassageCellFlux);
+DEFINE_GAMOS_SCORER(GmG4PSPassageCellCurrent);
+DEFINE_GAMOS_SCORER(GmG4PSPassageTrackLength);
+DEFINE_GAMOS_SCORER(GmG4PSPopulation);
+DEFINE_GAMOS_SCORER(GmG4PSTrackCounter);
+DEFINE_GAMOS_SCORER(GmG4PSTrackLength);
+DEFINE_GAMOS_SCORER(GmG4PSKerma);
+DEFINE_GAMOS_SCORER(GmG4PSData);
+DEFINE_GAMOS_SCORER(GmPSSurfaceFlux);
+DEFINE_GAMOS_SCORER(GmPSVolumeFlux);
+DEFINE_GAMOS_SCORER(GmPSSphericalDoseDeposit);
+DEFINE_GAMOS_SCORER(GmPSCylindricalRZDoseDeposit);
+DEFINE_GAMOS_SCORER(GmPSCylindricalRPhiDoseDeposit);
+DEFINE_GAMOS_SCORER(GmPSCylindricalZPhiDoseDeposit);
+
+#include "GmPSLET.hh"
+#include "GmPSEdep_LET.hh"
+#include "GmPSLETEDepD.hh"
+#include "GmPSLETEDepPhi.hh"
+
+#include "GmPSLETBydEdx.hh"
+#include "GmPSdx_LETBydEdx.hh"
+#include "GmPSEdep_LETBydEdx.hh"
+#include "GmPSLETBydEdxD.hh"
+#include "GmPSLETBydEdxPhi.hh"
+
+#include "GmPSLETByESpect.hh"
+#include "GmPSLET_LETByESpect.hh"
+#include "GmPSLETByESpectD.hh"
+#include "GmPSLETByESpectPhi.hh"
+
+DEFINE_GAMOS_SCORER(GmPSLET);
+DEFINE_GAMOS_SCORER(GmPSEdep_LET);
+DEFINE_GAMOS_SCORER(GmPSLETEDepPhi);
+DEFINE_GAMOS_SCORER(GmPSLETEDepD);
+
+DEFINE_GAMOS_SCORER(GmPSLETBydEdx);
+DEFINE_GAMOS_SCORER(GmPSdx_LETBydEdx);
+DEFINE_GAMOS_SCORER(GmPSEdep_LETBydEdx);
+DEFINE_GAMOS_SCORER(GmPSLETBydEdxD);
+DEFINE_GAMOS_SCORER(GmPSLETBydEdxPhi);
+
+DEFINE_GAMOS_SCORER(GmPSLETByESpect);
+DEFINE_GAMOS_SCORER(GmPSLET_LETByESpect);
+DEFINE_GAMOS_SCORER(GmPSLETByESpectD);
+DEFINE_GAMOS_SCORER(GmPSLETByESpectPhi);
+
+#endif
+

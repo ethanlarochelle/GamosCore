@@ -1,30 +1,3 @@
-//
-// ********************************************************************
-// * License and Disclaimer                                           *
-// *                                                                  *
-// * The  GAMOS software  is  copyright of the Copyright  Holders  of *
-// * the GAMOS Collaboration.  It is provided  under  the  terms  and *
-// * conditions of the GAMOS Software License,  included in the  file *
-// * LICENSE and available at  http://fismed.ciemat.es/GAMOS/license .*
-// * These include a list of copyright holders.                       *
-// *                                                                  *
-// * Neither the authors of this software system, nor their employing *
-// * institutes,nor the agencies providing financial support for this *
-// * work  make  any representation or  warranty, express or implied, *
-// * regarding  this  software system or assume any liability for its *
-// * use.  Please see the license in the file  LICENSE  and URL above *
-// * for the full disclaimer and the limitation of liability.         *
-// *                                                                  *
-// * This  code  implementation is the result of  the  scientific and *
-// * technical work of the GAMOS collaboration.                       *
-// * By using,  copying,  modifying or  distributing the software (or *
-// * any work based  on the software)  you  agree  to acknowledge its *
-// * use  in  resulting  scientific  publications,  and indicate your *
-// * acceptance of all terms of the GAMOS Software license.           *
-// ********************************************************************
-//
-
-
 
 #include "GmGetParticleMgr.hh"
 #include "GamosCore/GamosBase/Base/include/GmParameterMgr.hh"
@@ -39,6 +12,7 @@
 #include "G4GenericIon.hh"
 #include "G4NistManager.hh"
 #include "G4ProcessManager.hh"
+#include "G4IonTable.hh"
 
 GmGetParticleMgr* GmGetParticleMgr::theInstance = 0;
 
@@ -162,12 +136,18 @@ G4Ions* GmGetParticleMgr::CreateIon( const G4String& newValues )
     G4Ions* ion = 0;
     G4String partName = wl[0];
     // check if it is an ion 
-    //     std::string::size_type istart = partName.find("[");
-    //    std::string::size_type iend = partName.find("]");
-    //    if( istart  != std::string::npos
-    //	&& iend != std::string::npos ) {
-    //    G4String isot = partName.substr(0,istart);
+    std::string::size_type istart = partName.find("[");
+    std::string::size_type iend = partName.find("]");
+    G4double excitation = 0.;
+    if( istart != std::string::npos ) {
+      excitation = GmGenUtils::GetValue(partName.substr(istart+1,iend-istart-1))*CLHEP::keV;
+    }
     G4String isot = partName;
+    if( istart  != std::string::npos
+	&& iend != std::string::npos ) {
+      isot = partName.substr(0,istart);
+    }
+    // look for the element (characters, not numbers)
     unsigned int ii;
     for( ii = 0; ii < isot.length(); ii++ ){
       if( GmGenUtils::IsNumber( isot[ii] ) ) break;
@@ -176,8 +156,8 @@ G4Ions* GmGetParticleMgr::CreateIon( const G4String& newValues )
       G4String symb = isot.substr(0,ii);
       G4Element* elem = G4NistManager::Instance()->FindOrBuildElement(symb, false);
       if( elem ) {
-	//	ion = CreateIon( G4int(elem->GetZ()), atoi( G4String(isot.substr( ii, isot.length() )) ), atof( G4String(partName.substr( istart+1, iend-istart-1 ) ))*CLHEP::keV, 0 );
-	ion = CreateIon( G4int(elem->GetZ()), atoi( G4String(isot.substr( ii, isot.length() )) ), 0.0*CLHEP::keV, 0 );
+	ion = CreateIon( G4int(elem->GetZ()), atoi( G4String(isot.substr( ii, isot.length() )) ), excitation, 0 );
+	//ion = CreateIon( G4int(elem->GetZ()), atoi( G4String(isot.substr( ii, isot.length() )) ), 0.0*CLHEP::keV, 0 );
       }
     }
     /*  } else {

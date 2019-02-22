@@ -1,28 +1,3 @@
-//
-// ********************************************************************
-// * License and Disclaimer                                           *
-// *                                                                  *
-// * The  GAMOS software  is  copyright of the Copyright  Holders  of *
-// * the GAMOS Collaboration.  It is provided  under  the  terms  and *
-// * conditions of the GAMOS Software License,  included in the  file *
-// * LICENSE and available at  http://fismed.ciemat.es/GAMOS/license .*
-// * These include a list of copyright holders.                       *
-// *                                                                  *
-// * Neither the authors of this software system, nor their employing *
-// * institutes,nor the agencies providing financial support for this *
-// * work  make  any representation or  warranty, express or implied, *
-// * regarding  this  software system or assume any liability for its *
-// * use.  Please see the license in the file  LICENSE  and URL above *
-// * for the full disclaimer and the limitation of liability.         *
-// *                                                                  *
-// * This  code  implementation is the result of  the  scientific and *
-// * technical work of the GAMOS collaboration.                       *
-// * By using,  copying,  modifying or  distributing the software (or *
-// * any work based  on the software)  you  agree  to acknowledge its *
-// * use  in  resulting  scientific  publications,  and indicate your *
-// * acceptance of all terms of the GAMOS Software license.           *
-// ********************************************************************
-//
 #include "GmGeneratorMessenger.hh"
 #include "GmGenerator.hh"
 #include "GmGenerVerbosity.hh"
@@ -41,7 +16,7 @@
 GmGeneratorMessenger::GmGeneratorMessenger(GmGenerator* myua) 
    : myAction(myua) 
 {
-  AddSingleParticleCmd = new GmUIcmdWithAString("/gamos/generator/addSingleParticleSource",this);
+  AddSingleParticleCmd = new GmUIcmdWithAString("/gamos/generator/addSingleParticleSource",this); 
   AddSingleParticleCmd->SetGuidance("Add single particle source to list of active particle sources");
   AddSingleParticleCmd->SetParameterName("NAME PARTICLE_NAME ENERGY",false);
   AddSingleParticleCmd->AvailableForStates(G4State_Idle,G4State_PreInit);
@@ -55,6 +30,16 @@ GmGeneratorMessenger::GmGeneratorMessenger(GmGenerator* myua)
   AddDoubleBackToBackParticleCmd->SetGuidance("Add particle source of two particles with opposite directions to list of active particle sources");
   AddDoubleBackToBackParticleCmd->SetParameterName("NAME PARTICLE_NAME ENERGY",false);
   AddDoubleBackToBackParticleCmd->AvailableForStates(G4State_Idle,G4State_PreInit);
+
+  AddRTIonPlanScanSpotCmd = new GmUIcmdWithAString("/gamos/generator/addRTIonPlanScanSpotSource",this);
+  AddRTIonPlanScanSpotCmd->SetGuidance("Add RTIonPlan ScanSpot source to list of active particle sources");
+  AddRTIonPlanScanSpotCmd->SetParameterName("NAME",false);
+  AddRTIonPlanScanSpotCmd->AvailableForStates(G4State_Idle,G4State_PreInit);
+
+  AddRTPlanCmd = new GmUIcmdWithAString("/gamos/generator/addRTPlanSource",this);
+  AddRTPlanCmd->SetGuidance("Add RTIonPlan ScanSpot source to list of active particle sources");
+  AddRTPlanCmd->SetParameterName("NAME",false);
+  AddRTPlanCmd->AvailableForStates(G4State_Idle,G4State_PreInit);
 
   DistTimeCmd = new GmUIcmdWithAString("/gamos/generator/timeDist",this);
   DistTimeCmd->SetGuidance("Sets the time distribution type for one source");
@@ -85,6 +70,7 @@ GmGeneratorMessenger::GmGeneratorMessenger(GmGenerator* myua)
   DistributionCmd->SetGuidance("Add a new distribution to bias a variable");
   DistributionCmd->SetParameterName("GENERATOR_DIST_TYPE BIAS_DIST_NAME",false);
   DistributionCmd->AvailableForStates(G4State_Idle);
+
 }
 
 //------------------------------------------------------------------------
@@ -93,6 +79,8 @@ GmGeneratorMessenger::~GmGeneratorMessenger()
   if (AddSingleParticleCmd) delete AddSingleParticleCmd;
   if (AddIsotopeCmd) delete AddIsotopeCmd;
   if (AddDoubleBackToBackParticleCmd) delete AddDoubleBackToBackParticleCmd;
+  if (AddRTIonPlanScanSpotCmd) delete AddRTIonPlanScanSpotCmd;
+  if (AddRTPlanCmd) delete AddRTPlanCmd;
   if (DistTimeCmd) delete DistTimeCmd;
   if (DistEnergyCmd) delete DistEnergyCmd;
   if (DistPositionCmd) delete DistPositionCmd;
@@ -118,6 +106,12 @@ void GmGeneratorMessenger::SetNewValue(G4UIcommand * command,
     myAction->AddIsotopeSource(newValues);
   }else if (command == AddDoubleBackToBackParticleCmd) {
     myAction->AddDoubleBackToBackParticleSource(newValues);
+  }else if (command == AddRTPlanCmd) {
+    //    GmGenUtils::CheckNWords(newValues,3,"Command: "+ command->GetCommandPath() + "/" + command->GetCommandName() + " " + newValues + "  needs 3 arguments: name particle_name energy energy_unit"); 
+    myAction->AddRTPlanSource(newValues);
+  }else if (command == AddRTIonPlanScanSpotCmd) {
+    //    GmGenUtils::CheckNWords(newValues,3,"Command: "+ command->GetCommandPath() + "/" + command->GetCommandName() + " " + newValues + "  needs 3 arguments: name particle_name energy energy_unit"); 
+    myAction->AddRTIonPlanScanSpotSource(newValues);
   } else if (command == DistTimeCmd || command == DistEnergyCmd || command == DistPositionCmd || command == DistDirectionCmd ) {
     std::vector<G4String> wordlist = GmGenUtils::GetWordsInString( newValues );
     if( wordlist.size() < 2 ) {

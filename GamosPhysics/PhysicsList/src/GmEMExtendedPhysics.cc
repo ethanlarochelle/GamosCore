@@ -25,7 +25,7 @@
 //
 #include "globals.hh"
 #include "GmEMExtendedPhysics.hh"
-#include "GmPhysicsMessenger.hh"
+#include "GmEMPhysicsMessenger.hh"
 #include "GmPhysicsMuonStandard.hh"
 
 #include "G4ParticleDefinition.hh"
@@ -94,7 +94,7 @@ GmEMExtendedPhysics::GmEMExtendedPhysics(): GmEMPhysics(),
   // The threshold of production of secondaries is fixed to 10. mm
   // for all the particles, in all the experimental set-up
   defaultCutValue = 0.1 * CLHEP::mm;
-  messenger = new GmPhysicsMessenger(this);
+  messenger = new GmEMPhysicsMessenger(this);
   SetVerboseLevel(1);
   ConstructParticles();
 
@@ -131,9 +131,10 @@ void GmEMExtendedPhysics::ConstructProcess()
 {
   GmEMPhysics::ConstructProcess();
 
-  theParticleIterator->reset();
-  while( (*theParticleIterator)() ){
-    G4ParticleDefinition* particle = theParticleIterator->value();
+  auto particleIterator=GetParticleIterator();
+  particleIterator->reset();
+  while( (*particleIterator)() ){
+    G4ParticleDefinition* particle = particleIterator->value();
     G4ProcessManager* pmanager = particle->GetProcessManager();
     G4String particleName = particle->GetParticleName();
 

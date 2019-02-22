@@ -20,7 +20,7 @@ GEANT4_DEFINE_MODULE(NAME GamosCore_GamosReadDICOM
        Gm3ddose.hh
        Gm3ddoseHeader.hh
        GmGenerDistPositionInPhantomVoxels.hh
-       GmReadPhantomG4withPSGeometry.hh
+       GmReadPhantomG4withStGeometry.hh
        GmSqdoseHeader.hh
        GmPhantomStructures.hh
        GmSimplePhantomGeometry.hh
@@ -28,7 +28,7 @@ GEANT4_DEFINE_MODULE(NAME GamosCore_GamosReadDICOM
        GmPhantomDoseUA.hh
        GmReadPhantomG4Geometry.hh
        GmDICOMIntersectVolume.hh
-       GmReadPhantomPSMgr.hh
+       GmReadPhantomSVMgr.hh
        GmReadPhantomGeometry.hh
        GmSqdose.hh
        GmRegularParamUtils.hh
@@ -37,7 +37,7 @@ GEANT4_DEFINE_MODULE(NAME GamosCore_GamosReadDICOM
        GmReadPhantomPartialG4Geometry.hh
        GmTouchablePhantomStructure.hh
        GmReadPhantomEGSGeometry.hh
-       GmReadPhantomEGSwithPSGeometry.hh
+       GmReadPhantomEGSwithStGeometry.hh
        GmPhantomDensityHistosUA.hh
 
    SOURCES
@@ -45,9 +45,9 @@ GEANT4_DEFINE_MODULE(NAME GamosCore_GamosReadDICOM
        plugin.cc
        GmSimplePhantomGeometry.cc
        GmReadPhantomG4Geometry.cc
-       GmReadPhantomG4withPSGeometry.cc
+       GmReadPhantomG4withStGeometry.cc
        GmPhantomDensityHistosUA.cc
-       GmReadPhantomEGSwithPSGeometry.cc
+       GmReadPhantomEGSwithStGeometry.cc
        Gm3ddose.cc
        GmReadPhantomEGSGeometry.cc
        GmBuildPhantomStructuresUA.cc
@@ -58,7 +58,7 @@ GEANT4_DEFINE_MODULE(NAME GamosCore_GamosReadDICOM
        GmTouchablePhantomStructure.cc
        GmRegularParamUtils.cc
        GmSqdose.cc
-       GmReadPhantomPSMgr.cc
+       GmReadPhantomSVMgr.cc
        GmPhantomDoseUA.cc
        GmSqdoseHeader.cc
        GmDICOMIntersectVolume.cc

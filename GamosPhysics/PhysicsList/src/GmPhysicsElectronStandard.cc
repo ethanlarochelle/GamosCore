@@ -1,30 +1,5 @@
 //
 // ********************************************************************
-// * License and Disclaimer                                           *
-// *                                                                  *
-// * The  GAMOS software  is  copyright of the Copyright  Holders  of *
-// * the GAMOS Collaboration.  It is provided  under  the  terms  and *
-// * conditions of the GAMOS Software License,  included in the  file *
-// * LICENSE and available at  http://fismed.ciemat.es/GAMOS/license .*
-// * These include a list of copyright holders.                       *
-// *                                                                  *
-// * Neither the authors of this software system, nor their employing *
-// * institutes,nor the agencies providing financial support for this *
-// * work  make  any representation or  warranty, express or implied, *
-// * regarding  this  software system or assume any liability for its *
-// * use.  Please see the license in the file  LICENSE  and URL above *
-// * for the full disclaimer and the limitation of liability.         *
-// *                                                                  *
-// * This  code  implementation is the result of  the  scientific and *
-// * technical work of the GAMOS collaboration.                       *
-// * By using,  copying,  modifying or  distributing the software (or *
-// * any work based  on the software)  you  agree  to acknowledge its *
-// * use  in  resulting  scientific  publications,  and indicate your *
-// * acceptance of all terms of the GAMOS Software license.           *
-// ********************************************************************
-//
-//
-// ********************************************************************
 // * DISCLAIMER                                                       *
 // *                                                                  *
 // * The following disclaimer summarizes all the specific disclaimers *
@@ -96,12 +71,15 @@ void GmPhysicsElectronStandard::ConstructProcess()
 	  G4eBremsstrahlungRelModel* model2 = new G4eBremsstrahlungRelModel();
 	  G4eBremsstrahlung* brems = new G4eBremsstrahlung();
 	  model->SetLowEnergyLimit(brems->MinKinEnergy());
-	  model->SetHighEnergyLimit(model2->LowEnergyLimit());
+	  //	  model->SetHighEnergyLimit(model2->LowEnergyLimit());
+	  model->SetHighEnergyLimit(1.*CLHEP::GeV);
 	  model2->SetHighEnergyLimit(brems->MaxKinEnergy());                
-	  G4VEmFluctuationModel* fm = 0;
+	  /*	  G4VEmFluctuationModel* fm = 0;
 	  brems->AddEmModel(0, model, fm);
-	  brems->AddEmModel(1, model2, fm);
-	  SelectBremssAngularDist( model );
+	  brems->AddEmModel(1, model2, fm); */
+	  brems->AddEmModel(0, model);
+	  brems->AddEmModel(1, model2);
+	  SelectBremssAngularDist( model, "Electron" );
 	  manager->AddProcess(brems,  -1, 3, 3); 
 	}   
     }

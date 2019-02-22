@@ -1,28 +1,3 @@
-//
-// ********************************************************************
-// * License and Disclaimer                                           *
-// *                                                                  *
-// * The  GAMOS software  is  copyright of the Copyright  Holders  of *
-// * the GAMOS Collaboration.  It is provided  under  the  terms  and *
-// * conditions of the GAMOS Software License,  included in the  file *
-// * LICENSE and available at  http://fismed.ciemat.es/GAMOS/license .*
-// * These include a list of copyright holders.                       *
-// *                                                                  *
-// * Neither the authors of this software system, nor their employing *
-// * institutes,nor the agencies providing financial support for this *
-// * work  make  any representation or  warranty, express or implied, *
-// * regarding  this  software system or assume any liability for its *
-// * use.  Please see the license in the file  LICENSE  and URL above *
-// * for the full disclaimer and the limitation of liability.         *
-// *                                                                  *
-// * This  code  implementation is the result of  the  scientific and *
-// * technical work of the GAMOS collaboration.                       *
-// * By using,  copying,  modifying or  distributing the software (or *
-// * any work based  on the software)  you  agree  to acknowledge its *
-// * use  in  resulting  scientific  publications,  and indicate your *
-// * acceptance of all terms of the GAMOS Software license.           *
-// ********************************************************************
-//
 #include "GmVNumericDistribution.hh"
 #include "GamosCore/GamosData/Distributions/include/GmDistributionVerbosity.hh"
 #include "GamosCore/GamosBase/Base/include/GmParameterMgr.hh"
@@ -42,15 +17,21 @@
 GmVNumericDistribution::GmVNumericDistribution(G4String name)
 : GmVDistribution(name)
 {
-  bAllowOutOfLimits = G4bool(GmParameterMgr::GetInstance()->GetNumericValue(theName+":AllowOutOfLimits",1 ));
+  Initialize();
+}
 
-  ReadFile();
-  BuildData();
+//---------------------------------------------------------------------
+void GmVNumericDistribution::Initialize()
+{
+  theAllowOutOfLimits = GmParameterMgr::GetInstance()->GetNumericValue(theName+":AllowOutOfLimits",1 );
+
+  this->ReadFile();
+  this->BuildData();
 }
 
 //---------------------------------------------------------------------
 void GmVNumericDistribution::BuildData()
-{  
+{
   GmParameterMgr* parMgr = GmParameterMgr::GetInstance();
   G4String dataName = parMgr->GetStringValue(theName+":Data","");
   theData = GmDataMgr::GetInstance()->BuildData(dataName);
@@ -119,7 +100,13 @@ void GmVNumericDistribution::ReadFile()
 		FatalErrorInArgument,
 		G4String("DISTRIBUTION: "+theName).c_str());
   }
-  
+
+  CheckNValues();
+}
+
+//---------------------------------------------------------------------
+void GmVNumericDistribution::CheckNValues()
+{
   if( theValues.size() < 1 ) {
     G4Exception("GmVNumericDistribution::GmVNumericDistribution",
 		"Only one value found in file!",
@@ -207,14 +194,14 @@ void GmVNumericDistribution::ReadFileROOT( G4String& fileName )
     G4Exception("GmVNumericDistribution::GmVNumericDistribution",
 		"ROOT histogram name not provided",
 		FatalErrorInArgument,
-		G4String("DISTRIBUTION: "+theName).c_str());
+		G4String("Please use /gamos/setParam "+theName+":ROOTHistoName").c_str());
   }
 
   TFile file( fileName );
   TH1F* his = (TH1F*)(file.Get(histoName));
   if( his == 0 ) {
     G4Exception("GmVNumericDistribution::GmVNumericDistribution",
-		"ROOT histogram not found in file",
+		"ROOT 1D histogram not found in file",
 		FatalErrorInArgument,
 		G4String("DISTRIBUTION: "+theName+ " HISTOGRAM:" + histoName).c_str());
   }
@@ -261,6 +248,8 @@ void GmVNumericDistribution::ReadFileCSV( G4String& fileName )
 //---------------------------------------------------------------------
 void GmVNumericDistribution::ReadFileText( G4String& fileName )
 {
+  G4int iValColumn = G4int(GmParameterMgr::GetInstance()->GetNumericValue(theName+":ValueColumn",2 )-1);
+
  // Read energy - probability  pairs
   G4String pathc = getenv("GAMOS_SEARCH_PATH");
   fileName = GmGenUtils::FileInPath( pathc, fileName);
@@ -269,14 +258,14 @@ void GmVNumericDistribution::ReadFileText( G4String& fileName )
   G4int ii = 1;
   for( ;; ){
     if(! fin.GetWordsInLine( wl ) ) break;
-    if( wl.size() == 2) {
+    if( G4int(wl.size()) >= iValColumn+1) {
 #ifndef GAMOS_NO_VERBOSE
       if( DistVerb(debugVerb) ) {
-	G4cout << " GmVNumericDistribution::ReadFileText " <<  GmGenUtils::GetValue( wl[0] ) << " -> " <<  GmGenUtils::GetValue( wl[1] ) << G4endl;
+	G4cout << " GmVNumericDistribution::ReadFileText " <<  GmGenUtils::GetValue( wl[0] ) << " -> " <<  GmGenUtils::GetValue( wl[iValColumn] ) << G4endl;
       }
 #endif
       
-      theValues[ GmGenUtils::GetValue( wl[0] ) ] = GmGenUtils::GetValue( wl[1] );
+      theValues[ GmGenUtils::GetValue( wl[0] ) ] = GmGenUtils::GetValue( wl[iValColumn] );
     } else if( wl.size() == 1 ) {
       G4Exception("GmVNumericDistribution::ReadFileText",
 		  "Warning in number of words in line",
@@ -356,32 +345,37 @@ G4double GmVNumericDistribution::GetValueFromTrack(const G4Track* aTrack)
 G4double GmVNumericDistribution::GetNumericValueFromIndex(const G4double indexVal)
 {
   if( indexVal < theMinimum ) {
-    if( bAllowOutOfLimits ) {
+    if( theAllowOutOfLimits == 1 ) {
       G4Exception(G4String(theName+"::GetIndexFromValue").c_str(),
 		  "Value out of limits",
 		  JustWarning,
 		  G4String(GmGenUtils::ftoa(theMinimum)+ " <=? " + GmGenUtils::ftoa(indexVal)+" <=? "+GmGenUtils::ftoa(theMaximum)).c_str());
       return 0;
-    } else {
+    } else if( theAllowOutOfLimits == 0 ) {
       G4Exception("GmVNumericDistribution::GmGenUtils::GetValue",
 		  "Value is smaller than mininum",
 		  FatalException,
 		  G4String("DISTRIBUTION= " + theName + ": VALUE= " + GmGenUtils::ftoa(indexVal) + " MINIMUM= " + GmGenUtils::ftoa(theMinimum)).c_str());
+    } else {
+      return 0;
     } 
   }
   if( indexVal > theMaximum*1.000001 ) { // precision problems
-    if( bAllowOutOfLimits ) {
+    if( theAllowOutOfLimits == 1 ) {
       G4Exception(G4String(theName+"::GetIndexFromValue").c_str(),
 		  "Value out of limits",
 		  JustWarning,
 		  G4String(GmGenUtils::ftoa(theMinimum)+ " <=? " + GmGenUtils::ftoa(indexVal)+" <=? "+GmGenUtils::ftoa(theMaximum)).c_str());
       return INT_MAX;
-    } else {
+    } else if( theAllowOutOfLimits == 0 ) {
       G4Exception("GmVNumericDistribution::GmGenUtils::GetValue",
 		  "Value is bigger than the maxinum",
 		  FatalException,
 		  G4String("DISTRIBUTION= " + theName + ": VALUE= " + GmGenUtils::ftoa(indexVal) + " MAXIMUM= " + GmGenUtils::ftoa(theMaximum)).c_str());
-    } 
+    } else {
+      return INT_MAX;
+    }
+    
   }
 
   std::map<G4double,G4double>::const_iterator iteUp = theValues.upper_bound(indexVal);

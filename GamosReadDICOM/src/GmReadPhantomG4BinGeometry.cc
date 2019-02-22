@@ -1,28 +1,3 @@
-//
-// ********************************************************************
-// * License and Disclaimer                                           *
-// *                                                                  *
-// * The  GAMOS software  is  copyright of the Copyright  Holders  of *
-// * the GAMOS Collaboration.  It is provided  under  the  terms  and *
-// * conditions of the GAMOS Software License,  included in the  file *
-// * LICENSE and available at  http://fismed.ciemat.es/GAMOS/license .*
-// * These include a list of copyright holders.                       *
-// *                                                                  *
-// * Neither the authors of this software system, nor their employing *
-// * institutes,nor the agencies providing financial support for this *
-// * work  make  any representation or  warranty, express or implied, *
-// * regarding  this  software system or assume any liability for its *
-// * use.  Please see the license in the file  LICENSE  and URL above *
-// * for the full disclaimer and the limitation of liability.         *
-// *                                                                  *
-// * This  code  implementation is the result of  the  scientific and *
-// * technical work of the GAMOS collaboration.                       *
-// * By using,  copying,  modifying or  distributing the software (or *
-// * any work based  on the software)  you  agree  to acknowledge its *
-// * use  in  resulting  scientific  publications,  and indicate your *
-// * acceptance of all terms of the GAMOS Software license.           *
-// ********************************************************************
-//
 #include "G4Material.hh"
 
 #include "GmReadPhantomG4BinGeometry.hh"
@@ -45,12 +20,14 @@ GmReadPhantomG4BinGeometry::GmReadPhantomG4BinGeometry()
 //---------------------------------------------------------------------------
 GmReadPhantomG4BinGeometry::~GmReadPhantomG4BinGeometry()
 {
+  thePhantomFileName = "test.g4dcmb";
 }
+
 
 //---------------------------------------------------------------------------
 void GmReadPhantomG4BinGeometry::ReadPhantomData()
 {
-   G4String filename = GmParameterMgr::GetInstance()->GetStringValue("GmReadPhantomGeometry:Phantom:FileName", "test.g4dcmb");
+   G4String filename = GmParameterMgr::GetInstance()->GetStringValue("GmReadPhantomGeometry:Phantom:FileName", thePhantomFileName);
   
   G4String path( getenv( "GAMOS_SEARCH_PATH" ) );
   filename = GmGenUtils::FileInPath( path, filename );
@@ -89,6 +66,15 @@ void GmReadPhantomG4BinGeometry::ReadPhantomData()
     thePhantomMaterialsOriginal[ii] = mate;
   }
 
+  for( G4int jj = 0; jj < 3; jj++) {
+    if( fread(&sc, sizeof(char), 1, fin) != 1) {
+      G4Exception(" GmReadPhantomG4BinGeometry::ReadPhantomData",
+		  "Error",
+		  FatalException,
+		  "Problem reading patient position");
+    }
+    thePatientPosition += G4String(sc);
+  }
   if( fread(&nVoxelX, sizeof(size_t),  1, fin) != 1) {
     G4Exception(" GmReadPhantomG4BinGeometry::ReadPhantomData",
 		"Error",
@@ -175,7 +161,7 @@ void GmReadPhantomG4BinGeometry::ReadPhantomData()
   
   ReadVoxelDensitiesBin( fin );
 
-  //  ReadPS( fin );
+  //  ReadPV( fin );
 
   fclose(fin);
  
@@ -201,6 +187,8 @@ void GmReadPhantomG4BinGeometry::ReadVoxelDensitiesBin( FILE* fin )
   //--- Calculate the average material density for each material/density bin
   std::map< std::pair<G4Material*,G4int>, matInfo* > newMateDens;
   
+  theMateDensities = new float[nVoxelX*nVoxelY*nVoxelZ];
+
   G4float dens;
   //---- Read the material densities
   for( G4int iz = 0; iz < nVoxelZ; iz++ ) {
@@ -214,7 +202,11 @@ void GmReadPhantomG4BinGeometry::ReadVoxelDensitiesBin( FILE* fin )
 		      G4String("Problem reading material density" + GmGenUtils::itoa(ix) + " " + GmGenUtils::itoa(iy) + " " + GmGenUtils::itoa(iz)).c_str());
 	}
 	//	G4cout << ix << " " << iy << " " << iz << " density " << dens << G4endl;
-	if( !bRecalculateMaterialDensities ) continue; 
+	if( !bRecalculateMaterialDensities ) {
+	  G4int copyNo = ix + (iy)*nVoxelX + (iz)*nVoxelX*nVoxelY;
+	  theMateDensities[copyNo] = dens;
+	  continue;
+	}
 	
 	G4int copyNo = ix + (iy)*nVoxelX + (iz)*nVoxelX*nVoxelY;
 	//--- store the minimum and maximum density for each material (just for printing)
@@ -254,8 +246,9 @@ void GmReadPhantomG4BinGeometry::ReadVoxelDensitiesBin( FILE* fin )
 	  theMateIDs[copyNo] = thePhantomMaterialsOriginal.size()-1 + mi->id;
 	  //	  G4cout << copyNo << " mat new first " << thePhantomMaterialsOriginal.size()-1 + mi->id << G4endl;
 	}
-	//	G4cout << ix << " " << iy << " " << iz << " filling mateIDs " << copyNo << " = " << atoi(cid)-1 << G4endl;
-	//	mateIDs[copyNo] = atoi(cid)-1;
+	theMateDensities[copyNo] = dens;
+	//	G4cout << ix << " " << iy << " " << iz << " filling theMateIDs " << copyNo << " = " << atoi(cid)-1 << G4endl;
+	//	theMateIDs[copyNo] = atoi(cid)-1;
       }
     }
   }

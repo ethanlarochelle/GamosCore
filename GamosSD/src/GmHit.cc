@@ -1,34 +1,10 @@
-//
-// ********************************************************************
-// * License and Disclaimer                                           *
-// *                                                                  *
-// * The  GAMOS software  is  copyright of the Copyright  Holders  of *
-// * the GAMOS Collaboration.  It is provided  under  the  terms  and *
-// * conditions of the GAMOS Software License,  included in the  file *
-// * LICENSE and available at  http://fismed.ciemat.es/GAMOS/license .*
-// * These include a list of copyright holders.                       *
-// *                                                                  *
-// * Neither the authors of this software system, nor their employing *
-// * institutes,nor the agencies providing financial support for this *
-// * work  make  any representation or  warranty, express or implied, *
-// * regarding  this  software system or assume any liability for its *
-// * use.  Please see the license in the file  LICENSE  and URL above *
-// * for the full disclaimer and the limitation of liability.         *
-// *                                                                  *
-// * This  code  implementation is the result of  the  scientific and *
-// * technical work of the GAMOS collaboration.                       *
-// * By using,  copying,  modifying or  distributing the software (or *
-// * any work based  on the software)  you  agree  to acknowledge its *
-// * use  in  resulting  scientific  publications,  and indicate your *
-// * acceptance of all terms of the GAMOS Software license.           *
-// ********************************************************************
-//
 #include "GmHit.hh"
 #include "GmEDepo.hh"
 
 #include "GamosCore/GamosSD/include/GmHitsEventMgr.hh"
 #include "GamosCore/GamosAnalysis/include/GmCheckOriginalGamma.hh"
 #include "GamosCore/GamosUtils/include/GmGenUtils.hh"
+#include "GamosCore/GamosBase/Base/include/GmParameterMgr.hh"
 
 #include "G4Step.hh"
 #include "G4Track.hh"
@@ -52,8 +28,16 @@ GmHit::GmHit(G4Step* aStep, G4double energy, unsigned long long id, const G4Stri
   theEDepos.push_back( new GmEDepo( energy, aTrack->GetPosition(), aStep->GetTrack()->GetDefinition(), aStep->GetPostStepPoint()->GetGlobalTime() ) );
 
   // only for checks, it should be set by SD (at the center of face of entrance)
-  thePosition = aStep->GetTrack()->GetPosition();
-  
+  if( GmParameterMgr::GetInstance()->GetNumericValue("GmHit:LocalHitCoordinates",0) ) {
+    thePosition = aStep->GetTrack()->GetPosition();
+    thePosition = (G4TransportationManager::GetTransportationManager()->
+		   GetNavigatorForTracking()->
+		   GetGlobalToLocalTransform()).TransformPoint(thePosition);
+  } else {
+    thePosition = aStep->GetTrack()->GetPosition();
+  }
+
+    
 #ifndef GAMOS_NO_VERBOSE
   if( SDVerb(infoVerb) ) G4cout << " new GmHit " << id << " in det type " << sdtyp << " E " << theEnergy << " posXYZ " << aStep->GetTrack()->GetPosition().x() << " " << aStep->GetTrack()->GetPosition().y() << " " << aStep->GetTrack()->GetPosition().z() << G4endl;
 #endif
@@ -66,6 +50,18 @@ GmHit::GmHit(G4Step* aStep, G4double energy, unsigned long long id, const G4Stri
   bDeadTimeFound = false;
 
   theHitsTimeType = evtmgr->GetHitsTimeType();
+}
+
+//----------------------------------------------------------------------
+void GmHit::SetPosition(G4ThreeVector pos ) {
+
+  if( GmParameterMgr::GetInstance()->GetNumericValue("GmHit:LocalHitCoordinates",0) ) {
+    thePosition = (G4TransportationManager::GetTransportationManager()->
+		   GetNavigatorForTracking()->
+		   GetGlobalToLocalTransform()).TransformPoint(thePosition);
+  } else {
+    thePosition = pos;
+  }
 }
 
 //----------------------------------------------------------------------

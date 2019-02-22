@@ -1,28 +1,3 @@
-//
-// ********************************************************************
-// * License and Disclaimer                                           *
-// *                                                                  *
-// * The  GAMOS software  is  copyright of the Copyright  Holders  of *
-// * the GAMOS Collaboration.  It is provided  under  the  terms  and *
-// * conditions of the GAMOS Software License,  included in the  file *
-// * LICENSE and available at  http://fismed.ciemat.es/GAMOS/license .*
-// * These include a list of copyright holders.                       *
-// *                                                                  *
-// * Neither the authors of this software system, nor their employing *
-// * institutes,nor the agencies providing financial support for this *
-// * work  make  any representation or  warranty, express or implied, *
-// * regarding  this  software system or assume any liability for its *
-// * use.  Please see the license in the file  LICENSE  and URL above *
-// * for the full disclaimer and the limitation of liability.         *
-// *                                                                  *
-// * This  code  implementation is the result of  the  scientific and *
-// * technical work of the GAMOS collaboration.                       *
-// * By using,  copying,  modifying or  distributing the software (or *
-// * any work based  on the software)  you  agree  to acknowledge its *
-// * use  in  resulting  scientific  publications,  and indicate your *
-// * acceptance of all terms of the GAMOS Software license.           *
-// ********************************************************************
-//
 #include "GmG4PSTrackLength.hh"
 
 #include "G4UnitsTable.hh"
@@ -71,34 +46,6 @@ G4bool GmG4PSTrackLength::ProcessHits(G4Step* aStep,G4TouchableHistory*)
   
 }
 
-void GmG4PSTrackLength::EndOfEvent(G4HCofThisEvent*)
-{;}
-
-
-void GmG4PSTrackLength::DrawAll()
-{;}
-
-void GmG4PSTrackLength::PrintAll()
-{
-  G4cout << " MultiFunctionalDet  " << detector->GetName() << G4endl;
-  G4cout << " PrimitiveScorer " << GetName() << G4endl;
-  G4cout << " Number of entries " << EvtMap->entries() << G4endl;
-  std::map<G4int,G4double*>::iterator itr = EvtMap->GetMap()->begin();
-  for(; itr != EvtMap->GetMap()->end(); itr++) {
-    G4cout << "  copy no.: " << itr->first << "  track length: " ;
-    if ( multiplyKinE && !divideByVelocity ){
-      G4cout << *(itr->second)/(CLHEP::mm*CLHEP::MeV) <<" CLHEP::mm*CLHEP::MeV";
-    } else if ( !multiplyKinE && divideByVelocity ){
-      G4cout << *(itr->second)*CLHEP::second <<" /second";
-    } else if ( multiplyKinE && divideByVelocity) {
-      G4cout << *(itr->second)/CLHEP::MeV*CLHEP::second <<" CLHEP::MeV/second";
-    } else {
-      G4cout  << G4BestUnit(*(itr->second),"Length");
-    }
-    G4cout << G4endl;
-  }
-}
-
 void GmG4PSTrackLength::SetParameters( const std::vector<G4String>& params)
 {
   if( params.size() != 2 ){
@@ -143,8 +90,3 @@ G4String GmG4PSTrackLength::GetUnitName() const
   }
 }
 
- #include "GamosCore/GamosBase/Base/include/GmVClassifier.hh" 
-G4int GmG4PSTrackLength::GetIndex(G4Step* aStep ) 
- { 
- return theClassifier->GetIndexFromStep( aStep ); 
-} 

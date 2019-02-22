@@ -1,30 +1,8 @@
-//
-// ********************************************************************
-// * License and Disclaimer                                           *
-// *                                                                  *
-// * The  GAMOS software  is  copyright of the Copyright  Holders  of *
-// * the GAMOS Collaboration.  It is provided  under  the  terms  and *
-// * conditions of the GAMOS Software License,  included in the  file *
-// * LICENSE and available at  http://fismed.ciemat.es/GAMOS/license .*
-// * These include a list of copyright holders.                       *
-// *                                                                  *
-// * Neither the authors of this software system, nor their employing *
-// * institutes,nor the agencies providing financial support for this *
-// * work  make  any representation or  warranty, express or implied, *
-// * regarding  this  software system or assume any liability for its *
-// * use.  Please see the license in the file  LICENSE  and URL above *
-// * for the full disclaimer and the limitation of liability.         *
-// *                                                                  *
-// * This  code  implementation is the result of  the  scientific and *
-// * technical work of the GAMOS collaboration.                       *
-// * By using,  copying,  modifying or  distributing the software (or *
-// * any work based  on the software)  you  agree  to acknowledge its *
-// * use  in  resulting  scientific  publications,  and indicate your *
-// * acceptance of all terms of the GAMOS Software license.           *
-// ********************************************************************
-//
 #include "GmScoringMgr.hh"
 #include "GmVPrimitiveScorer.hh"
+#include "GmCompoundScorer.hh"
+#include "GmScoringRun.hh"
+#include "GmScoringVerbosity.hh"
 
 #include "GamosCore/GamosUtils/include/GmGenUtils.hh"
 #include "GamosCore/GamosGeometry/include/GmGeometryUtils.hh"
@@ -37,7 +15,11 @@
 #include "G4MultiFunctionalDetector.hh"
 #include "G4SDManager.hh"
 
+#ifdef ROOT5
 #include "Reflex/PluginService.h"
+#else
+#include "GamosCore/GamosScoring/Management/include/GmPrimitiveScorerFactory.hh"
+#endif
 
 GmScoringMgr* GmScoringMgr::theInstance = 0;
 
@@ -69,7 +51,7 @@ GmScoringMgr::~GmScoringMgr()
 
   std::map<G4String,GmVPrimitiveScorer*>::iterator ites;
   for( ites = theScorers.begin(); ites != theScorers.end(); ites++ ){
-    delete (*ites).second;
+    //t delete (*ites).second;
   }
   
   std::map<G4String,GmVPSPrinter*>::iterator itep;
@@ -119,34 +101,103 @@ void GmScoringMgr::CreateMFD( const std::vector<G4String>& wl )
 
 
 //----------------------------------------------------------------------
-void GmScoringMgr::AddScorer2MFD( const G4String& scorerName, const G4String& scorerClass, const G4String& MFDname, std::vector<G4String>& params )
+void GmScoringMgr::CreateScorer( const G4String& scorerName, const G4String& scorerClass, std::vector<G4String>& params )
 {
-  //----- Check that MFD exists
-  std::map<G4String,G4MultiFunctionalDetector*>::iterator itemfd = theMFDs.find(MFDname);
-  if( itemfd == theMFDs.end() ) {
-    G4cerr << "!!! ERROR: at command /gamos/scoring/addScorer2MFD " << scorerName << " " << scorerClass << " " << MFDname << std::endl;
+  GmVPrimitiveScorer* scorer = 0;
+#ifdef ROOT5
+  scorer = Reflex::PluginService::Create<GmVPrimitiveScorer*>(scorerClass,scorerName);
+#else
+  scorer = GmPrimitiveScorerFactory::get()->create(scorerClass,scorerName);
+#endif
+  
+  if( !scorer ) {
+    G4Exception(" GmScoringMgr::CreateScorer",
+		"Wrong argument",
+		FatalErrorInArgument,
+		G4String("Scorer class not found " + scorerClass + " Please check documentation and your /gamos/scorer commands").c_str());
+  }
+  //  if( params.size() != 0 ) scorer->SetParameters( params );
+  scorer->SetParameters( params ); // GmPSLETD builds the parameters itself
+
+  theScorers[scorer->GetName()] = scorer;
+
+}
+
+//----------------------------------------------------------------------
+void GmScoringMgr::AddScorer2MFD( std::vector<G4String>& wl )
+{
+  G4String scorerName = wl[0];
+  G4String scorerClass = "";
+  G4String MFDName = "";
+  GmVPrimitiveScorer* scorer = 0;
+  //----- Check that Scorer exists  
+  std::map<G4String,GmVPrimitiveScorer*>::iterator itesco = theScorers.find(scorerName);
+  if( itesco != theScorers.end() ) {
+    if( wl.size() < 2 ) G4Exception("GmScoringMessenger::SetNewVAlue",
+				    "Wrong argument",
+				    FatalErrorInArgument,
+				    G4String("/gamos/scoring/addScorer2MFD  needs only 2 arguments: ScorerName MFDname").c_str()); 
+    
+    if( wl.size() > 2 ) G4Exception("GmScoringMessenger::SetNewVAlue",
+				    "Wrong argument",
+				    FatalErrorInArgument,
+				    G4String("/gamos/scoring/addScorer2MFD  needs only 2 arguments: ScorerName MFDname \n . If you need to give parameters to the scorers, use the command  /gamos/scoring/createScorer" ).c_str()); 
+
+    scorer = (*itesco).second;
+    MFDName = wl[1];
+
+  //--- Create Scorer
+  } else {
+    if( wl.size() < 3 ) G4Exception("GmScoringMessenger::SetNewVAlue",
+				    "Wrong argument",
+				    FatalErrorInArgument,
+				    G4String("/gamos/scoring/addScorer2MFD  needs only 3 arguments: ScorerName ScorerClass MFDname ").c_str()); 
+    if( wl.size() > 3 ) G4Exception("GmScoringMessenger::SetNewVAlue",
+				    "Wrong argument",
+				    FatalErrorInArgument,
+				    G4String("/gamos/scoring/addScorer2MFD  needs only 3 arguments: ScorerName ScorerClass MFDname \n . If you need to give parameters to the scorers, use the command  /gamos/scoring/createScorer" ).c_str()); 
+
+    scorerClass = wl[1];
+    /*    if( scorerClass == "GmCompoundScorer" ) {
     G4Exception("GmScoringMgr::AddScorer2MFD",
 		"Wrong argument",
 		FatalErrorInArgument,
-		(" Trying to add an scorer to a non-existing multifunctional detector named: " + MFDname).c_str() );
+		(" Trying to add an scorer of type 'GmCompoundScorer', please defined it previously with user command /gamos/scoring/createScorer: " + scorerName).c_str() );
+		}*/
+ 
+#ifdef ROOT5
+    scorer = Reflex::PluginService::Create<GmVPrimitiveScorer*>(scorerClass,scorerName);
+#else
+    scorer = GmPrimitiveScorerFactory::get()->create(scorerClass,scorerName);
+#endif
+    if( !scorer ) {
+      G4Exception(" GmScoringMgr::AddScorer2MFD",
+		  "Wrong argument",
+		  FatalErrorInArgument,
+		  G4String("Scorer class not found " + scorerClass + " Please check documentation and your /gamos/scoring/addScorer2MFD commands").c_str());
+    }
+    MFDName = wl[2];
+    std::vector<G4String> params;
+    scorer->SetParameters( params ); // GmPSLETD builds the parameters itself
   }
 
-  GmVPrimitiveScorer* scorer = Reflex::PluginService::Create<GmVPrimitiveScorer*>(scorerClass,scorerName);
-  if( !scorer ) {
-    G4Exception(" GmScoringMgr::AddScorer2MFD",
+  //----- Check that MFD exists
+  std::map<G4String,G4MultiFunctionalDetector*>::iterator itemfd = theMFDs.find(MFDName);
+  if( itemfd == theMFDs.end() ) {
+    G4cerr << "!!! ERROR: at command /gamos/scoring/addScorer2MFD " << scorerName << " " << scorerClass
+	   << " " << MFDName << std::endl;
+    G4Exception("GmScoringMgr::AddScorer2MFD",
 		"Wrong argument",
 		FatalErrorInArgument,
-		G4String("Scorer class not found " + scorerClass + " Please check documentation and your /gamos/scoring/addScorer2MFD commands").c_str());
+		(" Trying to add an scorer to a non-existing multifunctional detector named: " + MFDName).c_str() );
   }
-  scorer->SetParameters( params );
-  if( scorer == 0 ) {
-    G4cerr << scorer << "!!! ERROR: at command /gamos/scoring/addScorer2MFD " << scorerClass << " " << scorerName << " " << MFDname << std::endl 
-	   << " no scorer exists of type " << scorerClass << " Please check documentation and your /gamos/scoring/addScorer2MFD commands " << G4endl;
-  } else {
-    ((*itemfd).second)->RegisterPrimitive(scorer);
-    scorer->RegisterMFD( ((*itemfd).second) );
-    theScorers[scorerName] = scorer;
-  }
+
+  G4MultiFunctionalDetector* mfd = (*itemfd).second;
+  mfd->RegisterPrimitive(scorer);
+  scorer->RegisterMFD( mfd );
+  scorer->PropagateMFDToSubScorers(); 
+
+  theScorers[scorerName] = scorer;
 
 }
 
@@ -171,8 +222,9 @@ void GmScoringMgr::AddFilter2Scorer( std::vector<G4String> params )
   GmVFilter* filter = GmFilterMgr::GetInstance()->FindOrBuildFilter(params,1);
 
   ((*itesco).second)->SetGmFilter(filter);
-  
   //  theFilters[params[0]] = filter;
+
+  ((*itesco).second)->PropagateFilterToSubScorers(); 
 
 }
 
@@ -184,7 +236,7 @@ void GmScoringMgr::AddPrinter2Scorer( std::vector<G4String> params )
 
   std::map<G4String,GmVPrimitiveScorer*>::iterator itesco = theScorers.find(scorerName);
   if( itesco == theScorers.end() ) {
-    G4cerr << "!!! ERROR: at command /gamos/scoring/addPrinter2Scorer " << params[1] << " " << scorerName << std::endl;
+    G4cerr << "!!! ERROR: at command /gamos/scoring/addPrinter2Scorer " << params[0] << " " << scorerName << std::endl;
     G4Exception("GmScoringMgr::AddPrinter2Scorer",
 		"Wrong argument",
 		FatalErrorInArgument,
@@ -200,9 +252,9 @@ void GmScoringMgr::AddPrinter2Scorer( std::vector<G4String> params )
   
   ((*itesco).second)->AddPrinter(printer);
  
-  printer->SetScoreByEvent( (*itesco).second->ScoreByEvent() );
-  
   thePrinters[params[0]] = printer;
+
+  //-  ((*itesco).second)->PropagatePrinterToSubScorers(printer); 
 
 }
 
@@ -242,6 +294,8 @@ void GmScoringMgr::AssignClassifier2Scorer( std::vector<G4String>& params )
   }
   */
 
+  ((*itesco).second)->PropagateClassifierToSubScorers(); 
+
 }
 
 
@@ -259,6 +313,8 @@ void GmScoringMgr::AddTrkWeight2Scorer( const G4String& scorerName, G4String& va
 
   G4bool bVal = GmGenUtils::GetBoolean(val);
   ((*itesco).second)->SetUseTrackWeight( bVal );
+
+  ((*itesco).second)->PropagateTrkWeightToSubScorers(); 
 }
 
 //----------------------------------------------------------------------
@@ -279,25 +335,66 @@ void GmScoringMgr::AddScoreErrors2Scorer( const G4String& scorerName, G4String& 
   
   G4bool bVal = GmGenUtils::GetBoolean(val);
   ((*itesco).second)->SetScoreErrors( bVal );
+
+  ((*itesco).second)->PropagateScoreErrorsToSubScorers(); 
 }
+
 //----------------------------------------------------------------------
-void GmScoringMgr::AddPrintByEvent2Printer( const G4String& printerName, G4String& val )   
+void GmScoringMgr::AddPrintByEvent2Scorer( const G4String& scorerName, G4String& val )   
 {
 
-  std::map<G4String,GmVPSPrinter*>::iterator itepr;
-  for( itepr = thePrinters.begin(); itepr != thePrinters.end(); itepr++ ) {
-    if( GmGenUtils::AreWordsEquivalent(printerName, (*itepr).first ) ) break;
-  }
-  if( itepr == thePrinters.end() ) {
-    G4cerr << "!!! ERROR: at command /gamos/scoring/printByEvent " << printerName << std::endl;
-    G4Exception("GmScoringMgr::AddPrintByEvent2Printer",
-		"Wrong argument",
-		FatalErrorInArgument,
-		G4String(" Trying to set track weight to a non-existing printer named: " + printerName).c_str() );
+  std::map<G4String,GmVPrimitiveScorer*>::iterator itesco;
+  for( itesco = theScorers.begin(); itesco != theScorers.end(); itesco++ ) {
+    if(  GmGenUtils::AreWordsEquivalent(scorerName, (*itesco).first ) ) break;
   }
 
+  if( itesco == theScorers.end() ) {
+    G4cerr << "!!! ERROR: at command /gamos/scoring/scoreByEvent " << scorerName << std::endl;
+    G4Exception("GmScoringMgr::AddScoreErrors2Scorer",
+		"Wrong argument",
+		FatalErrorInArgument,
+		G4String(" Trying to set track weight to a non-existing scorer named: " + scorerName).c_str() );
+  }
+  
   G4bool bVal = GmGenUtils::GetBoolean(val);
-  ((*itepr).second)->SetScoreByEvent( bVal );
+  ((*itesco).second)->SetScoreByEvent( bVal );
+
+}
+
+//----------------------------------------------------------------------
+void GmScoringMgr::AddPrintNEventsType2Scorer( const G4String& scorerName, G4String& val )   
+{
+
+  std::map<G4String,GmVPrimitiveScorer*>::iterator itesco;
+  for( itesco = theScorers.begin(); itesco != theScorers.end(); itesco++ ) {
+    if(  GmGenUtils::AreWordsEquivalent(scorerName, (*itesco).first ) ) break;
+  }
+
+  if( itesco == theScorers.end() ) {
+    G4cerr << "!!! ERROR: at command /gamos/scoring/scoreNEventsType " << scorerName << std::endl;
+    G4Exception("GmScoringMgr::AddScoreErrors2Scorer",
+		"Wrong argument",
+		FatalErrorInArgument,
+		G4String(" Trying to set track weight to a non-existing scorer named: " + scorerName).c_str() );
+  }
+
+  ScoreNEventsType net;
+  if( val == "ByRun" ) {
+    net = SNET_ByRun;
+  } else if( val == "ByEvent" ) {
+    net = SNET_ByRun;
+  } else if( val == "ByNFilled" ) {
+    net = SNET_ByRun;
+  } else {
+    G4cerr << "!!! ERROR: at command /gamos/scoring/scoreNEventsType " << scorerName << std::endl;
+    G4Exception("GmScoringMgr::AddScoreErrors2Scorer",
+		"Wrong argument",
+		FatalErrorInArgument,
+		G4String(" Second argument must be ByRun / ByEvent / ByNFilled, while it is:  " + val).c_str() );
+  }
+
+  ((*itesco).second)->SetNEventsType( net );
+
 }
 
 //----------------------------------------------------------------------
@@ -326,18 +423,36 @@ void GmScoringMgr::PrintAllScorers()
     ((*ite).second)->PrintAll();
   }
 
-
 }
 
-#include "G4Step.hh"
+//----------------------------------------------------------------------
+G4THitsMap<G4double>* GmScoringMgr::GetRunMap(GmVPrimitiveScorer* scorer )
+{
+  return theScoringRun->GetRunMap( scorer );
+}
 
 //----------------------------------------------------------------------
-void GmScoringMgr::CountSumsForLastEventInAllScorers()
+GmVPrimitiveScorer* GmScoringMgr::GetScore( G4String name, G4bool bMustExist ) const
 {
-  std::map<G4String,GmVPrimitiveScorer*>::const_iterator ite;
-  for( ite = theScorers.begin(); ite != theScorers.end(); ite++ ){
-    (*ite).second->SetNewEvent( TRUE );
-    (*ite).second->FillScorer((G4Step*)(0), 0., 1.);
-  }
+  GmVPrimitiveScorer* scorer = 0;
   
+  std::map<G4String,GmVPrimitiveScorer*>::const_iterator ite = theScorers.find( name );
+
+  if( ite == theScorers.end() ) {
+    if( bMustExist ) {
+      G4Exception("GmcoringMgr::GetScore",
+		  "",
+		  FatalException,
+		  ("Scorer does not exists " + name).c_str());
+    } else {
+      G4Exception("GmcoringMgr::GetScore",
+		  "",
+		  JustWarning,
+		  ("Scorer does not exists " + name).c_str());
+    }
+  } else {
+    scorer = (*ite).second;
+  }
+
+  return scorer;
 }

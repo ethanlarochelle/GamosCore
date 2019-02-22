@@ -1,30 +1,3 @@
-//
-// ********************************************************************
-// * License and Disclaimer                                           *
-// *                                                                  *
-// * The  GAMOS software  is  copyright of the Copyright  Holders  of *
-// * the GAMOS Collaboration.  It is provided  under  the  terms  and *
-// * conditions of the GAMOS Software License,  included in the  file *
-// * LICENSE and available at  http://fismed.ciemat.es/GAMOS/license .*
-// * These include a list of copyright holders.                       *
-// *                                                                  *
-// * Neither the authors of this software system, nor their employing *
-// * institutes,nor the agencies providing financial support for this *
-// * work  make  any representation or  warranty, express or implied, *
-// * regarding  this  software system or assume any liability for its *
-// * use.  Please see the license in the file  LICENSE  and URL above *
-// * for the full disclaimer and the limitation of liability.         *
-// *                                                                  *
-// * This  code  implementation is the result of  the  scientific and *
-// * technical work of the GAMOS collaboration.                       *
-// * By using,  copying,  modifying or  distributing the software (or *
-// * any work based  on the software)  you  agree  to acknowledge its *
-// * use  in  resulting  scientific  publications,  and indicate your *
-// * acceptance of all terms of the GAMOS Software license.           *
-// ********************************************************************
-//
-#include "Reflex/PluginService.h"
-
 #include "GmSDSimple.hh"
 #include "GmSDWithFilter.hh"
 #include "GmSDSimpleExactPos.hh"
@@ -33,6 +6,20 @@
 #include "GmSDVirtSegmBox.hh"
 #include "GmSDOpticalPhoton.hh"
 #include "GmSDSeparateByTime.hh"
+
+#include "GmRecHitBuilderByDistance.hh"
+#include "GmRecHitBuilderByBlock.hh"
+#include "GmRecHitBuilder1to1.hh"
+
+#include "GmHitsHistosUA.hh"
+#include "GmRecHitsHistosUA.hh"
+#include "GmHitsWriteUA.hh"
+#include "GmHitsReadUA.hh"
+#include "GmRecHitsWriteUA.hh"
+#include "GmHistosGammaAtSD.hh"
+
+#ifdef ROOT5
+#include "Reflex/PluginService.h"
 
 PLUGINSVC_FACTORY(GmSDSimple,G4VSensitiveDetector*(G4String))
 PLUGINSVC_FACTORY(GmSDSimpleExactPos,G4VSensitiveDetector*(G4String))
@@ -43,20 +30,9 @@ PLUGINSVC_FACTORY(GmSDOpticalPhoton,G4VSensitiveDetector*(G4String))
 PLUGINSVC_FACTORY(GmSDSeparateByTime,G4VSensitiveDetector*(G4String))
 PLUGINSVC_FACTORY(GmSDWithFilter,G4VSensitiveDetector*(G4String))
 
-#include "GmRecHitBuilderByDistance.hh"
-#include "GmRecHitBuilderByBlock.hh"
-#include "GmRecHitBuilder1to1.hh"
-
 PLUGINSVC_FACTORY(GmRecHitBuilderByDistance,GmVRecHitBuilder*())
 PLUGINSVC_FACTORY(GmRecHitBuilderByBlock,GmVRecHitBuilder*())
 PLUGINSVC_FACTORY(GmRecHitBuilder1to1,GmVRecHitBuilder*())
-
-#include "GmHitsHistosUA.hh"
-#include "GmRecHitsHistosUA.hh"
-#include "GmHitsWriteUA.hh"
-#include "GmHitsReadUA.hh"
-#include "GmRecHitsWriteUA.hh"
-#include "GmHistosGammaAtSD.hh"
 
 PLUGINSVC_FACTORY(GmHitsHistosUA,GmUserAction*())
 PLUGINSVC_FACTORY(GmRecHitsHistosUA,GmUserAction*())
@@ -67,3 +43,38 @@ PLUGINSVC_FACTORY(GmHistosGammaAtSD,GmUserAction*())
 
 #include "GmSDVerbosity.hh"
 PLUGINSVC_FACTORY(GmSDVerbosity,GmVVerbosity*())
+
+#else
+
+#include "PluginManager/ModuleDef.h"
+#include "GmSensDetFactory.hh"
+#include "GmRecHitBuilderFactory.hh"
+#include "GamosCore/GamosUserActionMgr/include/GmUserActionFactory.hh"
+
+DEFINE_SEAL_MODULE ();
+
+DEFINE_GAMOS_SENSDET(GmSDSimple);
+DEFINE_GAMOS_SENSDET(GmSDSimpleExactPos);
+DEFINE_GAMOS_SENSDET(GmSDVirtSegmentedSphereRThetaPhi);
+DEFINE_GAMOS_SENSDET(GmSDVirtSegmentedSphereThetaPhi);
+DEFINE_GAMOS_SENSDET(GmSDVirtSegmBox);
+DEFINE_GAMOS_SENSDET(GmSDOpticalPhoton);
+DEFINE_GAMOS_SENSDET(GmSDSeparateByTime);
+DEFINE_GAMOS_SENSDET(GmSDWithFilter);
+
+DEFINE_GAMOS_RECHIT_BUILDER(GmRecHitBuilderByDistance);
+DEFINE_GAMOS_RECHIT_BUILDER(GmRecHitBuilderByBlock);
+DEFINE_GAMOS_RECHIT_BUILDER(GmRecHitBuilder1to1);
+
+DEFINE_GAMOS_USER_ACTION(GmHitsHistosUA);
+DEFINE_GAMOS_USER_ACTION(GmRecHitsHistosUA);
+DEFINE_GAMOS_USER_ACTION(GmHitsWriteUA);
+DEFINE_GAMOS_USER_ACTION(GmHitsReadUA);
+DEFINE_GAMOS_USER_ACTION(GmRecHitsWriteUA);
+DEFINE_GAMOS_USER_ACTION(GmHistosGammaAtSD);
+
+#include "GamosCore/GamosBase/Base/include/GmVerbosityFactory.hh"
+#include "GmSDVerbosity.hh"
+DEFINE_GAMOS_VERBOSITY(GmSDVerbosity);
+
+#endif

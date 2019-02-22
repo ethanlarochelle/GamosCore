@@ -1,28 +1,3 @@
-//
-// ********************************************************************
-// * License and Disclaimer                                           *
-// *                                                                  *
-// * The  GAMOS software  is  copyright of the Copyright  Holders  of *
-// * the GAMOS Collaboration.  It is provided  under  the  terms  and *
-// * conditions of the GAMOS Software License,  included in the  file *
-// * LICENSE and available at  http://fismed.ciemat.es/GAMOS/license .*
-// * These include a list of copyright holders.                       *
-// *                                                                  *
-// * Neither the authors of this software system, nor their employing *
-// * institutes,nor the agencies providing financial support for this *
-// * work  make  any representation or  warranty, express or implied, *
-// * regarding  this  software system or assume any liability for its *
-// * use.  Please see the license in the file  LICENSE  and URL above *
-// * for the full disclaimer and the limitation of liability.         *
-// *                                                                  *
-// * This  code  implementation is the result of  the  scientific and *
-// * technical work of the GAMOS collaboration.                       *
-// * By using,  copying,  modifying or  distributing the software (or *
-// * any work based  on the software)  you  agree  to acknowledge its *
-// * use  in  resulting  scientific  publications,  and indicate your *
-// * acceptance of all terms of the GAMOS Software license.           *
-// ********************************************************************
-//
 #ifndef GmG4PhysicsLists_hh
 #define GmG4PhysicsLists_hh
 
@@ -33,6 +8,13 @@ public:
   G4FTFP_BERT() {}
 };
  
+#include "FTFP_BERT_ATL.hh"
+class G4FTFP_BERT_ATL : public  FTFP_BERT_ATL 
+{
+public:
+  G4FTFP_BERT_ATL() {}
+};
+
 #include "FTFP_BERT_HP.hh"
 class G4FTFP_BERT_HP : public  FTFP_BERT_HP 
 {
@@ -60,7 +42,14 @@ class G4FTFP_INCLXX_HP : public  FTFP_INCLXX_HP
 public:
   G4FTFP_INCLXX_HP() {}
 };
- 
+
+#include "FTFQGSP_BERT.hh"
+class G4FTFQGSP_BERT : public  FTFQGSP_BERT 
+{
+public:
+  G4FTFQGSP_BERT() {}
+};
+
 #include "FTF_BIC.hh"
 class G4FTF_BIC : public  FTF_BIC 
 {
@@ -83,7 +72,15 @@ class G4LBE : public  LBE
 public:
   G4LBE() {}
 };
- 
+
+#include "NuBeam.hh"
+class G4NuBeam : public  NuBeam 
+{
+public:
+  G4NuBeam() {}
+};
+
+
 #include "QBBC.hh"
 class G4QBBC : public  QBBC 
 {
@@ -160,5 +157,6 @@ class G4QGSP_BIC_AllHP : public  QGSP_BIC_AllHP
 public:
   G4QGSP_BIC_AllHP() {}
 };
+
 
 #endif

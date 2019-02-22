@@ -1,28 +1,3 @@
-//
-// ********************************************************************
-// * License and Disclaimer                                           *
-// *                                                                  *
-// * The  GAMOS software  is  copyright of the Copyright  Holders  of *
-// * the GAMOS Collaboration.  It is provided  under  the  terms  and *
-// * conditions of the GAMOS Software License,  included in the  file *
-// * LICENSE and available at  http://fismed.ciemat.es/GAMOS/license .*
-// * These include a list of copyright holders.                       *
-// *                                                                  *
-// * Neither the authors of this software system, nor their employing *
-// * institutes,nor the agencies providing financial support for this *
-// * work  make  any representation or  warranty, express or implied, *
-// * regarding  this  software system or assume any liability for its *
-// * use.  Please see the license in the file  LICENSE  and URL above *
-// * for the full disclaimer and the limitation of liability.         *
-// *                                                                  *
-// * This  code  implementation is the result of  the  scientific and *
-// * technical work of the GAMOS collaboration.                       *
-// * By using,  copying,  modifying or  distributing the software (or *
-// * any work based  on the software)  you  agree  to acknowledge its *
-// * use  in  resulting  scientific  publications,  and indicate your *
-// * acceptance of all terms of the GAMOS Software license.           *
-// ********************************************************************
-//
 #include "GmDataMgr.hh"
 #include "GmVData.hh"
 #include "GmDataVerbosity.hh"
@@ -33,7 +8,11 @@
 
 #include "G4tgrUtils.hh"
 
+#ifdef ROOT5
 #include "Reflex/PluginService.h"
+#else
+#include "GamosCore/GamosData/Management/include/GmDataFactory.hh"
+#endif
 
 GmDataMgr* GmDataMgr::theInstance = 0;
 
@@ -70,7 +49,11 @@ GmVData* GmDataMgr::BuildData( G4String dataName )
   if( iSeparator == G4int(std::string::npos) ) {
     if( dataName.find("AncestorStep") == 0 ) {
       G4String shortDataName = dataName.substr(12,dataName.length());
+#ifdef ROOT5
       GmVData * ancesData = Reflex::PluginService::Create<GmVData*>("GmData" + shortDataName);
+#else
+      GmVData * ancesData = GmDataFactory::get()->create("GmData" + shortDataName);
+#endif      
       if( ancesData == 0 ) {
 	G4Exception("GmVDataUser::GmVDataUser",
 		    "Wrong data type",
@@ -89,7 +72,11 @@ GmVData* GmDataMgr::BuildData( G4String dataName )
       }
       data->SetName( dataName ); // for others the user names the data
     } else {
+#ifdef ROOT5
       data = Reflex::PluginService::Create<GmVData*>("GmData" + dataName);
+#else
+      data = GmDataFactory::get()->create("GmData" + dataName);
+#endif      	
       if( data == 0 ) {
 	  G4Exception("GmDataMgr::BuildData",
 		      "Data type not found",
@@ -189,7 +176,11 @@ GmVData* GmDataMgr::CreateData( G4String dataName )
   GmVData * data = 0;
   if( dataName.find("AncestorStep") == 0 ) { 
       G4String shortDataName = dataName.substr(12,dataName.length());
+#ifdef ROOT5
       GmVData * ancesData = Reflex::PluginService::Create<GmVData*>("GmData" + shortDataName);
+#else
+      GmVData * ancesData = GmDataFactory::get()->create("GmData" + shortDataName);
+#endif
       if( ancesData == 0 ) {
 	G4Exception("GmVDataUser::GmVDataUser",
 		    "Wrong data type",
@@ -208,8 +199,12 @@ GmVData* GmDataMgr::CreateData( G4String dataName )
       }
       data->SetName( dataName ); // for others the user names the data
   } else {
+#ifdef ROOT5
     data = Reflex::PluginService::Create<GmVData*>("GmData" + dataName);
-    if( data == 0 ) {
+#else
+    data = GmDataFactory::get()->create("GmData" + dataName);
+#endif
+      if( data == 0 ) {
       G4Exception("GmVDataUser::GmVDataUser",
 		  "Wrong data type",
 		  FatalErrorInArgument,

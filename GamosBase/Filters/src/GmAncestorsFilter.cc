@@ -1,31 +1,6 @@
-//
-// ********************************************************************
-// * License and Disclaimer                                           *
-// *                                                                  *
-// * The  GAMOS software  is  copyright of the Copyright  Holders  of *
-// * the GAMOS Collaboration.  It is provided  under  the  terms  and *
-// * conditions of the GAMOS Software License,  included in the  file *
-// * LICENSE and available at  http://fismed.ciemat.es/GAMOS/license .*
-// * These include a list of copyright holders.                       *
-// *                                                                  *
-// * Neither the authors of this software system, nor their employing *
-// * institutes,nor the agencies providing financial support for this *
-// * work  make  any representation or  warranty, express or implied, *
-// * regarding  this  software system or assume any liability for its *
-// * use.  Please see the license in the file  LICENSE  and URL above *
-// * for the full disclaimer and the limitation of liability.         *
-// *                                                                  *
-// * This  code  implementation is the result of  the  scientific and *
-// * technical work of the GAMOS collaboration.                       *
-// * By using,  copying,  modifying or  distributing the software (or *
-// * any work based  on the software)  you  agree  to acknowledge its *
-// * use  in  resulting  scientific  publications,  and indicate your *
-// * acceptance of all terms of the GAMOS Software license.           *
-// ********************************************************************
-//
 #include "GmAncestorsFilter.hh"
 #include "GamosCore/GamosBase/Base/include/GmTrackInfo.hh"
-#include "GamosCore/GamosBase/Base/include/GmBaseVerbosity.hh"
+#include "GamosCore/GamosBase/Filters/include/GmFilterVerbosity.hh"
 
 #include "GamosCore/GamosUtils/include/GmG4Utils.hh"
 
@@ -53,7 +28,7 @@ G4bool GmAncestorsFilter::AcceptTrack(const G4Track* aTrack)
   if( bPassed.find(trkID) != bPassed.end()  // passed a previous step
       || bPassed.find( parentID) != bPassed.end()) { // passed parent in any step
 #ifndef GAMOS_NO_VERBOSE
-    if( BaseVerb(debugVerb) ) G4cout << " GmAncestorsFilter::AcceptTrack return 1, because ancestor was accepted " << G4endl;
+    if( FilterVerb(debugVerb) ) G4cout << " GmAncestorsFilter::AcceptTrack return 1, because ancestor was accepted " << G4endl;
 #endif
     return TRUE;
   }
@@ -63,7 +38,7 @@ G4bool GmAncestorsFilter::AcceptTrack(const G4Track* aTrack)
   if( bAccept ) bPassed.insert(aTrack->GetTrackID());
 
 #ifndef GAMOS_NO_VERBOSE
-  if( BaseVerb(debugVerb) ) G4cout << " GmAncestorsFilter::AcceptTrack return " << bAccept << G4endl;
+  if( FilterVerb(debugVerb) ) G4cout << " GmAncestorsFilter::AcceptTrack return " << bAccept << G4endl;
 #endif
 
   return bAccept;
@@ -82,13 +57,14 @@ G4bool GmAncestorsFilter::AcceptStep(const G4Step* aStep)
       aTrack->GetCurrentStepNumber() == 1 ) bPassed.clear();
 
   G4VUserTrackInformation* trkInfo = aTrack->GetUserInformation();
-  GmTrackInfo* gmTrkInfo = (GmTrackInfo*)(trkInfo);
+  GmTrackInfo* gmTrkInfo = dynamic_cast<GmTrackInfo*>(trkInfo);
+  if( !gmTrkInfo ) return FALSE;
 
   //--- Check if passed previous track at AcceptTrack
   G4int trkID = aTrack->GetTrackID();
   if( bPassed.find( aTrack->GetParentID()) != bPassed.end()) {
 #ifndef GAMOS_NO_VERBOSE
-    if( BaseVerb(debugVerb) ) G4cout << " GmAncestorsFilter::AcceptStep return 1, because ancestor was accepted at AcceptTrack " << G4endl;
+    if( FilterVerb(debugVerb) ) G4cout << " GmAncestorsFilter::AcceptStep return 1, because ancestor was accepted at AcceptTrack " << G4endl;
 #endif
     bPassed.insert(trkID);
     bAccept = TRUE;
@@ -98,7 +74,7 @@ G4bool GmAncestorsFilter::AcceptStep(const G4Step* aStep)
     if( gmTrkInfo ) {
       if( gmTrkInfo->IntValueExists("HistoryAncestors") ) {
 #ifndef GAMOS_NO_VERBOSE
-	if( BaseVerb(debugVerb) ) G4cout << " GmAncestorsFilter::AcceptStep return 1, because ancestor was accepted at AcceptStep " << G4endl;
+	if( FilterVerb(debugVerb) ) G4cout << " GmAncestorsFilter::AcceptStep return 1, because ancestor was accepted at AcceptStep " << G4endl;
 #endif
 	bAccept = TRUE;
       }
@@ -109,7 +85,7 @@ G4bool GmAncestorsFilter::AcceptStep(const G4Step* aStep)
   if( !bAccept ) {
     bAccept = AcceptStepAND(aStep);
 #ifndef GAMOS_NO_VERBOSE
-    if( bAccept ) if( BaseVerb(debugVerb) ) G4cout << " GmAncestorsFilter::AcceptStep return 1, because current step is accepted " << G4endl;
+    if( bAccept ) if( FilterVerb(debugVerb) ) G4cout << " GmAncestorsFilter::AcceptStep return 1, because current step is accepted " << G4endl;
 #endif
   }
 
@@ -129,7 +105,7 @@ G4bool GmAncestorsFilter::AcceptStep(const G4Step* aStep)
   }
     
 #ifndef GAMOS_NO_VERBOSE
-  if( BaseVerb(debugVerb) ) G4cout << " GmAncestorsFilter::AcceptStep return " << bAccept << G4endl;
+  if( FilterVerb(debugVerb) ) G4cout << " GmAncestorsFilter::AcceptStep return " << bAccept << G4endl;
 #endif
 
   return bAccept;

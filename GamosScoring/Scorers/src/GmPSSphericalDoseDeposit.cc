@@ -1,28 +1,3 @@
-//
-// ********************************************************************
-// * License and Disclaimer                                           *
-// *                                                                  *
-// * The  GAMOS software  is  copyright of the Copyright  Holders  of *
-// * the GAMOS Collaboration.  It is provided  under  the  terms  and *
-// * conditions of the GAMOS Software License,  included in the  file *
-// * LICENSE and available at  http://fismed.ciemat.es/GAMOS/license .*
-// * These include a list of copyright holders.                       *
-// *                                                                  *
-// * Neither the authors of this software system, nor their employing *
-// * institutes,nor the agencies providing financial support for this *
-// * work  make  any representation or  warranty, express or implied, *
-// * regarding  this  software system or assume any liability for its *
-// * use.  Please see the license in the file  LICENSE  and URL above *
-// * for the full disclaimer and the limitation of liability.         *
-// *                                                                  *
-// * This  code  implementation is the result of  the  scientific and *
-// * technical work of the GAMOS collaboration.                       *
-// * By using,  copying,  modifying or  distributing the software (or *
-// * any work based  on the software)  you  agree  to acknowledge its *
-// * use  in  resulting  scientific  publications,  and indicate your *
-// * acceptance of all terms of the GAMOS Software license.           *
-// ********************************************************************
-//
 #define _USE_MATH_DEFINES
 #include <cmath>
 
@@ -102,30 +77,6 @@ G4bool GmPSSphericalDoseDeposit::ProcessHits(G4Step* aStep,G4TouchableHistory*)
 } 
 
 //--------------------------------------------------------------------
-void GmPSSphericalDoseDeposit::EndOfEvent(G4HCofThisEvent*)
-{
-}
-
-//--------------------------------------------------------------------
-void GmPSSphericalDoseDeposit::DrawAll()
-{;}
-
-//--------------------------------------------------------------------
-void GmPSSphericalDoseDeposit::PrintAll()
-{
-  G4cout <<" GmPSSphericalDoseDeposit::PrintAllDefault() " << G4endl;
-  G4cout << " MultiFunctionalDet  " << detector->GetName() << G4endl;
-  G4cout << " PrimitiveScorer " << GetName() << G4endl;
-  G4cout << " Number of entries " << EvtMap->entries() << G4endl;
-  std::map<G4int,G4double*>::iterator itr = EvtMap->GetMap()->begin();
-  for(; itr != EvtMap->GetMap()->end(); itr++) {
-    G4cout << "  copy no.: " << itr->first
-	   << "  dose deposit: " << G4BestUnit(*(itr->second),"Dose")
-	   << G4endl;
-  }
-}
-
-//--------------------------------------------------------------------
 void GmPSSphericalDoseDeposit::SetParameters( const std::vector<G4String>& params)
 {
   if( params.size() != 3 
@@ -159,8 +110,4 @@ void GmPSSphericalDoseDeposit::SetParameters( const std::vector<G4String>& param
     theTotalVolume = 4./3.*M_PI*(pow(theMinRadius+theNBinsRadius*theStepRadius,3)-pow(theMinRadius,3));
   }
 }
- #include "GamosCore/GamosBase/Base/include/GmVClassifier.hh" 
-G4int GmPSSphericalDoseDeposit::GetIndex(G4Step* aStep ) 
- { 
- return theClassifier->GetIndexFromStep( aStep ); 
-} 
+

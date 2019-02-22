@@ -1,28 +1,3 @@
-//
-// ********************************************************************
-// * License and Disclaimer                                           *
-// *                                                                  *
-// * The  GAMOS software  is  copyright of the Copyright  Holders  of *
-// * the GAMOS Collaboration.  It is provided  under  the  terms  and *
-// * conditions of the GAMOS Software License,  included in the  file *
-// * LICENSE and available at  http://fismed.ciemat.es/GAMOS/license .*
-// * These include a list of copyright holders.                       *
-// *                                                                  *
-// * Neither the authors of this software system, nor their employing *
-// * institutes,nor the agencies providing financial support for this *
-// * work  make  any representation or  warranty, express or implied, *
-// * regarding  this  software system or assume any liability for its *
-// * use.  Please see the license in the file  LICENSE  and URL above *
-// * for the full disclaimer and the limitation of liability.         *
-// *                                                                  *
-// * This  code  implementation is the result of  the  scientific and *
-// * technical work of the GAMOS collaboration.                       *
-// * By using,  copying,  modifying or  distributing the software (or *
-// * any work based  on the software)  you  agree  to acknowledge its *
-// * use  in  resulting  scientific  publications,  and indicate your *
-// * acceptance of all terms of the GAMOS Software license.           *
-// ********************************************************************
-//
 #include "GmBOptrForceCollision.hh"
 #include "GmBOptrForceCollisionTrackData.hh"
 #include "G4BiasingProcessInterface.hh"
@@ -39,6 +14,8 @@
 
 #include "G4ParticleDefinition.hh"
 #include "G4ParticleTable.hh"
+
+#include "G4SystemOfUnits.hh"
 
 // -- §§ consider calling other constructor, thanks to C++11
 GmBOptrForceCollision::GmBOptrForceCollision(G4String name)
@@ -134,7 +111,7 @@ G4VBiasingOperation* GmBOptrForceCollision::ProposeOccurenceBiasingOperation(con
   // -- being its initial weight * the weight for the free flight travel,
   // -- this last one being per process. The initial weight is common, and is
   // -- arbitrary asked to the first operation to take care of it.
-  if ( fCurrentTrackData->fForceCollisionState == FCS_toBeFreeFlight )
+  if ( fCurrentTrackData->fForceCollisionState == ForceCollisionState::toBeFreeFlight )
     {
       G4BOptnForceFreeFlight* operation =  fFreeFlightOperations[callingProcess];
       if ( callingProcess->GetWrappedProcess()->GetCurrentInteractionLength() < DBL_MAX/10. )
@@ -155,7 +132,7 @@ G4VBiasingOperation* GmBOptrForceCollision::ProposeOccurenceBiasingOperation(con
   // -- at this level, a copy of the track entering the volume was
   // -- generated (borned) earlier. This copy will make the forced
   // -- interaction in the volume.
-  if ( fCurrentTrackData->fForceCollisionState == FCS_toBeForced )
+  if ( fCurrentTrackData->fForceCollisionState == ForceCollisionState::toBeForced )
     {
       // -- Remember if this calling process is the first of the physics wrapper in
       // -- the PostStepGPIL loop (using default argument of method below):
@@ -222,7 +199,7 @@ G4VBiasingOperation* GmBOptrForceCollision::ProposeOccurenceBiasingOperation(con
       return operationToReturn;
 
 
-    } // -- end of "if ( fCurrentTrackData->fForceCollisionState == FCS_toBeForced )"
+    } // -- end of "if ( fCurrentTrackData->fForceCollisionState == ForceCollisionState::toBeForced )"
 
   
   // -- other cases here: particle appearing in the volume by some
@@ -266,7 +243,7 @@ G4VBiasingOperation* GmBOptrForceCollision::ProposeNonPhysicsBiasingOperation(co
 	  fCurrentTrackData = new GmBOptrForceCollisionTrackData( this );
 	  track->SetAuxiliaryTrackInformation(fForceCollisionModelID, fCurrentTrackData);
 	}
-      fCurrentTrackData->fForceCollisionState = FCS_toBeCloned;
+      fCurrentTrackData->fForceCollisionState = ForceCollisionState::toBeCloned;
       fInitialTrackWeight = track->GetWeight();
       fCloningOperation->SetCloneWeights(0.0, fInitialTrackWeight);
       return fCloningOperation;
@@ -336,18 +313,18 @@ void GmBOptrForceCollision::OperationApplied( const G4BiasingProcessInterface*  
       return;
     }
   
-  if      ( fCurrentTrackData->fForceCollisionState == FCS_toBeCloned )
+  if      ( fCurrentTrackData->fForceCollisionState == ForceCollisionState::toBeCloned )
     {
-      fCurrentTrackData->fForceCollisionState = FCS_toBeFreeFlight;
+      fCurrentTrackData->fForceCollisionState = ForceCollisionState::toBeFreeFlight;
       auto cloneData                  = new GmBOptrForceCollisionTrackData( this );
-      cloneData->fForceCollisionState = FCS_toBeForced;
+      cloneData->fForceCollisionState = ForceCollisionState::toBeForced;
       fCloningOperation->GetCloneTrack()->SetAuxiliaryTrackInformation(fForceCollisionModelID, cloneData);
     }
-  else if ( fCurrentTrackData->fForceCollisionState == FCS_toBeFreeFlight )
+  else if ( fCurrentTrackData->fForceCollisionState == ForceCollisionState::toBeFreeFlight )
     {
       if ( fFreeFlightOperations[callingProcess]->OperationComplete() ) fCurrentTrackData->Reset(); // -- off biasing for this track
     }
-  else if ( fCurrentTrackData->fForceCollisionState == FCS_toBeForced )
+  else if ( fCurrentTrackData->fForceCollisionState == ForceCollisionState::toBeForced )
     {
       if ( operationApplied != fSharedForceInteractionOperation )
 	{
@@ -373,7 +350,7 @@ void GmBOptrForceCollision::OperationApplied( const G4BiasingProcessInterface*  
     }
   else
     {
-      if ( fCurrentTrackData->fForceCollisionState != FCS_free )
+      if ( fCurrentTrackData->fForceCollisionState != ForceCollisionState::free )
 	{
 	  G4ExceptionDescription ed;
 	  ed << " Internal inconsistency : please submit bug report. " << G4endl;
@@ -391,7 +368,7 @@ void  GmBOptrForceCollision::OperationApplied( const G4BiasingProcessInterface* 
 					       G4VBiasingOperation*            finalStateOperationApplied, const G4VParticleChange*    /*particleChangeProduced*/ )
 {
   
-  if ( fCurrentTrackData->fForceCollisionState == FCS_toBeForced )
+  if ( fCurrentTrackData->fForceCollisionState == ForceCollisionState::toBeForced )
     {
       if ( finalStateOperationApplied != fSharedForceInteractionOperation )
 	{

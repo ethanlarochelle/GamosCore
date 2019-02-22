@@ -1,28 +1,3 @@
-//
-// ********************************************************************
-// * License and Disclaimer                                           *
-// *                                                                  *
-// * The  GAMOS software  is  copyright of the Copyright  Holders  of *
-// * the GAMOS Collaboration.  It is provided  under  the  terms  and *
-// * conditions of the GAMOS Software License,  included in the  file *
-// * LICENSE and available at  http://fismed.ciemat.es/GAMOS/license .*
-// * These include a list of copyright holders.                       *
-// *                                                                  *
-// * Neither the authors of this software system, nor their employing *
-// * institutes,nor the agencies providing financial support for this *
-// * work  make  any representation or  warranty, express or implied, *
-// * regarding  this  software system or assume any liability for its *
-// * use.  Please see the license in the file  LICENSE  and URL above *
-// * for the full disclaimer and the limitation of liability.         *
-// *                                                                  *
-// * This  code  implementation is the result of  the  scientific and *
-// * technical work of the GAMOS collaboration.                       *
-// * By using,  copying,  modifying or  distributing the software (or *
-// * any work based  on the software)  you  agree  to acknowledge its *
-// * use  in  resulting  scientific  publications,  and indicate your *
-// * acceptance of all terms of the GAMOS Software license.           *
-// ********************************************************************
-//
 #include "GmBOptrForceCollisionTrackData.hh"
 #include "GmBOptrForceCollision.hh"
 
@@ -30,12 +5,12 @@ GmBOptrForceCollisionTrackData::GmBOptrForceCollisionTrackData( const GmBOptrFor
 : G4VAuxiliaryTrackInformation(),
   fForceCollisionOperator( optr )
 {
-  fForceCollisionState = FCS_free;
+  fForceCollisionState = ForceCollisionState::free;
 }
 
 GmBOptrForceCollisionTrackData::~GmBOptrForceCollisionTrackData()
 {
-  if ( fForceCollisionState != FCS_free )
+  if ( fForceCollisionState != ForceCollisionState::free )
     {
       G4ExceptionDescription ed;
       ed << "Track deleted while under GmBOptrForceCollision biasing scheme of operator `";
@@ -55,16 +30,16 @@ void GmBOptrForceCollisionTrackData::Print() const
   G4cout << "     Force collision state    : ";
   switch ( fForceCollisionState )
     {
-    case FCS_free :
+    case ForceCollisionState::free :
       G4cout << "free from biasing ";
       break;
-    case FCS_toBeCloned :
+    case ForceCollisionState::toBeCloned :
       G4cout << "to be cloned ";
       break;
-    case FCS_toBeForced :
+    case ForceCollisionState::toBeForced :
       G4cout << "to be interaction forced ";
       break;
-    case FCS_toBeFreeFlight :
+    case ForceCollisionState::toBeFreeFlight :
       G4cout << "to be free flight forced (under weight = 0) ";
       break;
     default:

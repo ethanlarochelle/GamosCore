@@ -1,28 +1,3 @@
-//
-// ********************************************************************
-// * License and Disclaimer                                           *
-// *                                                                  *
-// * The  GAMOS software  is  copyright of the Copyright  Holders  of *
-// * the GAMOS Collaboration.  It is provided  under  the  terms  and *
-// * conditions of the GAMOS Software License,  included in the  file *
-// * LICENSE and available at  http://fismed.ciemat.es/GAMOS/license .*
-// * These include a list of copyright holders.                       *
-// *                                                                  *
-// * Neither the authors of this software system, nor their employing *
-// * institutes,nor the agencies providing financial support for this *
-// * work  make  any representation or  warranty, express or implied, *
-// * regarding  this  software system or assume any liability for its *
-// * use.  Please see the license in the file  LICENSE  and URL above *
-// * for the full disclaimer and the limitation of liability.         *
-// *                                                                  *
-// * This  code  implementation is the result of  the  scientific and *
-// * technical work of the GAMOS collaboration.                       *
-// * By using,  copying,  modifying or  distributing the software (or *
-// * any work based  on the software)  you  agree  to acknowledge its *
-// * use  in  resulting  scientific  publications,  and indicate your *
-// * acceptance of all terms of the GAMOS Software license.           *
-// ********************************************************************
-//
 #ifndef GmVClassifier_hh
 #define GmVClassifier_hh 1
 
@@ -44,18 +19,18 @@ public: // with description
   virtual ~GmVClassifier(){ 
   }
   
-  virtual G4int GetIndexFromStep(const G4Step* aStep ) = 0;
+  virtual int64_t GetIndexFromStep(const G4Step* aStep ) = 0;
 
-  virtual G4int GetIndexFromTrack(const G4Track*);
+  virtual int64_t GetIndexFromTrack(const G4Track*);
 
-  virtual G4int GetIndexFromSecoTrack(const G4Track* aTrack1, const G4Track* aTrack2);
+  virtual int64_t GetIndexFromSecoTrack(const G4Track* aTrack1, const G4Track* aTrack2);
 
-  virtual G4String GetIndexName(G4int);
+  virtual G4String GetIndexName(int64_t);
 
   virtual void SetParameters( std::vector<G4String>& ){};
 
-  virtual std::set<G4int> GetIndexSet() const{
-    std::set<G4int> si;
+  virtual std::set<int64_t> GetIndexSet() const{
+    std::set<int64_t> si;
     return si; 
   }
 
@@ -81,7 +56,7 @@ protected:
   G4String theName;
   G4String theClass;
 
-  G4int theMaxIndex;
+  int64_t theMaxIndex;
 
   G4bool bIsCompound;
 

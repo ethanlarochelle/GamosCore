@@ -1,28 +1,3 @@
-//
-// ********************************************************************
-// * License and Disclaimer                                           *
-// *                                                                  *
-// * The  GAMOS software  is  copyright of the Copyright  Holders  of *
-// * the GAMOS Collaboration.  It is provided  under  the  terms  and *
-// * conditions of the GAMOS Software License,  included in the  file *
-// * LICENSE and available at  http://fismed.ciemat.es/GAMOS/license .*
-// * These include a list of copyright holders.                       *
-// *                                                                  *
-// * Neither the authors of this software system, nor their employing *
-// * institutes,nor the agencies providing financial support for this *
-// * work  make  any representation or  warranty, express or implied, *
-// * regarding  this  software system or assume any liability for its *
-// * use.  Please see the license in the file  LICENSE  and URL above *
-// * for the full disclaimer and the limitation of liability.         *
-// *                                                                  *
-// * This  code  implementation is the result of  the  scientific and *
-// * technical work of the GAMOS collaboration.                       *
-// * By using,  copying,  modifying or  distributing the software (or *
-// * any work based  on the software)  you  agree  to acknowledge its *
-// * use  in  resulting  scientific  publications,  and indicate your *
-// * acceptance of all terms of the GAMOS Software license.           *
-// ********************************************************************
-//
 #include "globals.hh"
 
 #include "GmReadPhantomPartialG4Geometry.hh"
@@ -58,12 +33,13 @@ GmReadPhantomPartialG4Geometry::GmReadPhantomPartialG4Geometry()
 //---------------------------------------------------------------------------
 GmReadPhantomPartialG4Geometry::~GmReadPhantomPartialG4Geometry()
 {
+  thePhantomFileName = "test.g4dcm";
 }
 
 //---------------------------------------------------------------------------
 void GmReadPhantomPartialG4Geometry::ReadPhantomData()
 {
-  G4String filename = GmParameterMgr::GetInstance()->GetStringValue("GmReadPhantomGeometry:Phantom:FileName", "test.g4dcm");
+  G4String filename = GmParameterMgr::GetInstance()->GetStringValue("GmReadPhantomGeometry:Phantom:FileName", thePhantomFileName);
 
   G4String path( getenv( "GAMOS_SEARCH_PATH" ) );
   filename = GmGenUtils::FileInPath( path, filename );
@@ -175,7 +151,7 @@ void GmReadPhantomPartialG4Geometry::ReadPhantomData()
 
   ReadVoxelDensitiesPartial( *fin );
 
-  ReadPS( fing );
+  ReadPV( fing );
 
   fin->close();
 }
@@ -197,6 +173,8 @@ void GmReadPhantomPartialG4Geometry::ReadVoxelDensitiesPartial( std::ifstream& f
   }
   //  densitySteps[0] = 0.0001; //air
 
+  theMateDensities = new float[nVoxelX*nVoxelY*nVoxelZ];
+
   //--- Calculate the average material density for each material/density bin
   std::map< std::pair<G4Material*,G4int>, matInfo* > newMateDens;
   G4double dens1;
@@ -214,7 +192,11 @@ void GmReadPhantomPartialG4Geometry::ReadVoxelDensitiesPartial( std::ifstream& f
 	if( ix >= G4int(ifxmin1) && ix <= G4int(ifxmax1) ) {
 	  fin >> dens1;
 	  //	G4cout << ix << " " << iy << " " << iz << " filling mateIDs " << copyNo << " = " <<  atoi(stemp.c_str())-1 << " " << stemp << G4endl;
-	  if( !bRecalculateMaterialDensities ) continue; 
+	  if( !bRecalculateMaterialDensities ) {
+	    copyNo = ix + (iy)*nVoxelX + (iz)*nVoxelX*nVoxelY;
+	    theMateDensities[copyNo] = dens1;
+	    continue;
+	  }
 	  
 	//--- store the minimum and maximum density for each material (just for printing)
 	  mpite = densiMinMax.find( theMateIDs[copyNo] );
@@ -253,9 +235,11 @@ void GmReadPhantomPartialG4Geometry::ReadVoxelDensitiesPartial( std::ifstream& f
 	    theMateIDs[copyNo] = thePhantomMaterialsOriginal.size()-1 + mi->id;
 	    //	  G4cout << copyNo << " mat new first " << thePhantomMaterialsOriginal.size()-1 + mi->id << G4endl;
 	  }
+	  theMateDensities[copyNo] = dens1;
+
 	  copyNo++;
-	//	G4cout << ix << " " << iy << " " << iz << " filling mateIDs " << copyNo << " = " << atoi(cid)-1 << G4endl;
-				      //	mateIDs[copyNo] = atoi(cid)-1;
+	//	G4cout << ix << " " << iy << " " << iz << " filling theMateIDs " << copyNo << " = " << atoi(cid)-1 << G4endl;
+				      //	theMateIDs[copyNo] = atoi(cid)-1;
 	}
       }
     }
@@ -351,7 +335,7 @@ void GmReadPhantomPartialG4Geometry::ConstructPhantom(G4LogicalVolume* )
   thePartialPhantomParam->BuildContainerWalls();
 
   //  G4cout << " Number of Materials " << thePhantomMaterials.size() << G4endl;
-  //  G4cout << " SetMaterialIndices(0) " << mateIDs[0] << G4endl;
+  //  G4cout << " SetMaterialIndices(0) " << theMateIDs[0] << G4endl;
 
   G4PVParameterised * phantom_phys;
   if( OptimAxis == "kUndefined" ) {

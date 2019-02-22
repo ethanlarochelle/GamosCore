@@ -1,28 +1,3 @@
-//
-// ********************************************************************
-// * License and Disclaimer                                           *
-// *                                                                  *
-// * The  GAMOS software  is  copyright of the Copyright  Holders  of *
-// * the GAMOS Collaboration.  It is provided  under  the  terms  and *
-// * conditions of the GAMOS Software License,  included in the  file *
-// * LICENSE and available at  http://fismed.ciemat.es/GAMOS/license .*
-// * These include a list of copyright holders.                       *
-// *                                                                  *
-// * Neither the authors of this software system, nor their employing *
-// * institutes,nor the agencies providing financial support for this *
-// * work  make  any representation or  warranty, express or implied, *
-// * regarding  this  software system or assume any liability for its *
-// * use.  Please see the license in the file  LICENSE  and URL above *
-// * for the full disclaimer and the limitation of liability.         *
-// *                                                                  *
-// * This  code  implementation is the result of  the  scientific and *
-// * technical work of the GAMOS collaboration.                       *
-// * By using,  copying,  modifying or  distributing the software (or *
-// * any work based  on the software)  you  agree  to acknowledge its *
-// * use  in  resulting  scientific  publications,  and indicate your *
-// * acceptance of all terms of the GAMOS Software license.           *
-// ********************************************************************
-//
 #include "GmG4Utils.hh"
 #include "GmGenUtils.hh"
 
@@ -396,6 +371,7 @@ G4String GmG4Utils::GetInelasticName( const G4Step* aStep )
 
   const G4HadronicProcess* hadProc = (const G4HadronicProcess*)(proc);
   const G4Nucleus* aNucleus = hadProc->GetTargetNucleus();
+  //  G4cout << " GmG4Utils::GetInelasticName::aStep NSECOS " << aNucleus << G4endl; //GDEG
 
   std::vector<G4String> secos;
   std::vector<G4Track*>::const_iterator itet;
@@ -403,7 +379,7 @@ G4String GmG4Utils::GetInelasticName( const G4Step* aStep )
   //  G4cout << " GmG4Utils::GetInelasticName::aStep NSECOS " << secoTracks.size() << G4endl;
   for( itet = secoTracks.begin(); itet != secoTracks.end(); itet++ ){
     G4ParticleDefinition* part = (*itet)->GetDefinition();
-    //    G4cout << " GmG4Utils::GetInelasticName::aStep " << part->GetParticleName() << G4endl;
+    //    G4cout << " GmG4Utils::GetInelasticName::aStep " << part->GetParticleName() << " baryon= " << part->GetBaryonNumber() << G4endl; //GDEB
     if( !part->GetBaryonNumber() ) continue;
     secos.push_back( part->GetParticleName() );
     //    G4cout << " GmG4Utils::GetInelasticName::aStep nSecosInV " << secos.size() << G4endl;
@@ -444,8 +420,12 @@ G4String GmG4Utils::GetInelasticName( std::map<G4String,G4int> secosN, const G4P
 
   G4String targetNucName = "";
   if( targetNucleus != 0 ){
-    targetNucName = GmG4Utils::GetElementNameFromZ(targetNucleus->GetZ_asInt() ) + GmGenUtils::itoa(targetNucleus->GetA_asInt() ); 
-    //    G4cout << " GmG4Utils::GetInelasticName: targetNucName from targetNucleus " << targetNucName << G4endl;
+    if( targetNucleus->GetZ_asInt() != 0 ) {
+      targetNucName = GmG4Utils::GetElementNameFromZ(targetNucleus->GetZ_asInt() ) + GmGenUtils::itoa(targetNucleus->GetA_asInt() );
+    } else {
+      targetNucName = "ZZZ";
+    }
+    //    G4cout << " GmG4Utils::GetInelasticName: targetNucName from targetNucleus " << targetNucName << G4endl; //GDEB
   }
   G4String primaryParticleName = primaryParticle->GetParticleName();
   
@@ -455,9 +435,10 @@ G4String GmG4Utils::GetInelasticName( std::map<G4String,G4int> secosN, const G4P
   G4String ionName = "";
   for(itepi = secosN.rbegin(); itepi != secosN.rend(); itepi++) { 
     G4String particleName = (*itepi).first;
-    G4int nPart = (*itepi).second;
+    //    G4int nPart = (*itepi).second;
+  /* OLD GEANT4, ion O15[0.0], now O15
     size_t ic = particleName.find("[");
-    //    G4cout << " GmG4Utils::GetInelasticName: seco " << particleName << " N " << nPart << G4endl;
+    G4cout << " GmG4Utils::GetInelasticName: seco " << particleName << " N " << nPart << G4endl; //GDEB
     if( ic != G4String::npos ) {
       if( ic == 0 ) {
 	G4String newTargetNucName = particleName.substr(1,particleName.size());
@@ -471,12 +452,6 @@ G4String GmG4Utils::GetInelasticName( std::map<G4String,G4int> secosN, const G4P
 	//	G4cout << " GmG4Utils::GetInelasticName: targetNucName from seco loop " << targetNucName << G4endl;
 
       } else {
-	/*	if( ionName != "" ) {
-	  G4Exception("SHGetHadronicXSBRUA::EndOfRunAction",
-		      "Warning",
-		      JustWarning,
-		      G4String("Two ions produced: " + ionName + " " + particleName).c_str());
-		      } */
 	if( ionName != "" ) {
 	  ionName += "-";
 	}
@@ -485,14 +460,22 @@ G4String GmG4Utils::GetInelasticName( std::map<G4String,G4int> secosN, const G4P
 	}else {
 	  ionName +=  GmGenUtils::itoa(nPart) + particleName.substr(0,ic);
 	}
-	//	G4cout << " GmG4Utils::GetInelasticName: ionName " << ionName << G4endl;
+	//	G4cout << " GmG4Utils::GetInelasticName: ionName " << ionName << G4endl; //GDEB
 
       }
     } else{
-      G4String partNameShort = GetParticleShortName( particleName );
-      secosNShortName[partNameShort] = (*itepi).second;
-      //           G4cout << " GmG4Utils::GetInelasticName: secoPart add " << partNameShort << " : " << particleName << G4endl;
+      G4String particleNameShort = GetParticleShortName( particleName );
+      secosNShortName[particleNameShort] = (*itepi).second;
+      //      G4cout << " GmG4Utils::GetInelasticName: secoPart add " << particleNameShort << " : " << particleName << G4endl; //GDEB
 
+    } */
+    if( particleName == "neutron" || particleName == "proton" || particleName == "deuteron"  || particleName == "triton" || particleName == "He3" || particleName == "alpha" ) {
+      G4String particleNameShort = GetParticleShortName( particleName );
+      secosNShortName[particleNameShort] = (*itepi).second;
+      //      G4cout << " GmG4Utils::GetInelasticName: secoPart add " << particleNameShort << " : " << particleName << G4endl; //GDEB
+    } else {
+      if( ionName != "" ) ionName += "+";
+      ionName += particleName;
     }
   }
   // Now non ions particles in order

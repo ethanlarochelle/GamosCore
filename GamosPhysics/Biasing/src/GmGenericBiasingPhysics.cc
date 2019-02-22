@@ -1,28 +1,3 @@
-//
-// ********************************************************************
-// * License and Disclaimer                                           *
-// *                                                                  *
-// * The  GAMOS software  is  copyright of the Copyright  Holders  of *
-// * the GAMOS Collaboration.  It is provided  under  the  terms  and *
-// * conditions of the GAMOS Software License,  included in the  file *
-// * LICENSE and available at  http://fismed.ciemat.es/GAMOS/license .*
-// * These include a list of copyright holders.                       *
-// *                                                                  *
-// * Neither the authors of this software system, nor their employing *
-// * institutes,nor the agencies providing financial support for this *
-// * work  make  any representation or  warranty, express or implied, *
-// * regarding  this  software system or assume any liability for its *
-// * use.  Please see the license in the file  LICENSE  and URL above *
-// * for the full disclaimer and the limitation of liability.         *
-// *                                                                  *
-// * This  code  implementation is the result of  the  scientific and *
-// * technical work of the GAMOS collaboration.                       *
-// * By using,  copying,  modifying or  distributing the software (or *
-// * any work based  on the software)  you  agree  to acknowledge its *
-// * use  in  resulting  scientific  publications,  and indicate your *
-// * acceptance of all terms of the GAMOS Software license.           *
-// ********************************************************************
-//
 //---------------------------------------------------------------------------
 //
 // ClassName:   GmGenericBiasingPhysics
@@ -44,6 +19,7 @@
 
 #include "G4BiasingHelper.hh"
 #include "G4BiasingProcessInterface.hh"
+#include "GmEWBSSplittingProcess.hh"
 
 // factory
 #include "G4PhysicsConstructorFactory.hh"
@@ -215,11 +191,12 @@ void GmGenericBiasingPhysics::ConstructProcess()
   DeReferenceWords();
   
   // -- bias setup per individual particle name:
-  aParticleIterator->reset();
+  auto particleIterator=GetParticleIterator();
+  particleIterator->reset();
   
-  while( (*aParticleIterator)() )
+  while( (*particleIterator)() )
     {
-      G4ParticleDefinition*     particle = aParticleIterator->value();
+      G4ParticleDefinition*     particle = particleIterator->value();
       G4String              particleName = particle->GetParticleName();
       G4ProcessManager*         pmanager = particle->GetProcessManager();
       
@@ -263,14 +240,14 @@ void GmGenericBiasingPhysics::ConstructProcess()
 	}
       
     }
-
+  
   
   // -- bias setup per group:
-  aParticleIterator->reset();
+  particleIterator->reset();
 
-  while( (*aParticleIterator)() )
+  while( (*particleIterator)() )
     {
-      G4ParticleDefinition*     particle = aParticleIterator->value();
+      G4ParticleDefinition*     particle = particleIterator->value();
       G4String              particleName = particle->GetParticleName();
       G4ProcessManager*         pmanager = particle->GetProcessManager();
       
@@ -349,11 +326,11 @@ void GmGenericBiasingPhysics::ConstructProcess()
   if ( fVerbose )
     {
       // -- print:
-      aParticleIterator->reset();
+      particleIterator->reset();
       
-      while( (*aParticleIterator)() )
+      while( (*particleIterator)() )
 	{
-	  G4ParticleDefinition*     particle = aParticleIterator->value();
+	  G4ParticleDefinition*     particle = particleIterator->value();
 	  G4String              particleName = particle->GetParticleName();
 	  G4ProcessManager*         pmanager = particle->GetProcessManager();
 	  
@@ -393,17 +370,22 @@ void GmGenericBiasingPhysics::ConstructProcess()
 	    }
 	}
     }
+
+  if( theSplittingProcParams.size() != 0 ) {
+    CreateSplittingProcess( theSplittingProcParams );
+  }
 }
 
 // GAMOS
 void GmGenericBiasingPhysics::DeReferenceWords()
 {
 
+  auto particleIterator=GetParticleIterator();
   for( size_t ii = 0; ii < fBiasedParticles.size(); ii++ ) {
     std::vector<G4String> derefBPa;
-    aParticleIterator->reset();
-    while( (*aParticleIterator)() )  {
-      G4ParticleDefinition*     particle = aParticleIterator->value();
+    particleIterator->reset();
+    while( (*particleIterator)() )  {
+      G4ParticleDefinition*     particle = particleIterator->value();
       G4String              particleName = particle->GetParticleName();
       if( GmGenUtils::AreWordsEquivalent( fBiasedParticles[ii], particleName ) ) {
 	derefBPa.push_back( particleName );
@@ -425,9 +407,9 @@ void GmGenericBiasingPhysics::DeReferenceWords()
   }
 
   for( size_t ii = 0; ii < fBiasedParticles.size(); ii++ ) {
-    aParticleIterator->reset();
-    while( (*aParticleIterator)() )  {
-      G4ParticleDefinition*     particle = aParticleIterator->value();
+    particleIterator->reset();
+    while( (*particleIterator)() )  {
+      G4ParticleDefinition*     particle = particleIterator->value();
       G4String              particleName = particle->GetParticleName();      
       if( fBiasedParticles[ii] == particleName ) {
 	G4ProcessManager*    pmanager = particle->GetProcessManager();
@@ -461,4 +443,48 @@ void GmGenericBiasingPhysics::DeReferenceWords()
       }
     }
   }
+}
+
+
+//-----------------------------------------------------------------------
+void GmGenericBiasingPhysics::AddSplittingProcess( std::vector<G4String> params)
+{
+  if( params.size() < 1 ){
+    G4String parastr;
+    for( unsigned int ii = 0; ii < params.size(); ii++ ){
+      parastr += params[ii] + " ";
+    }
+    G4Exception("GmBiasingMgr::AddProcesses",
+		"BM004",
+		FatalErrorInArgument,
+		G4String("At least two arguments must be supplied in command '/gamos/physics/biasing/addProcesses' : PROCESS_1 PROCESS_2 ... PROCESS_N.  They are: "+parastr).c_str());
+  }
+
+  theSplittingProcParams = params;
+
+}
+
+//-----------------------------------------------------------------------
+void GmGenericBiasingPhysics::CreateSplittingProcess( std::vector<G4String> params)
+{
+  GmEWBSSplittingProcess* splitProc = new  GmEWBSSplittingProcess();
+
+  // -- bias setup per individual particle name:
+  G4ParticleTable* myParticleTable = G4ParticleTable::GetParticleTable();
+  G4ParticleTable::G4PTblDicIterator* myParticleIterator = myParticleTable->GetIterator();
+  myParticleIterator->reset();
+
+  while( (*myParticleIterator)() ) {
+    G4ParticleDefinition*     particle = myParticleIterator->value();
+    G4String              particleName = particle->GetParticleName();
+    G4ProcessManager*         pmanager = particle->GetProcessManager();
+    
+    for( size_t ii = 0; ii < params.size(); ii++ ){
+      if( GmGenUtils::AreWordsEquivalent( params[ii], particleName ) ) {
+	pmanager->AddDiscreteProcess( splitProc );
+      }
+    }
+    
+  }
+  
 }

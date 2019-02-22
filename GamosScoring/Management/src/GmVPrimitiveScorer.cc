@@ -1,33 +1,7 @@
-//
-// ********************************************************************
-// * License and Disclaimer                                           *
-// *                                                                  *
-// * The  GAMOS software  is  copyright of the Copyright  Holders  of *
-// * the GAMOS Collaboration.  It is provided  under  the  terms  and *
-// * conditions of the GAMOS Software License,  included in the  file *
-// * LICENSE and available at  http://fismed.ciemat.es/GAMOS/license .*
-// * These include a list of copyright holders.                       *
-// *                                                                  *
-// * Neither the authors of this software system, nor their employing *
-// * institutes,nor the agencies providing financial support for this *
-// * work  make  any representation or  warranty, express or implied, *
-// * regarding  this  software system or assume any liability for its *
-// * use.  Please see the license in the file  LICENSE  and URL above *
-// * for the full disclaimer and the limitation of liability.         *
-// *                                                                  *
-// * This  code  implementation is the result of  the  scientific and *
-// * technical work of the GAMOS collaboration.                       *
-// * By using,  copying,  modifying or  distributing the software (or *
-// * any work based  on the software)  you  agree  to acknowledge its *
-// * use  in  resulting  scientific  publications,  and indicate your *
-// * acceptance of all terms of the GAMOS Software license.           *
-// ********************************************************************
-//
 #include "GamosCore/GamosUserActionMgr/include/GmStepMgr.hh"
 #include "G4VPrimitiveScorer.hh"
-#include "G4EnergyLossForExtrapolator.hh"
 
-#include "GmVPrimitiveScorer.hh"
+#include "GmCompoundScorer.hh"
 #include "GmVPSPrinter.hh"
 #include "GmScoringVerbosity.hh"
 
@@ -50,19 +24,28 @@
 #include "G4LogicalVolume.hh"
 #include "G4LogicalVolumeStore.hh"
 #include "G4VSolid.hh"
+#include "G4UnitsTable.hh"
 
+#ifdef ROOT5
 #include "Reflex/PluginService.h"
+#else
+#include "GmPSPrinterFactory.hh"
+#endif
 
 //--------------------------------------------------------------------
 GmVPrimitiveScorer::GmVPrimitiveScorer(G4String name) 
   : G4VPrimitiveScorer( name, 0 )
 { 
+#ifndef GAMOS_NO_VERBOSE
+  if( ScoringVerb(debugVerb) ) G4cout << "GmVPrimitiveScorer::GmVPrimitiveScorer " << name << G4endl;
+#endif
+
   sumALL = 0.;
 
   HCID = -1;
   fWeighted = TRUE;
   bScoreErrors = TRUE;
-  bScoreByEvent = TRUE;
+  theNEventsType = SNET_ByEvent;
   theUnit = 1.;
   theUnitName = G4String("");
 
@@ -104,6 +87,8 @@ GmVPrimitiveScorer::GmVPrimitiveScorer(G4String name)
   theGeometryUtils = GmGeometryUtils::GetInstance();
   bUseVolume = false;
   theMFD = 0;
+  bDefaultPrinter = true;
+  bSubScorer = false;
 }
 
 //--------------------------------------------------------------------
@@ -123,7 +108,7 @@ void GmVPrimitiveScorer::DumpAll(G4THitsMap<G4double>* RunMap)
 {
   //  G4cout <<" GmVPrimitiveScorer::DumpAll " << G4endl;
 
-  if( thePrinters.size() == 0 ) {
+  if( thePrinters.size() == 0 && bDefaultPrinter ) {
     AddDefaultPrinter();
   }
 
@@ -154,8 +139,12 @@ void GmVPrimitiveScorer::SetClassifier(GmVClassifier* idx )
 //--------------------------------------------------------------------
 void GmVPrimitiveScorer::AddDefaultPrinter()
 {
-  G4String param = "GmPSPrinterG4cout";
+  G4String param = "GmPSPrinterCout";
+#ifdef ROOT5
   GmVPSPrinter* psp = Reflex::PluginService::Create<GmVPSPrinter*>(param,param);
+#else
+  GmVPSPrinter* psp = GmPSPrinterFactory::get()->create(param,param);
+#endif
   thePrinters.push_back( psp ); 
 }
 
@@ -173,7 +162,7 @@ void GmVPrimitiveScorer::AddDefaultClassifier()
 //--------------------------------------------------------------------
 void GmVPrimitiveScorer::Initialize(G4HCofThisEvent* HCE)
 {
-  EvtMap = new G4THitsMap<G4double>(detector->GetName(),
+   EvtMap = new G4THitsMap<G4double>(detector->GetName(),
 				    GetName());
   if(HCID < 0) {HCID = GetCollectionID(0);}
   HCE->AddHitsCollection(HCID, EvtMap);
@@ -189,7 +178,7 @@ G4bool GmVPrimitiveScorer::FillScorer(G4Step* aStep, G4double val, G4double wei)
 
   if( !fWeighted ) wei = 1.;
   FillScorer( aStep, index, val, wei );
-
+  
   return true;
 }
 
@@ -199,16 +188,7 @@ G4bool GmVPrimitiveScorer::FillScorer(G4Step* aStep, G4int index, G4double val, 
 #ifndef GAMOS_NO_VERBOSE
   //  if( ScoringVerb(debugVerb) ) G4cout << EvtMap << " EvtMap Number of entries " << EvtMap->entries() << " tmp " << theSumV_tmp.size() << " val " << val << " weight " << wei << G4endl;
 #endif
-  if( bScoreErrors ) {
-    if( bNewEvent ) {
-      ScoreNewEvent();
-    }
-    bNewEvent = false;
-  }
-
-  if( index == -1 ) return true;
-
-
+  
   if( theMultiplyingData ) {
     G4double vald = theMultiplyingData->GetValueFromStep(aStep, index);
 #ifndef GAMOS_NO_VERBOSE
@@ -223,45 +203,47 @@ G4bool GmVPrimitiveScorer::FillScorer(G4Step* aStep, G4int index, G4double val, 
 #endif
     val *= vald;
   }
-
+ 
   G4double valwei = val*wei;
   EvtMap->add(index,valwei);
+
 #ifndef GAMOS_NO_VERBOSE
   if( ScoringVerb(debugVerb) ) G4cout << GetName() 
-	 << " index " << index 
-	 << " val " << val 
-	 << " wei " << wei << G4endl;
+				      << " index " << index 
+				      << " val " << val 
+				      << " wei " << wei << G4endl;
 #endif
-  
   if( bScoreErrors ) {
     theSumV_tmp[index] += val*wei; 
 #ifndef GAMOS_NO_VERBOSE
-    if( ScoringVerb(debugVerb) ) G4cout << GetName() << " chk theSumV_tmp " << index << " = " << theSumV_tmp[index] << G4endl;
+    //    if( ScoringVerb(debugVerb) ) G4cout << this <<  GetName() << " chk theSumV_tmp " << index << " = " << theSumV_tmp[index] << G4endl;
 #endif
   }
   
   sumALL += val*wei;
 #ifndef GAMOS_NO_VERBOSE
-  if( ScoringVerb(debugVerb) ) G4cout << " EvtMap Number of entries " << EvtMap->entries() << " tmp " << theSumV2.size() << " SUMALL " << sumALL << G4endl;
+  if( ScoringVerb(debugVerb) ) G4cout << " EvtMap Nindices " << EvtMap->entries() << " SUMALL " << sumALL << G4endl;
 #endif
-
+  if( theNEventsType == SNET_ByNFilled ) {
+    //    G4cout << " NFILLED " << index << " " << theNFilled.size()<< G4endl; //GDEB
+    theNFilled_tmp.insert(index);
+  }
+  
   return true;
 } 
-
-//--------------------------------------------------------------------
-void GmVPrimitiveScorer::FillScorerAtPostCheckingRegular(G4Step* aStep, G4double val, G4double wei)
-{
-  if( !IsRegularScoring(aStep) ){
-    FillScorer( aStep, val, wei );
-  } else { // use the last voxel traversed
-    FillScorer( aStep, G4RegularNavigationHelper::Instance()->theStepLengths[ G4RegularNavigationHelper::Instance()->theStepLengths.size()-1 ].first, val, wei );
-  }
-
-}
  
 //--------------------------------------------------------------------
-void GmVPrimitiveScorer::ScoreNewEvent() 
+void GmVPrimitiveScorer::SumEndOfEvent() 
 {
+  GmCompoundScorer* scorerCp = dynamic_cast<GmCompoundScorer*>(this);
+  if( scorerCp != 0 && EvtMap ) {
+    scorerCp->BuildCompoundScores();
+  }
+  
+  //  G4cout << " " << GetName() << " GmVPrimitiveScorer::ScoreNewEvent() " << G4endl; //GDEB
+  //--- For CompoundScorer, redo EvtMap and theSumV_tmp
+  //--- set unitGmVPrimitiveScorer
+
   //--- Store X and X2 of last event
   G4double eventSum = 0.;
 
@@ -270,52 +252,97 @@ void GmVPrimitiveScorer::ScoreNewEvent()
     G4int idx = (*ite).first;
     //      theSumV[idx] += (*ite).second; // this magnitude is stored in the usual G4 mechanism
     theSumV2[idx] += (*ite).second*(*ite).second;
-    //	(*ite).second = 0.;
+    //    G4cout << this << " " << GetName() << " " << idx << " SUMV2 " << theSumV2[idx] << " " << (*ite).second <<G4endl;    //GDEB
     //	theNEntries[idx]+=1;
     
-    /*	std::map<G4int,G4double*>::iterator itee;
-	for( itee =  EvtMap->GetMap()->begin(); itee !=  EvtMap->GetMap()->end(); itee++ ){
-	//	G4cout << " EvtMap " << (*itee).first << " = " << (*itee).second << G4endl;
-	} */
-    
 #ifndef GAMOS_NO_VERBOSE
-    if( ScoringVerb(debugVerb) ) G4cout<< GetName() << " " << idx << " EVENT SumV= " << (*ite).second << " SumV2= " <<  theSumV2[idx] << G4endl;
+    if( ScoringVerb(debugVerb) ) G4cout << GetName() << " " << idx << " EVENT SumV2= " << (*ite).second*(*ite).second << " total= " << theSumV2[idx] << " from_score " << (*ite).second << G4endl;
 #endif
     if( theConvergenceTester ) {
       eventSum += (*ite).second;
     }
   }
- 
+
+  std::set<size_t>::iterator itenf;
+  for( itenf = theNFilled_tmp.begin(); itenf !=theNFilled_tmp.end(); itenf++ ){
+    theNFilled[*itenf]++;
+  }
+  
   if( theConvergenceTester ) {
     theConvergenceTester->AddScore( eventSum );
   }
 
-  theSumV_tmp.clear();
-
+  if( !bSubScorer ) {
+    theSumV_tmp.clear();
+    theNFilled_tmp.clear();
+  }
+  //  G4cout << this << GetName() << " CLEAR SumV " << theSumV_tmp.size() <<G4endl; //GDEB
+  
 }
 
+//--------------------------------------------------------------------
+void GmVPrimitiveScorer::ClearSumV_tmp()
+{
+  theSumV_tmp.clear();
+}
 
 //--------------------------------------------------------------------
-void GmVPrimitiveScorer::CalculateErrors(G4THitsMap<G4double>* RunMap)
+void GmVPrimitiveScorer::ClearNFilled_tmp()
 {
-  G4double nev;
-  if( bScoreByEvent ) {
-    nev = GmNumberOfEvent::GetNumberOfEvent();
-  } else {
-    nev = 1;
+  theNFilled_tmp.clear();
+}
+
+//--------------------------------------------------------------------
+G4double GmVPrimitiveScorer::GetNEvents( G4int index ){
+  switch (theNEventsType) {
+    case SNET_ByRun:
+      return 1;
+    case SNET_ByEvent:
+      return GmNumberOfEvent::GetNumberOfEvent();
+    case SNET_ByNFilled:
+      return theNFilled[index];
   }
   
+  return 1;
+}
+
+//--------------------------------------------------------------------
+void GmVPrimitiveScorer::Normalize(G4THitsMap<G4double>* RunMap)
+{
   std::map<G4int,G4double*>::iterator ite;
   for(ite = RunMap->GetMap()->begin(); ite != RunMap->GetMap()->end(); ite++){
-    G4double sumWX = (*(ite->second));
-    theError[ite->first]  = GetError( ite->first, sumWX, nev );
+    G4int index = ite->first;
+    G4double nev = GetNEvents( index );
+    G4double normFactor = nev*theUnit;
+    G4double sumX = (*(ite->second))/normFactor;
+    RunMap->set(index,sumX);
+    if( ScoringVerb(debugVerb) ) G4cout << GetName() << " " << index << " Normalize SUMV2_bef " << theSumV2[index] << G4endl;
+    theSumV2[index] = theSumV2[index] / (normFactor*normFactor);
 #ifndef GAMOS_NO_VERBOSE
-    if( ScoringVerb(debugVerb) ) G4cout << ite->first << " CERROR " << theError[ ite->first ] << G4endl;
+    if( ScoringVerb(debugVerb) ) G4cout << GetName() << " " << index << " Normalize " << (*(ite->second)) << " " << sumX*normFactor << " / " << normFactor << " nev " << nev << " unit " << theUnit << G4endl;
+    if( ScoringVerb(debugVerb) ) G4cout << GetName() << " " << index << " Normalize SUMV2 " << theSumV2[index] << G4endl;
 #endif
   }
   
 }
 
+//--------------------------------------------------------------------
+void GmVPrimitiveScorer::CalculateErrors(G4THitsMap<G4double>* RunMap)
+{
+  
+  std::map<G4int,G4double*>::iterator ite;
+  for(ite = RunMap->GetMap()->begin(); ite != RunMap->GetMap()->end(); ite++){
+    G4double sumWX = (*(ite->second));
+    G4int index = ite->first;
+    G4double nev = GetNEvents( index );
+    theError[index] = GetError( index, sumWX, nev );
+#ifndef GAMOS_NO_VERBOSE
+    //    if( ScoringVerb(debugVerb) ) G4cout << GetName() << " " << ite->first << " CalculateError " << theError[ index ] << G4endl;
+    if( ScoringVerb(debugVerb) ) G4cout << GetName() << " " << index << " CalculateError " << theError[ index ] << " sumWX " << sumWX << G4endl;
+#endif
+  }
+  
+}
 
 //--------------------------------------------------------------------
 G4double GmVPrimitiveScorer::GetError( G4int index )
@@ -328,46 +355,44 @@ G4double GmVPrimitiveScorer::GetError( G4int index, G4double sumWX, G4double nEv
 {
   if( theSumV2.find( index ) == theSumV2.end() ) return 0.;
   //  G4double error = (theSumV2[index]*nEvents - sumWX*sumWX) / (nEvents*nEvents*(nEvents-1));
-  G4double error = (theSumV2[index]*nEvents - sumWX*sumWX) / (nEvents-1);
+  G4double error = 0.;
+  if( nEvents > 1 ) error = (theSumV2[index]*nEvents - sumWX*sumWX) / (nEvents-1);
+    //  G4cout << " ERROR " << (theSumV2[index]*nEvents - sumWX*sumWX) << " " << theSumV2[index]*nEvents << " - " << sumWX*sumWX << G4endl; //GDEB
 #ifndef GAMOS_NO_VERBOSE
-  if( ScoringVerb(debugVerb) ) G4cout << " GetError " << index << " e= " << error/(nEvents*nEvents) << " S1 " << theSumV2[index]*nEvents << " S2 " << sumWX*sumWX << " S3 " << (nEvents*nEvents*(nEvents-1)) << G4endl;
+  G4double normF = nEvents*theUnit;
+  if( ScoringVerb(debugVerb) ) G4cout << GetName() <<" GetError " << index << " e2= " << error*normF*normF << " S1 " << theSumV2[index]/nEvents << " S2 " << sumWX*sumWX*normF*normF << " S3 " << nEvents-1 << G4endl;
+  //t  if( ScoringVerb(debugVerb) ) G4cout << GetName() <<" GetError " << index << " e2= " << error << " S1 " << theSumV2[index]/nEvents << " S2 " << sumWX*sumWX << " S3 " << nEvents-1 << G4endl;
 #endif
   
   if( error <= 0. ) {
     if( error < -1.E-30 ) G4cerr << " !!WARNING  Error squared in scorer " << GetName() << " is negative: " << error << G4endl;
     error = 0.;
   } else {
-    error = std::sqrt(error)/nEvents;
+    error = std::sqrt(error);
   }
+  //  if( index%1000 == 1 ) G4cout << " DOSE GetError " << index << " " << sumWX << " +- " << error << " dose2 " << theSumV2[index] << " nev " << nEvents << G4endl; //GDEB
 
 #ifndef GAMOS_NO_VERBOSE
   if( ScoringVerb(debugVerb) ) G4cout << " GetError " << index << " e= " << error << " e2= " << error*error << " nev " << nEvents << " sumWX " << sumWX << " sumW2 " << theSumV2[index] << G4endl;
 #endif
-  if( index%1000 == 0 ) G4cout   << " GetError " << index << " e= " << error << " e2= " << error*error << " nev " << nEvents << " sumWX " << sumWX << " sumW2 " << theSumV2[index] << G4endl; //GDEB
+  //  if( index%1000 == 0 ) G4cout   << " GetError " << index << " e= " << error << " e2= " << error*error << " nev " << nEvents << " sumWX " << sumWX << " sumW2 " << theSumV2[index] << G4endl; //GDEB 
  
   //  G4cout << " GmVPrimitiveScorer::GetError " << index << " = " << error << " sumW " << sumWX << " sumW2 " << theSumV2[index] << " nEvents " << nEvents << G4endl;
   return error;
 }
 
 //--------------------------------------------------------------------
-G4double GmVPrimitiveScorer::GetErrorRelative( G4int index, G4double sumWX, G4double nEvents )
+G4double GmVPrimitiveScorer::GetErrorRelative( G4int index, G4double sumWX)
 {
   G4double errorrel = GetError( index );
 #ifndef GAMOS_NO_VERBOSE
-   if( ScoringVerb(debugVerb) )  G4cout << " GetErrorRelative temp er " << errorrel << G4endl;
+  if( ScoringVerb(debugVerb) )  G4cout << " GetErrorRelative temp er " << errorrel << G4endl;
 #endif
   // divide by averageX
-  if( bScoreByEvent ) {
-    if( sumWX != 0. ) errorrel /= (sumWX/nEvents); 
+  if( sumWX != 0. ) errorrel /= sumWX; 
 #ifndef GAMOS_NO_VERBOSE
-  if( ScoringVerb(debugVerb) ) G4cout << " GetErrorRelative " << index << " er= " << errorrel << " nev " << nEvents << " sumWX " << sumWX << G4endl;
+  if( ScoringVerb(debugVerb) ) G4cout << " GetErrorRelative " << index << " er= " << errorrel << " nev " << " sumWX " << sumWX << G4endl;
 #endif
-  } else {
-    if( sumWX != 0. ) errorrel /= sumWX;    
-#ifndef GAMOS_NO_VERBOSE
-  if( ScoringVerb(debugVerb) ) G4cout << " GetErrorRelative " << index << " er= " << errorrel << " sumWX " << sumWX << G4endl;
-#endif
-  }
 
   return errorrel;
 }
@@ -482,4 +507,30 @@ G4double GmVPrimitiveScorer::GetVolume( const G4Step* aStep )
     return theGeometryUtils->GetCubicVolume( aStep->GetPreStepPoint()->GetPhysicalVolume() );
   }
 }
- 
+
+//--------------------------------------------------------------------
+std::map<G4int,size_t> GmVPrimitiveScorer::GetNFilled() const
+{
+  return theNFilled;
+}
+
+//--------------------------------------------------------------------
+void GmVPrimitiveScorer::PrintAll()
+{
+  G4cout << " MultiFunctionalDet  " << detector->GetName() << G4endl;
+  G4cout << " PrimitiveScorer " << GetName() << G4endl;
+  G4cout << " Number of entries " << EvtMap->entries() << G4endl;
+  std::map<G4int,G4double*>::iterator itr = EvtMap->GetMap()->begin();
+  for(; itr != EvtMap->GetMap()->end(); itr++) {
+    G4cout << "  copy no.: " << itr->first
+	   << "  val: " << G4BestUnit(*(itr->second),"Energy") 
+	   << G4endl;
+  }
+}
+
+void GmVPrimitiveScorer::EndOfEvent(G4HCofThisEvent*)
+{;}
+
+void GmVPrimitiveScorer::DrawAll()
+{;}
+

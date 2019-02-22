@@ -1,30 +1,6 @@
-//
-// ********************************************************************
-// * License and Disclaimer                                           *
-// *                                                                  *
-// * The  GAMOS software  is  copyright of the Copyright  Holders  of *
-// * the GAMOS Collaboration.  It is provided  under  the  terms  and *
-// * conditions of the GAMOS Software License,  included in the  file *
-// * LICENSE and available at  http://fismed.ciemat.es/GAMOS/license .*
-// * These include a list of copyright holders.                       *
-// *                                                                  *
-// * Neither the authors of this software system, nor their employing *
-// * institutes,nor the agencies providing financial support for this *
-// * work  make  any representation or  warranty, express or implied, *
-// * regarding  this  software system or assume any liability for its *
-// * use.  Please see the license in the file  LICENSE  and URL above *
-// * for the full disclaimer and the limitation of liability.         *
-// *                                                                  *
-// * This  code  implementation is the result of  the  scientific and *
-// * technical work of the GAMOS collaboration.                       *
-// * By using,  copying,  modifying or  distributing the software (or *
-// * any work based  on the software)  you  agree  to acknowledge its *
-// * use  in  resulting  scientific  publications,  and indicate your *
-// * acceptance of all terms of the GAMOS Software license.           *
-// ********************************************************************
-//
 #include "GmSqdose.hh"
 #include "Gm3ddose.hh"
+#include "GmReadDICOMVerbosity.hh"
 #include "GamosCore/GamosUtils/include/GmGenUtils.hh"
 #include "GamosCore/GamosBase/Base/include/GmParameterMgr.hh"
 
@@ -33,16 +9,22 @@ GmSqdose::GmSqdose()
 {
   theHeader = 0;
   G4String stype = GmParameterMgr::GetInstance()->GetStringValue("GmSqdose:FileType","ALL");
-  if( stype == "ALL" || stype == "all") {
+  for(size_t ii = 0; ii < stype.length(); ii++) {
+    stype[ii] = toupper(stype[ii]);
+  }
+  if( stype == "ALL" ) {
     theType = SqTALL;
-  } else if( stype == "FILLED" ||  stype == "filled") {
+  } else if( stype == "FILLED" ) {
     theType = SqTFILLED;
+  } else if( stype == "CROSS_PHANTOM" || stype == "CROSSPHANTOM" ) {
+    theType = SqTCROSS_PHANTOM;
   } else {
     G4Exception("GmSqdose::GmSqdose",
 		"Wrong FileType",
 		FatalErrorInArgument,
-		G4String("FileType can be ALL/all or FILLED/filled, it is " + stype ).c_str());
+		G4String("FileType can be ALL, FILLED or CROSS_PHANTOM, it is " + stype ).c_str());
   }
+  
 }
 
 //-----------------------------------------------------------------------
@@ -56,6 +38,9 @@ void GmSqdose::Print( FILE* out )
 {
   theHeader->Print(out);
 
+#ifndef GAMOS_NO_VERBOSE
+    if( ReadDICOMVerb(warningVerb) ) G4cout << " TYPE " << theType << G4endl;
+#endif
   if(fwrite(&theType,
 	    sizeof(size_t),1,out)!=1){
     G4Exception("GmSqdose::Print",
@@ -64,10 +49,16 @@ void GmSqdose::Print( FILE* out )
 		"Error writing type");
   }
 
+  size_t siz = 0;
   if( theType == SqTALL ) {
-    size_t siz = theHeader->GetNoVoxelX()*
+    siz = theHeader->GetNoVoxelX()*
       theHeader->GetNoVoxelY()*
       theHeader->GetNoVoxelZ();
+  } else if ( theType == SqTCROSS_PHANTOM ) {
+    siz = theDoses.size();
+  }
+  //  G4cout << " N VOXELS WRITE " << siz << G4endl;  //GDEB
+  if( theType == SqTALL || theType == SqTCROSS_PHANTOM ) {
     //----- Loop to all voxels and print dose
     for( size_t ii = 0; ii < siz; ii++ ) {
       float dose = theDoses[ii];
@@ -91,10 +82,13 @@ void GmSqdose::Print( FILE* out )
       }
     }
   } else if( theType == SqTFILLED ) {
-    size_t siz = theDoses.size();
+    siz = theDoses.size();
     for( size_t ii = 0; ii < siz; ii++ ) {
       float dose = theDoses[ii];
       float dose2 = theDoseSqs[ii];
+#ifndef GAMOS_NO_VERBOSE
+    if( ReadDICOMVerb(warningVerb) ) if( ii%1000000 == 0 ) G4cout << " GmSqdose Print DOSE " << ii <<" " << dose << " " << dose2 << G4endl;
+#endif
       if( dose != 0. ) {
 	if(fwrite(&ii,
 		  sizeof(size_t),1,out)!=1){
@@ -129,6 +123,14 @@ void GmSqdose::Print( FILE* out )
 void GmSqdose::Read( G4String fileName )
 {
   FILE * fin = fopen(fileName,"rb");
+    
+  if( !fin ) {
+    G4Exception("GmSqdose::Read",
+		"Error",
+		FatalException,
+		("File not found: "+ fileName).c_str());
+  }
+
   Read(fin);
 }
 
@@ -136,7 +138,14 @@ void GmSqdose::Read( G4String fileName )
 //-----------------------------------------------------------------------
 void GmSqdose::Read( FILE* fin )
 {
-  if( theHeader != 0 ){
+  if( !fin ) {
+    G4Exception("GmSqdose::Read",
+		"Error",
+		FatalException,
+		"File not found");
+  }
+
+    if( theHeader != 0 ){
     G4Exception("GmSqdose::Read",
 		    "Error",
 		    FatalException,
@@ -145,38 +154,52 @@ void GmSqdose::Read( FILE* fin )
   theHeader = new GmSqdoseHeader;
   theHeader->Read( fin );
 
-  size_t nv = theHeader->GetNoVoxelX() *
-    theHeader->GetNoVoxelY() * 
-    theHeader->GetNoVoxelZ();
- 
-  if( fread(&theType, sizeof(size_t),  1, fin) != 1) {
+  if( fread(&theType, sizeof(size_t), 1, fin) != 1) {
     G4Exception("GmSqdose::Read",
 		    "Error",
 		    FatalException,
 		"Problem reading type ");
   }
-  G4cout << " GmSqdose::Read type " << theType << G4endl;
+#ifndef GAMOS_NO_VERBOSE
+  if( ReadDICOMVerb(warningVerb) ) G4cout << " GmSqdose::Read type " << theType << G4endl;
+#endif
 
-  if( theType == 1 ) {
+  size_t nv = 0;
+  if( theType == SqTALL ) {
+    nv = theHeader->GetNoVoxelX()*
+      theHeader->GetNoVoxelY()*
+      theHeader->GetNoVoxelZ();
+  } else if ( theType == SqTCROSS_PHANTOM ) {
+    nv = (theHeader->GetNoVoxelX()+theHeader->GetNoVoxelY()-1)*
+      theHeader->GetNoVoxelZ();theDoses.size();
+  }
+  //  G4cout << " READ nv " << nv << G4endl; //GDEB  
+
+  if( theType == SqTALL || theType == SqTCROSS_PHANTOM  ) {
     for( size_t iv = 0; iv < nv; iv++ ){
       float ftmp;
-      if( fread(&ftmp, sizeof(float),  1, fin) != 1) {
+      if( fread(&ftmp, sizeof(float), 1, fin) != 1) {
 	G4Exception("GmSqdose::Read()",
-"Problem reading dose ",FatalErrorInArgument,G4String("Reading voxel number "+GmGenUtils::itoa(iv)).c_str());
+		    "Problem reading dose ",
+		    FatalErrorInArgument,
+		    G4String("Reading voxel number "+GmGenUtils::itoa(iv)).c_str());
       }
       theDoses.push_back( ftmp );
-      //    if( theDoses.size()%100000 == 1 ) G4cout << iv << " READ dose " << theDoses.size() << " = " << theDoses[theDoses.size()-1] << G4endl;
+      //      if( theDoses.size()%1 == 0 ) G4cout << iv << " 1READ dose " << theDoses.size() << " = " << theDoses[theDoses.size()-1] << G4endl; //GDEB
     }
     
     for( size_t iv = 0; iv < nv; iv++ ){
       float ftmp;
-      if( fread(&ftmp, sizeof(float),  1, fin) != 1) {
-	G4Exception("GmSqdose::Read()","Problem reading dose ",FatalErrorInArgument,G4String("Reading voxel number "+GmGenUtils::itoa(iv)).c_str());
+      if( fread(&ftmp, sizeof(float), 1, fin) != 1) {
+	G4Exception("GmSqdose::Read()",
+		    "Problem reading dose ",
+		    FatalErrorInArgument,
+		    G4String("Reading voxel number "+GmGenUtils::itoa(iv)).c_str());
       }
       theDoseSqs.push_back( ftmp );
-      //    if( theDoseSqs.size()%100000 == 1 ) G4cout << iv << " READ dose2 " << theDoseSqs.size() << " = " << theDoseSqs[theDoseSqs.size()-1] << G4endl;
+      //      if( theDoseSqs.size()%1000 == 1 ) G4cout << iv << " READ dose2 " << theDoseSqs.size() << " = " << theDoseSqs[theDoseSqs.size()-1] << G4endl;//GDEB
     }
-  } else if( theType == 2 ){
+  } else if( theType == SqTFILLED ){
     G4int idPrev = -1;
     size_t iv;
     for( iv = 0; iv < nv; iv++ ){
@@ -196,6 +219,7 @@ void GmSqdose::Read( FILE* fin )
 	theDoses.push_back( 0. );
       }
       theDoses.push_back( ftmp );
+      //      if( idNow%1000 == 0 ) G4cout << " 2READ dose " << theDoses.size() << " = " << theDoses[theDoses.size()-1] << G4endl;//GDEB
 
       if( fread(&ftmp, sizeof(float),  1, fin) != 1) {
 	G4Exception("GmSqdose::Read()","Problem reading dose ",FatalErrorInArgument,G4String("Reading voxel number "+GmGenUtils::itoa(idNow)).c_str());
@@ -204,6 +228,7 @@ void GmSqdose::Read( FILE* fin )
 	theDoseSqs.push_back( 0. );
       }
       theDoseSqs.push_back( ftmp );
+      //      if( theDoseSqs.size()%1000 == 1 ) G4cout << iv << " READ dose2 " << theDoseSqs.size() << " = " << theDoseSqs[theDoseSqs.size()-1] << G4endl;//GDEB
 
       //      G4cout << iv << " READ DOSE " << idNow << " prev " << idPrev << " dose " << ftmp1 << " dose2 " << ftmp << G4endl;
 
@@ -281,33 +306,52 @@ void GmSqdose::CalculateErrors()
 {
   size_t nvox = theDoses.size();
   G4double nEvents = theHeader->GetNumberOfEvents();
+  
   for( size_t ii = 0; ii < nvox; ii++ ){
     G4double error = (theDoseSqs[ii]*nEvents - theDoses[ii]*theDoses[ii]) / (nEvents-1);
+    //    if( ii%1000 == 1 ) {
+    /*    if( ii >1 && ii < 1000  ) {
+      G4double doseSq = (theDoseErrors[ii]*theDoseErrors[ii]*nEvents*nEvents*(nEvents-1)+theDoses[ii]*theDoses[ii])/nEvents;
+      G4cout << ii << " SQ FROM ERROR " << theDoseErrors[ii]<< " " << theDoses[ii] << " " << theDoseSqs[ii] << G4endl;  //GDEB
+      } */
+
+    //    if( ii%1000 == 1 ) G4cout << ii << " CalculateError " << error << " " << theDoses[ii] << " = " << theDoseSqs[ii] << G4endl; //GDEB
     if( error < 0. ) {
       if( error < -1.E-30 ) G4cerr << " !!WARNING GmSqdose::CalculateErrors negative error, set to 0. " << error << G4endl;
       error = 0.;
     } else {
-      error = std::sqrt(error)/nEvents;
+      error = std::sqrt(error);
     }
 
     theDoseErrors.push_back( error );
-  
-    //     G4cout << " GetError " << ii q<< " e= " << error << " S1 " << theDoseSqs[ii]*nEvents << " s2 " << theDoses[ii]*theDoses[ii] << " S3 " << (nEvents*nEvents*(nEvents-1)) << G4endl;
+    //    if( ii%100000 == 1 ) G4cout << " DOSE GetError " << ii << " " << theDoses[ii] << " +- " << error << " " << theDoseSqs[ii] << " nev " << nEvents << G4endl;
+    /*    if( ii >1 && ii < 1000  ) {
+      G4cout << ii << " SQ FINAL ERROR " << theDoseErrors[ii]<< G4endl;  //GDEB
+      } */
   }
 }
 
 //-----------------------------------------------------------------------
 GmSqdose::GmSqdose(const Gm3ddose& dose3d)
 {
+  theType = SqTALL;
+
   theHeader = new GmSqdoseHeader(*(dose3d.GetHeader()));
 
+  //  G4cout << " GmSqdose(const Gm3ddose& NV " << theHeader->GetNoVoxelX()<< " " << theHeader->GetNoVoxelY() << " " << theHeader->GetNoVoxelZ() << G4endl; //GDEB
+ 
   theDoses = dose3d.GetDoses();
   theDoseErrors = dose3d.GetDoseErrors();
 
+  G4double nEvents = theHeader->GetNumberOfEvents();
   size_t nv = theDoses.size();
   for( size_t jj = 0; jj < nv; jj++ ){
-    theDoseSqs.push_back( theDoses[jj]*theDoses[jj] );
-  }
+    theDoseSqs.push_back( (theDoseErrors[jj]*theDoses[jj]*theDoseErrors[jj]*theDoses[jj]*nEvents*nEvents*(nEvents-1)+theDoses[jj]*theDoses[jj])/nEvents/1.E3 );
+    //?    theDoses[jj] *= nEvents/1.E3;
+    theDoses[jj] *= nEvents;
+    //    G4double error = (theDoseSqs[jj]*nEvents - theDoses[jj]*theDoses[jj]) / (nEvents-1);
+    //    if(jj%1000 == 0 ) G4cout << " GmSqdose DOSE " << jj << " " << theDoses[jj] << " +- " << theDoseErrors[jj] << " D2 " << theDoseSqs[jj] << G4endl; //GDEB
+   }
 
 }
 

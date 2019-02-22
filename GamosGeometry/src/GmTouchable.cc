@@ -1,28 +1,3 @@
-//
-// ********************************************************************
-// * License and Disclaimer                                           *
-// *                                                                  *
-// * The  GAMOS software  is  copyright of the Copyright  Holders  of *
-// * the GAMOS Collaboration.  It is provided  under  the  terms  and *
-// * conditions of the GAMOS Software License,  included in the  file *
-// * LICENSE and available at  http://fismed.ciemat.es/GAMOS/license .*
-// * These include a list of copyright holders.                       *
-// *                                                                  *
-// * Neither the authors of this software system, nor their employing *
-// * institutes,nor the agencies providing financial support for this *
-// * work  make  any representation or  warranty, express or implied, *
-// * regarding  this  software system or assume any liability for its *
-// * use.  Please see the license in the file  LICENSE  and URL above *
-// * for the full disclaimer and the limitation of liability.         *
-// *                                                                  *
-// * This  code  implementation is the result of  the  scientific and *
-// * technical work of the GAMOS collaboration.                       *
-// * By using,  copying,  modifying or  distributing the software (or *
-// * any work based  on the software)  you  agree  to acknowledge its *
-// * use  in  resulting  scientific  publications,  and indicate your *
-// * acceptance of all terms of the GAMOS Software license.           *
-// ********************************************************************
-//
 #include "GmTouchable.hh"
 #include "GmGeomVerbosity.hh"
 
@@ -227,14 +202,14 @@ GmTouchable::GmTouchable( const G4VTouchable* g4touch )
 #endif
   for( ii = 0; ii < nAnces; ii++ ) {
     //    g4touch->MoveUpHistory();
-    G4VPhysicalVolume* pv = g4touch->GetVolume(ii);
-    //-    G4VPhysicalVolume* pv = g4touch->GetVolume(ii+1);
-    //-    G4cout << " trans pv " << pv->GetName() << G4endl;
-    ancestorName = "/" + pv->GetName();
+    G4VPhysicalVolume* pv2 = g4touch->GetVolume(ii);
+    //-    G4VPhysicalVolume* pv2 = g4touch->GetVolume(ii+1);
+    //-    G4cout << " trans pv2 " << pv2->GetName() << G4endl;
+    ancestorName = "/" + pv2->GetName();
     char chartmp[10];
     int copyNoAncestor;
-    if( !pv->IsReplicated() ) {
-      copyNoAncestor = pv->GetCopyNo();
+    if( !pv2->IsReplicated() ) {
+      copyNoAncestor = pv2->GetCopyNo();
     } else {
       copyNoAncestor = -1;
     }
@@ -246,13 +221,13 @@ GmTouchable::GmTouchable( const G4VTouchable* g4touch )
 #endif
 
     G4Transform3D trans;
-    if( pv->GetRotation() != 0 ) {
-      trans = G4Transform3D( *(pv->GetRotation()), pv->GetObjectTranslation() );
+    if( pv2->GetRotation() != 0 ) {
+      trans = G4Transform3D( *(pv2->GetRotation()), pv2->GetObjectTranslation() );
     } else {
-      //      G4cout << " no rotation for volume " << pv->GetName() << "  " << pv << G4endl;
-      trans = G4Transform3D( G4RotationMatrix(), pv->GetObjectTranslation() );
+      //      G4cout << " no rotation for volume " << pv2->GetName() << "  " << pv2 << G4endl;
+      trans = G4Transform3D( G4RotationMatrix(), pv2->GetObjectTranslation() );
     }  
-    // CalculateTransformation( pv, copyNoAncestor );
+    // CalculateTransformation( pv2, copyNoAncestor );
     globalTrans = trans * globalTrans;
     if( ii == 0 ){
       theLocalPos = trans.getTranslation();

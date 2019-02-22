@@ -1,28 +1,3 @@
-//
-// ********************************************************************
-// * License and Disclaimer                                           *
-// *                                                                  *
-// * The  GAMOS software  is  copyright of the Copyright  Holders  of *
-// * the GAMOS Collaboration.  It is provided  under  the  terms  and *
-// * conditions of the GAMOS Software License,  included in the  file *
-// * LICENSE and available at  http://fismed.ciemat.es/GAMOS/license .*
-// * These include a list of copyright holders.                       *
-// *                                                                  *
-// * Neither the authors of this software system, nor their employing *
-// * institutes,nor the agencies providing financial support for this *
-// * work  make  any representation or  warranty, express or implied, *
-// * regarding  this  software system or assume any liability for its *
-// * use.  Please see the license in the file  LICENSE  and URL above *
-// * for the full disclaimer and the limitation of liability.         *
-// *                                                                  *
-// * This  code  implementation is the result of  the  scientific and *
-// * technical work of the GAMOS collaboration.                       *
-// * By using,  copying,  modifying or  distributing the software (or *
-// * any work based  on the software)  you  agree  to acknowledge its *
-// * use  in  resulting  scientific  publications,  and indicate your *
-// * acceptance of all terms of the GAMOS Software license.           *
-// ********************************************************************
-//
 #ifndef GmReadPhantomGeometry_h
 #define GmReadPhantomGeometry_h 1
 
@@ -60,13 +35,13 @@ public:
     thePhantomMaterials = pm;
   }
 
-  G4int GetNVoxelX() {
+  G4int GetNoVoxelX() {
     return nVoxelX;
   }
-  G4int GetNVoxelY() {
+  G4int GetNoVoxelY() {
     return nVoxelY;
   }
-    G4int GetNVoxelZ() {
+    G4int GetNoVoxelZ() {
     return nVoxelZ;
   }
 
@@ -103,11 +78,48 @@ public:
   G4float GetVoxelHalfZ() const {
     return dimZ/2.;
   }
+  G4float GetVoxelWidthX() const {
+    return dimX;
+  }
+  G4float GetVoxelWidthY() const {
+    return dimY;
+  }
+  G4float GetVoxelWidthZ() const {
+    return dimZ;
+  }
 
-  G4int GetNVoxels() {
+  G4int GetNoVoxels() {
     return nVoxelX * nVoxelY * nVoxelZ;
   }
-  
+
+  G4double GetInitialRotAngleX() const {
+    return theInitialRotAngleX;
+  }
+  G4double GetInitialRotAngleY() const {
+    return theInitialRotAngleY;
+  }
+  G4double GetInitialRotAngleZ() const {
+    return theInitialRotAngleZ;
+  }
+
+  G4ThreeVector GetInitialDisp() const {
+    return theInitialDisp;
+  }
+
+  void SetFileName( G4String fn ) {
+    theFileName = fn;
+  }
+  void SetPhantomFileName( G4String fn ) {
+    thePhantomFileName = fn;
+  }
+  void SetMotherName( G4String fn ) {
+    theMotherName = fn;
+  }
+
+  void SetRecalculateMaterialDensities( G4bool brmd ) {
+    bRecalculateMaterialDensities = brmd;
+  }
+
 protected:
   virtual void ReadPhantomData() = 0;
 
@@ -117,9 +129,7 @@ protected:
   G4Material* BuildMaterialChangingDensity( G4Material* origMate, float density, G4String mateName );
 
   virtual void ReadVoxelDensities( std::ifstream& fin );
-
 protected:
-  G4LogicalVolume* world_logic;
   G4LogicalVolume* cont_logic;
   G4VPhysicalVolume* parameterisedPhysVolume; 
 
@@ -143,6 +153,9 @@ protected:
 
   std::map<G4int,G4Material*> thePhantomMaterialsOriginal; // map numberOfMaterial to G4Material. They are the list of materials as built from .geom file
 
+  G4String theFileName;
+  G4String thePhantomFileName;
+  G4String theMotherName;
 };
 
 #endif
