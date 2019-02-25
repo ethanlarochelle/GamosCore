@@ -21,6 +21,7 @@
 #include "GmG4PSPopulation.hh"
 #include "GmG4PSTrackCounter.hh"
 #include "GmG4PSTrackLength.hh"
+#include "GmG4PSTrackLengthFluence.hh"
 #include "GmG4PSKerma.hh"
 
 #include "GmG4PSData.hh"
@@ -49,6 +50,7 @@ PLUGINSVC_FACTORY(GmG4PSPassageTrackLength,GmVPrimitiveScorer*(G4String))
 PLUGINSVC_FACTORY(GmG4PSPopulation,GmVPrimitiveScorer*(G4String))
 PLUGINSVC_FACTORY(GmG4PSTrackCounter,GmVPrimitiveScorer*(G4String))
 PLUGINSVC_FACTORY(GmG4PSTrackLength,GmVPrimitiveScorer*(G4String))
+PLUGINSVC_FACTORY(GmG4PSTrackLengthFluence,GmVPrimitiveScorer*(G4String))
 PLUGINSVC_FACTORY(GmG4PSKerma,GmVPrimitiveScorer*(G4String))
 PLUGINSVC_FACTORY(GmG4PSData,GmVPrimitiveScorer*(G4String))
 PLUGINSVC_FACTORY(GmPSSurfaceFlux,GmVPrimitiveScorer*(G4String))
