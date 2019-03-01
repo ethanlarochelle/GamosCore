@@ -53,9 +53,9 @@
 #include "GmLEPTSPhysics.hh"
 #include "G4SystemOfUnits.hh"
 #include "G4EmLEPTSPhysics.hh"
-#include "G4EmPenelopeLEPTSPhysics.hh"
-#include "G4EmLivermoreLEPTSPhysics.hh"
-#include "G4EmStandardLEPTSPhysics.hh"
+#include "G4EmPenelopePhysics.hh"
+#include "G4EmLivermorePhysics.hh"
+#include "G4EmStandardPhysics.hh"
 #include "G4ParticleTable.hh"
 #include "G4VEmProcess.hh"
 #include "G4VEmModel.hh"
@@ -76,11 +76,11 @@ GmLEPTSPhysics::GmLEPTSPhysics()
   theEmLEPTSPhysics = new G4EmLEPTSPhysics();
   theHighEnergyModel = "livermore";
   if( theHighEnergyModel == "penelope" ) {
-    theEmHighEnergyPhysics = new G4EmPenelopeLEPTSPhysics();
+    theEmHighEnergyPhysics = new G4EmPenelopePhysics();
   } else if( theHighEnergyModel == "livermore" ) {
-    theEmHighEnergyPhysics = new G4EmLivermoreLEPTSPhysics();
+    theEmHighEnergyPhysics = new G4EmLivermorePhysics();
   } else if( theHighEnergyModel == "standard" ) {
-    theEmHighEnergyPhysics = new G4EmStandardLEPTSPhysics();
+    theEmHighEnergyPhysics = new G4EmStandardPhysics();
   }
 
 }

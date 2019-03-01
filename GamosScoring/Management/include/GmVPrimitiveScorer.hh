@@ -103,7 +103,7 @@ public:
       theNEventsType = SNET_ByRun;
     }
   }
-  //  G4bool ScoreByEventType() const { return theNEventsType; }
+  G4bool ScoreByEventType() const { return theNEventsType; }
   void SetNEventsType( ScoreNEventsType net ) {
     theNEventsType = net;
   }

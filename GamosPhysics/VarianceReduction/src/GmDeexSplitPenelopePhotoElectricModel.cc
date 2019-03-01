@@ -79,8 +79,10 @@
 #include "G4LossTableManager.hh"
 
 #include "GamosCore/GamosBase/Base/include/GmParameterMgr.hh"
+//....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo....
 
-using namespace CLHEP;
+using namespace std;
+//using namespace CLHEP;
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo....
 

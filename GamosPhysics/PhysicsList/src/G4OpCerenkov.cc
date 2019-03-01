@@ -450,12 +450,12 @@ void G4OpCerenkov::BuildThePhysicsTable()
 			 // loop over all (photon energy, refraction index)
 			 // pairs stored for this material  
 
-             for (size_t i = 1;
-                              i < theRefractionIndexVector->GetVectorLength();
-                              i++)
+             for (size_t j = 1;
+                              j < theRefractionIndexVector->GetVectorLength();
+                              j++)
 			 {
-                                currentRI = (*theRefractionIndexVector)[i];
-                                currentPM = theRefractionIndexVector->Energy(i);
+                                currentRI = (*theRefractionIndexVector)[j];
+                                currentPM = theRefractionIndexVector->Energy(j);
 
 				currentCAI = 0.5*(1.0/(prevRI*prevRI) +
 					          1.0/(currentRI*currentRI));
@@ -619,7 +619,7 @@ G4double G4OpCerenkov::PostStepGetPhysicalInteractionLength(
 	   G4double MeanNumberOfPhotons = 
                     GetAverageNumberOfPhotons(charge,beta,aMaterial,Rindex);
 
-           G4double Step = 0.;
+           Step = 0.;
            if (MeanNumberOfPhotons > 0.0) Step = fMaxPhotons /
                                                  MeanNumberOfPhotons;
 
@@ -639,7 +639,7 @@ G4double G4OpCerenkov::PostStepGetPhysicalInteractionLength(
                                                  (1.-fMaxBetaChange)*
                                                  (1.-fMaxBetaChange));
 
-           G4double Step = mass * deltaGamma / dedx;
+           Step = mass * deltaGamma / dedx;
 
            if (Step > 0. && Step < StepLimit) StepLimit = Step;
 

@@ -417,7 +417,7 @@ void GmOpticalPropertiesMgr::BuildG4()
          G4String("Table: "+(*itep).first));
       }
       else{
-        itevE = itevE1
+        itevE = itevE1;
       }
     }
 

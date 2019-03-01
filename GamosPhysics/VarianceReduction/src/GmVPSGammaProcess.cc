@@ -44,6 +44,7 @@
 #include "G4Positron.hh"
 #include "G4PhysicsTableHelper.hh"
 #include "G4EmConfigurator.hh"
+#include "G4ParticleChangeForLoss.hh"
 using namespace CLHEP;
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo....
@@ -179,7 +180,7 @@ G4VParticleChange* GmVPSGammaProcess::PostStepDoIt(const G4Track& track,
 	aTrack->SetTouchableHandle(track.GetTouchableHandle());
 	// set weight
 	// add the secondary
-	fParticleChange.AddSecondaryTrack(aTrack); // fParticleChange is G4ParticleChangeForLoss
+	fParticleChange.AddSecondary(aTrack); // fParticleChange is G4ParticleChangeForLoss
 	aTrack->SetWeight(secondaryWeights[ii]); // this has to be done later, beacuse AddSecondary takes the one from the parent
 	
 #ifndef GAMOS_NO_VERBOSE

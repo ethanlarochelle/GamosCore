@@ -21,7 +21,7 @@
 #include "GmG4PSPopulation.hh"
 #include "GmG4PSTrackCounter.hh"
 #include "GmG4PSTrackLength.hh"
-#include "GmG4PSTrackLengthFluence.hh"
+#include "GmPSTrackLengthFluence.hh"
 #include "GmG4PSKerma.hh"
 
 #include "GmG4PSData.hh"

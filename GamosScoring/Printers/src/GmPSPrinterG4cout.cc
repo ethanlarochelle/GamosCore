@@ -88,7 +88,7 @@ void GmPSPrinterG4cout::DumpAll( G4THitsMap<G4double>* RunMap, GmVPrimitiveScore
   G4cout << " Number of entries= " << RunMap->entries() << G4endl;
   std::map<G4int,G4double*>::iterator ite;
   G4double nev;
-  //??  G4bool bScoreByEvent = theScorer->ScoreByEvent();
+  G4bool bScoreByEvent = theScorer->ScoreByEventType();
 
   if( bScoreByEvent ) {
     nev = GmNumberOfEvent::GetNumberOfEvent();
@@ -114,7 +114,7 @@ void GmPSPrinterG4cout::DumpAll( G4THitsMap<G4double>* RunMap, GmVPrimitiveScore
     G4cout << "  index: " << classifier->GetIndexName(ite->first) << "  = " << aveX;
     aveALL += aveX;
     if( theScorer->ScoreErrors() ) {
-      G4double error = theScorer->GetErrorRelative( ite->first, sumX, nev );
+      G4double error = theScorer->GetErrorRelative( ite->first, sumX );
       //   if( aveX != 0. ) error /= (aveX/theUnit); // relative error
       G4cout << " +-(REL) " << error << " " << theUnitName;
       errorALL += (error*aveX)*(error*aveX);

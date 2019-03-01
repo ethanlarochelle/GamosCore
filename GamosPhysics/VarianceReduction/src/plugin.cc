@@ -23,14 +23,30 @@
 // * acceptance of all terms of the GAMOS Software license.           *
 // ********************************************************************
 //
-#include "Reflex/PluginService.h"
+
 
 #include "GmBSScanWeightsUA.hh"
 
 #include "GmBSControlHistosUA.hh"
 #include "GmPSEMPhysics.hh"
 
+#ifdef ROOT5
+#include "Reflex/PluginService.h"
+
 PLUGINSVC_FACTORY(GmBSScanWeightsUA,GmUserAction*())
 PLUGINSVC_FACTORY(GmBSControlHistosUA,GmUserAction*())
 
 PLUGINSVC_FACTORY(GmPSEMPhysics,G4VUserPhysicsList*())
+
+#else
+
+#include "PluginManager/ModuleDef.h"
+#include "GamosCore/GamosUserActionMgr/include/GmUserActionFactory.hh"
+#include "GamosCore/GamosPhysics/PhysicsList/include/GmPhysicsFactory.hh"
+
+DEFINE_SEAL_MODULE ();
+DEFINE_GAMOS_USER_ACTION(GmBSScanWeightsUA);
+DEFINE_GAMOS_USER_ACTION(GmBSControlHistosUA);
+DEFINE_GAMOS_PHYSICS(GmPSEMPhysics);
+
+#endif

@@ -44,6 +44,7 @@
 #ifndef GmDeexSplitPenelopePhotoElectricModel_HH
 #define GmDeexSplitPenelopePhotoElectricModel_HH 1
 
+#include "globals.hh"
 #include "GmVPSModelHelper.hh"
 #include "G4PenelopePhotoElectricModel.hh"
 #include "G4DataVector.hh"
@@ -55,6 +56,8 @@ class G4ParticleDefinition;
 class G4DynamicParticle;
 class G4MaterialCutsCouple;
 class G4Material;
+
+using namespace CLHEP;
 
 class GmDeexSplitPenelopePhotoElectricModel : public G4PenelopePhotoElectricModel, public GmVPSModelHelper  
 {
