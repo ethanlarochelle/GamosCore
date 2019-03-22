@@ -50,7 +50,7 @@ PLUGINSVC_FACTORY(GmG4PSPassageTrackLength,GmVPrimitiveScorer*(G4String))
 PLUGINSVC_FACTORY(GmG4PSPopulation,GmVPrimitiveScorer*(G4String))
 PLUGINSVC_FACTORY(GmG4PSTrackCounter,GmVPrimitiveScorer*(G4String))
 PLUGINSVC_FACTORY(GmG4PSTrackLength,GmVPrimitiveScorer*(G4String))
-PLUGINSVC_FACTORY(GmG4PSTrackLengthFluence,GmVPrimitiveScorer*(G4String))
+PLUGINSVC_FACTORY(GmPSTrackLengthFluence,GmVPrimitiveScorer*(G4String))
 PLUGINSVC_FACTORY(GmG4PSKerma,GmVPrimitiveScorer*(G4String))
 PLUGINSVC_FACTORY(GmG4PSData,GmVPrimitiveScorer*(G4String))
 PLUGINSVC_FACTORY(GmPSSurfaceFlux,GmVPrimitiveScorer*(G4String))
@@ -115,6 +115,7 @@ DEFINE_GAMOS_SCORER(GmG4PSPassageTrackLength);
 DEFINE_GAMOS_SCORER(GmG4PSPopulation);
 DEFINE_GAMOS_SCORER(GmG4PSTrackCounter);
 DEFINE_GAMOS_SCORER(GmG4PSTrackLength);
+DEFINE_GAMOS_SCORER(GmPSTrackLengthFluence);
 DEFINE_GAMOS_SCORER(GmG4PSKerma);
 DEFINE_GAMOS_SCORER(GmG4PSData);
 DEFINE_GAMOS_SCORER(GmPSSurfaceFlux);
