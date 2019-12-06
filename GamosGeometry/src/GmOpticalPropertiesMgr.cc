@@ -73,6 +73,24 @@ void GmOpticalPropertiesMgr::AddEnergiesToTable( std::vector<G4String> wl )
 
 
 //-----------------------------------------------------------------------
+void GmOpticalPropertiesMgr::AddWavelengthsToTable( std::vector<G4String> wl )
+{
+  std::vector<G4String>::iterator ite = wl.begin();
+  ite++; ite++;
+  wl.insert(ite, "WAVELENGHTS" );
+#ifndef GAMOS_NO_VERBOSE
+  if( GeomVerb(debugVerb) ) {
+    for( unsigned int ii = 0; ii < wl.size() ; ii++ ) {
+      G4cout << "GmOpticalPropertiesMgr::AddWavelengthsToTable WAVELENGTH " << wl[ii] << G4endl;
+    }
+  }
+#endif
+  AddPropertyToTable( wl );
+
+}
+
+
+//-----------------------------------------------------------------------
 void GmOpticalPropertiesMgr::AddPropertyToTable( const std::vector<G4String> wl )
 {
   msmpt::const_iterator itet = theMatPropTables.find(wl[1]);
