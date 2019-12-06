@@ -153,6 +153,33 @@ G4double GmGenUtils::GetValue( const G4String& str )
   if( str == "false" || str == "FALSE" ) return 0;
   if( str == "true" || str == "TRUE" ) return 1;
 
+  G4double value=0.;
+  G4int pos1=str.find("*wv");
+  G4int pos2=str.find("*/");
+  G4String str_new;
+  
+  if( pos1 != -1 ) {
+    str_new=str;
+    str_new.erase(pos1+1,2);
+    // G4cout << "STRING" << str_new << G4endl;
+    value=G4tgrUtils::GetDouble(str_new);
+    //G4cout << value << G4endl;
+    return 1239.84187/value/1000000./1000000.;
+  }
+  else if( pos2 != -1 ) {
+    str_new=str;
+    str_new.erase(pos2+1,1);
+    str_new.insert(0,"1.0/");
+    //G4cout << "STRING " << str_new << G4endl;
+    value=G4tgrUtils::GetDouble(str_new);
+    //G4cout << value << G4endl;
+   return value;
+  }
+  else {
+    value=G4tgrUtils::GetDouble(str);
+    return value;
+  }
+
   if( GmGenUtils::bCheckTimeUnits ) {
     G4String strnew = str;
 
