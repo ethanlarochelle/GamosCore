@@ -1,0 +1,101 @@
+#------------------------------------------------------------------------------
+# 
+# Module : GamosCore_GamosBase_Base
+# Package: 
+#
+#------------------------------------------------------------------------------
+set(CMAKE_VERBOSE_MAKEFILE ON)
+include(Geant4MacroDefineModule)
+include_directories(${CMAKE_SOURCE_DIR}/source)
+#
+# Define the GAMOS Module.
+#
+GEANT4_DEFINE_MODULE(NAME GamosCore_GamosBase_Base
+	 HEADERS
+		GmHisto1.hh
+		GmHistoWriterCSV.hh
+		GmHistoProfile1.hh
+		GmHistoProfile2.hh
+		GmParameterMessenger.hh
+		GmVisManager.hh
+		GmVFilter.hh
+		GmBaseMessenger.hh
+		GmVerbosityFactory.hh
+		GmIOMgr.hh
+		GmVClassifier.hh
+		GmParameterMgr.hh
+		GmParameterListVNumeric.icc
+		GmTrackInfo.hh
+		GmBaseVerbosity.hh
+		GmParameterList.hh
+		GmParameterListNumeric.icc
+		GmClassifierFactory.hh
+		GmHistoWriterTXT.hh
+		GmAnalysisMessenger.hh
+		GmParameterList.icc
+		GmAnalysisMgr.hh
+		GmDistributionMgr.hh
+		GmParameterListNumeric.hh
+		GmHistoWriterGraphics.hh
+		GmClassifierMgr.hh
+		GmIObinMgr.hh
+		GmParameter.hh
+		GmVVerbosity.hh
+		GmVDistribution.hh
+		GmGetParticleMgr.hh
+		GmHistoWriter.hh
+		GmDistributionFactory.hh
+		GmIOtextMgr.hh
+		GmFilterFactory.hh
+		GmParameterListVNumeric.hh
+		GmUIcmdWithAString.hh
+		GmHistoWriterROOT.hh
+		GmHistoReaderCSV.hh
+		GmHisto2.hh
+		GmConvergenceTester.hh
+		GmChangeEnergies.hh
+		GmFilterMgr.hh
+	 SOURCES
+		GmIOtextMgr.cc
+		GmClassifierFactory.cc
+		GmConvergenceTester.cc
+		GmAnalysisMessenger.cc
+		GmBaseVerbosity.cc
+		GmHistoWriterROOT.cc
+		GmVVerbosity.cc
+		GmBaseMessenger.cc
+		GmParameterMessenger.cc
+		GmGetParticleMgr.cc
+		GmTrackInfo.cc
+		GmChangeEnergies.cc
+		GmUIcmdWithAString.cc
+		GmVFilter.cc
+		GmVDistribution.cc
+		GmHistoWriterTXT.cc
+		GmVerbosityFactory.cc
+		GmHistoProfile1.cc
+		GmFilterFactory.cc
+		GmHistoWriterCSV.cc
+		GmHistoReaderCSV.cc
+		GmClassifierMgr.cc
+		GmDistributionFactory.cc
+		GmVClassifier.cc
+		GmIObinMgr.cc
+		GmFilterMgr.cc
+		GmIOMgr.cc
+		GmHistoWriterGraphics.cc
+		GmHistoProfile2.cc
+		GmHisto1.cc
+		GmHisto2.cc
+		GmParameterMgr.cc
+		GmDistributionMgr.cc
+		plugin.cc
+		GmAnalysisMgr.cc
+	 
+	 GLOBAL_DEPENDENCIES
+		${Geant4_LIBRARIES} 
+		${ROOT_LIBRARIES} 
+	GamosCore_GamosUtils
+
+	LINK_LIBRARIES
+)

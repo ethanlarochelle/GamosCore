@@ -1,0 +1,82 @@
+#------------------------------------------------------------------------------
+# 
+# Module : GamosCore_GamosGeometry
+# Package: 
+#
+#------------------------------------------------------------------------------
+set(CMAKE_VERBOSE_MAKEFILE ON)
+include(Geant4MacroDefineModule)
+include_directories(${CMAKE_SOURCE_DIR}/source)
+#
+# Define the GAMOS Module.
+#
+GEANT4_DEFINE_MODULE(NAME GamosCore_GamosGeometry
+	 HEADERS
+		GmGeomTextDumperUA.hh
+		GmUniformMagField.hh
+		GmParallelWorld.hh
+		GmGeometryFromText.hh
+		GmDetectorPart.hh
+		GmOpticalPropertiesMgr.hh
+		GmUniformEMField.hh
+		GmGeomTextDetectorBuilder.hh
+		GmVModule.hh
+		GmGeomTextLineProcessor.hh
+		GmGeomVerbosity.hh
+		GmGeometryUseMaterials.hh
+		GmGeomUseMateDetectorBuilder.hh
+		GmRegionData.hh
+		GmGeometryMessenger.hh
+		GmModuleMgr.hh
+		GmTouchable.hh
+		GmParallelWorldCreator.hh
+		GmModuleRangeModulator.hh
+		GmSolid.hh
+		GmModuleJaws.hh
+		GmUniformElectricField.hh
+		GmModuleMLC.hh
+		GmRegionCutsMgr.hh
+		GmGeometryFactory.hh
+		GmGeometryUtils.hh
+		GmDetector.hh
+	 SOURCES
+		GmGeometryUtils.cc
+		GmGeomVerbosity.cc
+		GmParallelWorldCreator.cc
+		GmGeometryFactory.cc
+		GmMaterialList.icc
+		GmGeomTextDumperUA.cc
+		GmModuleMLC.cc
+		GmRegionCutsMgr.cc
+		GmGeomTextLineProcessor.cc
+		GmGeometryMessenger.cc
+		GmUniformElectricField.cc
+		GmGeometryUseMaterials.cc
+		GmParallelWorld.cc
+		GmModuleRangeModulator.cc
+		GmUniformEMField.cc
+		GmGeomUseMateDetectorBuilder.cc
+		GmModuleMgr.cc
+		GmGeomTextDetectorBuilder.cc
+		GmSolid.cc
+		GmUniformMagField.cc
+		GmModuleMLC.cc.old
+		GmOpticalPropertiesMgr.cc
+		GmModuleJaws.cc
+		GmDetector.cc
+		GmTouchable.cc
+		GmGeometryFromText.cc
+		plugin.cc
+		GmRegionData.cc
+		GmVModule.cc
+	 
+	 GLOBAL_DEPENDENCIES
+		${Geant4_LIBRARIES} 
+		${ROOT_LIBRARIES} 
+	GamosCore_GamosBase_Base
+	GamosCore_GamosUtils
+	GamosCore_GamosUserActionMgr
+	GamosCore_GamosData_Distributions
+
+	LINK_LIBRARIES
+)

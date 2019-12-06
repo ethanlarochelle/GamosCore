@@ -1,0 +1,82 @@
+#------------------------------------------------------------------------------
+# 
+# Module : GamosCore_GamosUtilsUA
+# Package: 
+#
+#------------------------------------------------------------------------------
+set(CMAKE_VERBOSE_MAKEFILE ON)
+include(Geant4MacroDefineModule)
+include_directories(${CMAKE_SOURCE_DIR}/source)
+#
+# Define the GAMOS Module.
+#
+GEANT4_DEFINE_MODULE(NAME GamosCore_GamosUtilsUA
+	 HEADERS
+		GmTrackingVerboseUA.hh
+		GmSSData.hh
+		GmTimeStudyUA.hh
+		GmSaveHistosAfterNEvents.hh
+		GmGenerHistosUA.hh
+		GmTimeStudyEventUA.hh
+		GmChangeWeightUA.hh
+		GmTimeStudyMgr.hh
+		GmCountTracksUA.hh
+		GmCopyWeightToSecondaryUA.hh
+		GmCountProcessesUA.hh
+		GmPrintXSUA.hh
+		GmSaveStepUA.hh
+		GmKillTooManyStepsUA.hh
+		GmKillAtSteppingActionUA.hh
+		GmGamosVerboseByEventUA.hh
+		GmUtilsUAVerbosity.hh
+		GmDumpGeometryUA.hh
+		GmVisStoreTrajUA.hh
+		GmKillAtTrackingActionUA.hh
+		GmCountTracksAndStepsUA.hh
+		GmCopyWeightToRDSecondaryUA.hh
+		GmKillAllUA.hh
+		GmMaterialBudgetUA.hh
+		GmStopRunAfterTimeUA.hh
+		GmKillAtStackingActionUA.hh
+		GmShowerShapeUA.hh
+		GmPrintEMParamsUA.hh
+	 SOURCES
+		GmKillAtSteppingActionUA.cc
+		GmStopRunAfterTimeUA.cc
+		GmCountProcessesUA.cc
+		GmTimeStudyMgr.cc
+		GmCopyWeightToSecondaryUA.cc
+		GmGenerHistosUA.cc
+		GmGamosVerboseByEventUA.cc
+		GmPrintEMParamsUA.cc
+		GmCountTracksUA.cc
+		GmShowerShapeUA.cc
+		GmCopyWeightToRDSecondaryUA.cc
+		GmKillTooManyStepsUA.cc
+		GmMaterialBudgetUA.cc
+		GmCountTracksAndStepsUA.cc
+		GmTimeStudyUA.cc
+		GmSSData.cc
+		GmKillAtStackingActionUA.cc
+		GmDumpGeometryUA.cc
+		GmPrintXSUA.cc
+		GmChangeWeightUA.cc
+		GmUtilsUAVerbosity.cc
+		GmTimeStudyEventUA.cc
+		GmTrackingVerboseUA.cc
+		GmSaveHistosAfterNEvents.cc
+		GmKillAllUA.cc
+		GmKillAtTrackingActionUA.cc
+		plugin.cc
+		GmVisStoreTrajUA.cc
+	 
+	 GLOBAL_DEPENDENCIES
+		${Geant4_LIBRARIES} 
+		${ROOT_LIBRARIES} 
+	GamosCore_GamosBase_Base
+	GamosCore_GamosUserActionMgr
+	GamosCore_GamosAnalysis
+	GamosCore_GamosGeometry
+
+	LINK_LIBRARIES
+)
