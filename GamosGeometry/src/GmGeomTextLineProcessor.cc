@@ -65,6 +65,9 @@ G4bool GmGeomTextLineProcessor::ProcessLine( const std::vector<G4String>& wl )
     } else if( wl0 == ":MATEPT_ADD_ENERGIES" ) {
       G4tgrUtils::CheckWLsize( wl, 3, WLSIZE_GE, " :MATEPT_ADD_ENERGIES");
       GmOpticalPropertiesMgr::GetInstance()->AddEnergiesToTable( wl );
+    } else if( wl0 == ":MATEPT_ADD_WAVELENGTHS" ) {
+      G4tgrUtils::CheckWLsize( wl, 3, WLSIZE_GE, " :MATEPT_ADD_WAVELENGTHS");
+      GmOpticalPropertiesMgr::GetInstance()->AddWavelengthsToTable( wl );
     } else if( wl0 == ":MATEPT_ADD_PROPERTY" ) {
       G4tgrUtils::CheckWLsize( wl, 4, WLSIZE_GE, " :MATEPT_ADD_PROPERTY");
       GmOpticalPropertiesMgr::GetInstance()->AddPropertyToTable( wl );
