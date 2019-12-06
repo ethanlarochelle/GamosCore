@@ -97,6 +97,8 @@ GEANT4_DEFINE_MODULE(NAME GamosCore_GamosGenerator
 		GmPositionSurfacePos.hh
 		GmGenerDistDirectionThetaFromFile.hh
 		GmVGenerDistEnergy.hh
+		GmGenerDistWavelengthFromFile.hh
+		GmGenerDistWavelengthRandomFlat.hh
 	 SOURCES
 		GmGenerDistDirectionConst.cc
 		GmVGenerDist.cc
@@ -169,6 +171,8 @@ GEANT4_DEFINE_MODULE(NAME GamosCore_GamosGenerator
 		GmGenerDistDirectionThetaFromFile.cc
 		GmIsotopeMgr.cc
 		GmGenerDistPositionRectangle.cc
+		GmGenerDistWavelengthFromFile.cc
+		GmGenerDistWavelengthRandomFlat.cc
 		plugin.cc
 	 
 	 GLOBAL_DEPENDENCIES

@@ -251,6 +251,7 @@ GEANT4_DEFINE_MODULE(NAME GamosCore_GamosData_Data
 		GmDataInitialPrimKineticEnergy.hh
 		GmDataDirChangeTheta.hh
 		GmDataVertexMomY.hh
+		GmDataWavelengthEnergy.hh
 	 SOURCES
 		GmDataFinalMaterial.cc
 		GmDataFinalLocalPosX.cc
@@ -492,6 +493,7 @@ GEANT4_DEFINE_MODULE(NAME GamosCore_GamosData_Data
 		GmDataInitialLocalDirPerp.cc
 		GmDataMomChangeX.cc
 		GmDataInitialLocalPosPhi.cc
+		GmDataWavelengthEnergy.cc
 	 
 	 GLOBAL_DEPENDENCIES
 		${Geant4_LIBRARIES} 

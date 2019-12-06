@@ -12,6 +12,8 @@
 #include "GmGenerDistEnergyFromFile.hh"
 #include "GmGenerDistTimeConstant.hh"
 #include "GmGenerDistTimeDecay.hh"
+#include "GmGenerDistWavelengthFromFile.hh"
+#include "GmGenerDistWavelengthRandomFlat.hh"
 #include "GmGenerDistTimeConstantChange.hh"
 #include "GmGenerDistPositionPoint.hh"
 #include "GmVGenerDistPositionVolumesAndSurfaces.hh"
@@ -59,6 +61,8 @@ PLUGINSVC_FACTORY(GmGenerDistEnergyGaussian,GmVGenerDistEnergy*())
 PLUGINSVC_FACTORY(GmGenerDistEnergyFromFile,GmVGenerDistEnergy*())
 PLUGINSVC_FACTORY(GmGenerDistEnergyIsolethargical,GmVGenerDistEnergy*())
 PLUGINSVC_FACTORY(GmGenerDistEnergyMCNPisolethargical,GmVGenerDistEnergy*())
+PLUGINSVC_FACTORY(GmGenerDistWavelengthFromFile,GmVGenerDistEnergy*())
+PLUGINSVC_FACTORY(GmGenerDistWavelengthRandomFlat,GmVGenerDistEnergy*())
 
 PLUGINSVC_FACTORY(GmGenerDistTimeConstant,GmVGenerDistTime*())
 PLUGINSVC_FACTORY(GmGenerDistTimeDecay,GmVGenerDistTime*())

@@ -13,6 +13,9 @@
 #include "GmPhysicsGammaNuclear.hh"
 #include "GmPhysicsCerenkov.hh"
 #include "GmPhysicsCoulombScattering.hh"
+#include "GmPhysicsScintillation.hh"
+#include "GmPhysicsTissueOptics.hh"
+
 
 #include "GamosCore/GamosUtils/include/GmGenUtils.hh"
 #include "GamosCore/GamosUtils/include/GmG4Utils.hh"
@@ -91,7 +94,7 @@ GmExtraPhysicsMessenger::GmExtraPhysicsMessenger()
   
   // add new physics
   theAddPhysicsCmd = new GmUIcmdWithAString("/gamos/physics/addPhysics",this);  
-  theAddPhysicsCmd->SetGuidance("Add new physics: decay, radioactiveDecay, opticalphoton, cerenkov, gamma-nuclear, electron-nuclear, positron-nuclear, xray-refraction, coulombScattering");
+  theAddPhysicsCmd->SetGuidance("Add new physics: decay, radioactiveDecay, scintillation, opticalphoton, tissue-optics, cerenkov, gamma-nuclear, electron-nuclear, positron-nuclear, xray-refraction, coulombScattering");
   theAddPhysicsCmd->AvailableForStates(G4State_Idle);
 
   // remove processes by type
@@ -213,10 +216,20 @@ void GmExtraPhysicsMessenger::AddPhysics(G4String newValue)
   } else if( newValue == "radioactiveDecay" ) {
     GmPhysicsRadioactiveDecay* radioPhys = new GmPhysicsRadioactiveDecay;
     radioPhys->ConstructProcess();
-    
+   
+  // instantiate scintillation
+  } else if( newValue == "scintillation" ) {
+    GmPhysicsScintillation* optPhotPhys = new GmPhysicsScintillation;
+    optPhotPhys->ConstructProcess();
+  
   // instantiate optical photon processes
   } else if( newValue == "opticalphoton" ) {
     GmPhysicsOpticalPhoton* optPhotPhys = new GmPhysicsOpticalPhoton;
+    optPhotPhys->ConstructProcess();
+
+  // instantiate tissue-optics processes
+  } else if( newValue == "tissue-optics" ) {
+    GmPhysicsTissueOptics* optPhotPhys = new GmPhysicsTissueOptics;
     optPhotPhys->ConstructProcess();
 
   } else if( newValue == "gamma-nuclear" ) {
@@ -247,7 +260,7 @@ void GmExtraPhysicsMessenger::AddPhysics(G4String newValue)
     G4Exception("GmExtraPhysicsMessenger::AddPhysics",
 		"Wrong argument",
 		FatalErrorInArgument,
-		G4String("ARGUMENT is = " + newValue + " .It may be: decay, radioactiveDecay, opticalphoton, cerenkov, gamma-nuclear, electron-nuclear, positron-nuclear, xray-refraction").c_str());
+		G4String("ARGUMENT is = " + newValue + " .It may be: decay, radioactiveDecay, scintillation, opticalphoton, tissue-optics, cerenkov, gamma-nuclear, electron-nuclear, positron-nuclear, xray-refraction").c_str());
   }
   
 }

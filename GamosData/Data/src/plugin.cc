@@ -164,6 +164,7 @@
 #include "GmDataAccumulatedKerma.hh"
 #include "GmDataInitialDEDX.hh"
 #include "GmDataFinalDEDX.hh"
+#include "GmDataWavelengthEnergy.hh"
 #include "GmDataInitialNeutronEquivalentDose.hh"
 #include "GmDataFinalGammaEquivalentDose.hh"
 #include "GmDataInitialGammaEquivalentDose.hh"
@@ -440,6 +441,7 @@ PLUGINSVC_FACTORY(GmDataInitialNeutronEnergyToEquivalentDose,GmVData*())
 PLUGINSVC_FACTORY(GmDataInitialGammaEnergyToEquivalentDose,GmVData*())
 PLUGINSVC_FACTORY(GmDataFinalNeutronEnergyToEquivalentDose,GmVData*())
 PLUGINSVC_FACTORY(GmDataFinalGammaEnergyToEquivalentDose,GmVData*())
+PLUGINSVC_FACTORY(GmDataWavelengthEnergy,GmVData*())
 
 //--- GEOMETRY DATA
 PLUGINSVC_FACTORY(GmDataInitialSolid,GmVData*())
