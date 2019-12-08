@@ -367,7 +367,7 @@ void G4OpTissueScatter::ReadData()
 		  			wlnew = GmGenUtils::GetValue(wl[ii]);
 		  			if(wlprev <= wlnew){
 		  				G4Exception((theFileNamePrefix+"_G4OpTissueScatter::ReadData").c_str(),
-				      		"Error in wavelengh definition.",
+				      		"Error in wavelength definition.",
 				      		FatalErrorInArgument,
 				      		"Wavelengths must be specified in ascending order.");
 		  			}

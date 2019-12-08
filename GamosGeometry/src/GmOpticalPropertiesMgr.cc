@@ -77,11 +77,11 @@ void GmOpticalPropertiesMgr::AddWavelengthsToTable( std::vector<G4String> wl )
 {
   std::vector<G4String>::iterator ite = wl.begin();
   ite++; ite++;
-  wl.insert(ite, "WAVELENGHTS" );
+  wl.insert(ite, "WAVELENGTHS" );
 #ifndef GAMOS_NO_VERBOSE
   if( GeomVerb(debugVerb) ) {
     for( unsigned int ii = 0; ii < wl.size() ; ii++ ) {
-      G4cout << "GmOpticalPropertiesMgr::AddWavelengthsToTable WAVELENGTH " << wl[ii] << G4endl;
+      G4cout << "GmOpticalPropertiesMgr::AddWavelengthsToTable ENER " << wl[ii] << G4endl;
     }
   }
 #endif
@@ -93,6 +93,14 @@ void GmOpticalPropertiesMgr::AddWavelengthsToTable( std::vector<G4String> wl )
 //-----------------------------------------------------------------------
 void GmOpticalPropertiesMgr::AddPropertyToTable( const std::vector<G4String> wl )
 {
+  #ifndef GAMOS_NO_VERBOSE
+    if( GeomVerb(debugVerb) ) {
+      for( unsigned int ii = 0; ii < wl.size() ; ii++ ) {
+        G4cout << "GmOpticalPropertiesMgr::AddPropertyToTable INPUT " << ii << wl[ii] << G4endl;
+      }
+    }
+  #endif
+
   msmpt::const_iterator itet = theMatPropTables.find(wl[1]);
 
   if( itet != theMatPropTables.end() ) {
