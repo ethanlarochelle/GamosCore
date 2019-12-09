@@ -418,7 +418,7 @@ void GmOpticalPropertiesMgr::BuildG4()
         itevE = itevE2;
       }
     }
-    else if (iterEV1 != prop->end()){
+    else if (itevE1 != prop->end()){
       if( itevE2 != prop->end() ){
         G4Exception( "GmOpticalPropertiesMgr::BuildG4 ",
           "Trying to add a property to a G4MaterialPropertiesTable wihtout having defined an wavelength vector",
