@@ -324,7 +324,7 @@ G4OpScintillation::PostStepDoIt(const G4Track& aTrack, const G4Step& aStep)
            MeanNumberOfPhotons = ScintillationYield;
         else if (emSaturation)
            MeanNumberOfPhotons = ScintillationYield*
-                              (emSaturation->VisibleEnergyDeposition(&aStep));
+                              (emSaturation->VisibleEnergyDepositionAtAStep(&aStep));
         else
            MeanNumberOfPhotons = ScintillationYield*TotalEnergyDeposit;
 
