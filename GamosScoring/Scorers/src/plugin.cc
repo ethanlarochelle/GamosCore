@@ -123,6 +123,7 @@ DEFINE_GAMOS_SCORER(GmPSSphericalDoseDeposit);
 DEFINE_GAMOS_SCORER(GmPSCylindricalRZDoseDeposit);
 DEFINE_GAMOS_SCORER(GmPSCylindricalRPhiDoseDeposit);
 DEFINE_GAMOS_SCORER(GmPSCylindricalZPhiDoseDeposit);
+DEFINE_GAMOS_SCORER(GmPSTrackLengthFluence);
 
 #include "GmPSLET.hh"
 #include "GmPSEdep_LET.hh"
