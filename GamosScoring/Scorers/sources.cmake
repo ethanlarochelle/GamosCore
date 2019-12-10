@@ -60,6 +60,7 @@ GEANT4_DEFINE_MODULE(NAME GamosCore_GamosScoring_Scorers
 		GmPSCylindricalRPhiDoseDeposit.hh
 		GmPSdx_LETBydEdx.hh
 		GmG4PSPassageCellFlux.hh
+		GmPSTrackLengthFluence.hh
 	 SOURCES
 		GmG4PSEnergyDeposit.cc
 		GmG4PSKerma.cc
@@ -108,6 +109,7 @@ GEANT4_DEFINE_MODULE(NAME GamosCore_GamosScoring_Scorers
 		GmG4PSDoseDeposit.cc
 		GmG4PSCellCharge.cc
 		GmPSLETBydEdxPhi.cc
+		GmPSTrackLengthFluence.cc
 		plugin.cc
 		GmG4PSTermination.cc
 	 
