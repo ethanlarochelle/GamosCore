@@ -2,7 +2,7 @@
 #include "G4ProcessManager.hh"
 #include "G4ParticleDefinition.hh"
 #include "G4ParticleTable.hh"
-#include "G4Cerenkov.hh"
+#include "G4OpCerenkov.hh"
 #include "G4OpticalPhoton.hh"
 #include "GamosCore/GamosBase/Base/include/GmParameterMgr.hh"
 #include "GamosCore/GamosUtils/include/GmG4Utils.hh"
@@ -21,7 +21,7 @@ void GmPhysicsCerenkov::ConstructParticle()
 
 void GmPhysicsCerenkov::ConstructProcess()
 {
-  G4Cerenkov*   theCerenkovProcess = new G4Cerenkov();
+  G4OpCerenkov*   theCerenkovProcess = new G4OpCerenkov();
   G4int MaxNumPhotons = G4int(GmParameterMgr::GetInstance()->GetNumericValue("GmPhysicsCerenkov:MaxNumPhotonsPerStep",100));
   theCerenkovProcess->SetMaxNumPhotonsPerStep(MaxNumPhotons);
   
