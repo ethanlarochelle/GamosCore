@@ -359,7 +359,7 @@ G4double GmVPrimitiveScorer::GetError( G4int index, G4double sumWX, G4double nEv
   G4double error = 0.;
   if( nEvents > 1 ) error = (theSumV2[index]*nEvents - sumWX*sumWX) / (nEvents-1);
 
-  G4double error_2 = error*error
+  G4double error_2 = error*error;
   //  G4cout << " ERROR " << (theSumV2[index]*nEvents - sumWX*sumWX) << " " << theSumV2[index]*nEvents << " - " << sumWX*sumWX << G4endl; //GDEB
   #ifndef GAMOS_NO_VERBOSE
     G4double normF = nEvents*theUnit;
