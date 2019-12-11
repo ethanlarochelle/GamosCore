@@ -85,6 +85,7 @@
 #include "G4OpticalSurface.hh"
 #include "G4OpticalPhoton.hh"
 #include "G4TransportationManager.hh"
+#include "G4ParallelWorldProcess.hh"
 
 // Class Description:
 // Discrete Process -- reflection/refraction at optical interfaces.
