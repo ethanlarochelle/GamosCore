@@ -200,6 +200,8 @@ if (Qsplit == "OFF") {
                 FatalException,
                 "Please add using constant material property FLUOR_LIFETIME.");
   }
+
+  G4double primaryEnergy = aTrack.GetDynamicParticle()->GetKineticEnergy();
     
   for (G4int i=0 ; i<numPhotons ; i++) {
 
@@ -209,17 +211,30 @@ if (Qsplit == "OFF") {
 	WLSIntegral = (G4PhysicsOrderedFreeVector*)((*theIntegralTable)(materialIndex));
 	emissionprob=emissionprobmap[materialIndex];
 	G4double CIImax = WLSIntegral->GetMaxValue();
-	
-	if (calcType == "interpolate"){
-		G4double CIIvalue = G4UniformRand()*CIImax;
-        sampledEnergy = 
-                      WLSIntegral->GetEnergy(CIIvalue);
-	}
-	
-	if (calcType == "fixed"){
-		G4double pv = CLHEP::RandFlat::shoot();
-		std::map<G4double,G4double>::iterator ite = emissionprob.upper_bound( pv );
-		sampledEnergy = (*ite).second;
+	for (G4int j=0; j<=100; j++) {
+		// Determine photon energy
+		if (calcType == "interpolate"){
+			G4double CIIvalue = G4UniformRand()*CIImax;
+	        sampledEnergy = 
+	                      WLSIntegral->GetEnergy(CIIvalue);
+		}
+		else if (calcType == "fixed"){
+			G4double pv = CLHEP::RandFlat::shoot();
+			std::map<G4double,G4double>::iterator ite = emissionprob.upper_bound( pv );
+			sampledEnergy = (*ite).second;
+		}
+		else {
+			G4Exception("G4OpTissueFluor", "Invalid fluorescence method.",
+                FatalException,
+                "Please set parameter for G4OpTissueFluor:Method [interpolate/fixed]");
+		}
+		if (verboseLevel>2) {
+			G4cout << "G4OpTissueFluor: primaryEnergy = " << primaryEnergy << G4endl;
+		    G4cout << "G4OpTissueFluor: sampledEnergy = " << sampledEnergy << G4endl;
+		    G4cout << "G4OpTissueFluor: CIImax = " << CIImax << G4endl;
+		}
+		if (sampledEnergy <= primaryEnergy) break;
+
 	}
 	
 	// Generate random photon direction
@@ -269,7 +284,7 @@ if (Qsplit == "OFF") {
     G4ThreeVector aSecondaryPosition = pPostStepPoint->GetPosition();
 
     G4Track* aSecondaryTrack = 
-      new G4Track(aWLSPhoton,theWeight*1000000000.0,aSecondaryPosition);
+      new G4Track(aWLSPhoton,aSecondaryTime,aSecondaryPosition);
    
     aSecondaryTrack->SetTouchableHandle(aTrack.GetTouchableHandle()); 
     
@@ -321,6 +336,9 @@ else if (Qsplit == "ON"){
 	                "Please add using constant material property FLUOR_LIFETIME.");
 	  }
 
+	  G4double primaryEnergy = aTrack.GetDynamicParticle()->GetKineticEnergy();
+
+
 	  for (G4int i=0 ; i<numPhotons ; i++) {
 
 	    // Determine photon energy
@@ -329,18 +347,31 @@ else if (Qsplit == "ON"){
 		WLSIntegral = (G4PhysicsOrderedFreeVector*)((*theIntegralTable)(materialIndex));
 		emissionprob=emissionprobmap[materialIndex];
 		G4double CIImax = WLSIntegral->GetMaxValue();
-
-		if (calcType == "interpolate"){
-			G4double CIIvalue = G4UniformRand()*CIImax;
-	        sampledEnergy = 
-	                      WLSIntegral->GetEnergy(CIIvalue);
+		for (G4int j=0; j<=100; j++) {
+			// Determine photon energy
+			if (calcType == "interpolate"){
+				G4double CIIvalue = G4UniformRand()*CIImax;
+		        sampledEnergy = 
+		                      WLSIntegral->GetEnergy(CIIvalue);
+			}
+			else if (calcType == "fixed"){
+				G4double pv = CLHEP::RandFlat::shoot();
+				std::map<G4double,G4double>::iterator ite = emissionprob.upper_bound( pv );
+				sampledEnergy = (*ite).second;
+			}
+			else {
+				G4Exception("G4OpTissueFluor", "Invalid fluorescence method.",
+                FatalException,
+                "Please set parameter for G4OpTissueFluor:Method [interpolate/fixed]");
+			}
+			if (verboseLevel>2) {
+				G4cout << "G4OpTissueFluor: primaryEnergy = " << primaryEnergy << G4endl;
+			    G4cout << "G4OpTissueFluor: sampledEnergy = " << sampledEnergy << G4endl;
+			    G4cout << "G4OpTissueFluor: CIImax = " << CIImax << G4endl;
+			}
+			if (sampledEnergy <= primaryEnergy) break;
 		}
 
-		if (calcType == "fixed"){
-			G4double pv = CLHEP::RandFlat::shoot();
-			std::map<G4double,G4double>::iterator ite = emissionprob.upper_bound( pv );
-			sampledEnergy = (*ite).second;
-		}
 
 		// Generate random photon direction
 
