@@ -125,6 +125,8 @@ DEFINE_GAMOS_GENER_DIST_ENERGY(GmGenerDistEnergyGaussian);
 DEFINE_GAMOS_GENER_DIST_ENERGY(GmGenerDistEnergyFromFile);
 DEFINE_GAMOS_GENER_DIST_ENERGY(GmGenerDistEnergyIsolethargical);
 DEFINE_GAMOS_GENER_DIST_ENERGY(GmGenerDistEnergyMCNPisolethargical);
+DEFINE_GAMOS_GENER_DIST_ENERGY(GmGenerDistWavelengthFromFile);
+DEFINE_GAMOS_GENER_DIST_ENERGY(GmGenerDistWavelengthRandomFlat);
 
 DEFINE_GAMOS_GENER_DIST_TIME(GmGenerDistTimeConstant);
 DEFINE_GAMOS_GENER_DIST_TIME(GmGenerDistTimeDecay);
