@@ -711,6 +711,7 @@ DEFINE_GAMOS_DATA(GmDataInitialNeutronEnergyToEquivalentDose);
 DEFINE_GAMOS_DATA(GmDataInitialGammaEnergyToEquivalentDose);
 DEFINE_GAMOS_DATA(GmDataFinalNeutronEnergyToEquivalentDose);
 DEFINE_GAMOS_DATA(GmDataFinalGammaEnergyToEquivalentDose);
+DEFINE_GAMOS_DATA(GmDataWavelengthEnergy);
 
 //--- GEOMETRY DATA
 DEFINE_GAMOS_DATA(GmDataInitialSolid);
