@@ -211,7 +211,7 @@ if (Qsplit == "OFF") {
 	WLSIntegral = (G4PhysicsOrderedFreeVector*)((*theIntegralTable)(materialIndex));
 	emissionprob=emissionprobmap[materialIndex];
 	G4double CIImax = WLSIntegral->GetMaxValue();
-	for (G4int j=0; j<=100; j++) {
+	//for (G4int j=0; j<=100; j++) {
 		// Determine photon energy
 		if (calcType == "interpolate"){
 			G4double CIIvalue = G4UniformRand()*CIImax;
@@ -233,9 +233,9 @@ if (Qsplit == "OFF") {
 		    G4cout << "G4OpTissueFluor: sampledEnergy = " << sampledEnergy << G4endl;
 		    G4cout << "G4OpTissueFluor: CIImax = " << CIImax << G4endl;
 		}
-		if (sampledEnergy <= primaryEnergy) break;
+		//if (sampledEnergy <= primaryEnergy) break;
 
-	}
+	//}
 	
 	// Generate random photon direction
 
@@ -288,7 +288,7 @@ if (Qsplit == "OFF") {
    
     aSecondaryTrack->SetTouchableHandle(aTrack.GetTouchableHandle()); 
     
-    //aSecondaryTrack->SetParentID(aTrack.GetTrackID());
+    aSecondaryTrack->SetParentID(aTrack.GetTrackID());
 
     aSecondaryTrack->SetWeight(theWeight/numPhotons);
 
@@ -347,7 +347,7 @@ else if (Qsplit == "ON"){
 		WLSIntegral = (G4PhysicsOrderedFreeVector*)((*theIntegralTable)(materialIndex));
 		emissionprob=emissionprobmap[materialIndex];
 		G4double CIImax = WLSIntegral->GetMaxValue();
-		for (G4int j=0; j<=100; j++) {
+		//for (G4int j=0; j<=100; j++) {
 			// Determine photon energy
 			if (calcType == "interpolate"){
 				G4double CIIvalue = G4UniformRand()*CIImax;
@@ -369,8 +369,8 @@ else if (Qsplit == "ON"){
 			    G4cout << "G4OpTissueFluor: sampledEnergy = " << sampledEnergy << G4endl;
 			    G4cout << "G4OpTissueFluor: CIImax = " << CIImax << G4endl;
 			}
-			if (sampledEnergy <= primaryEnergy) break;
-		}
+			//if (sampledEnergy <= primaryEnergy) break;
+		//}
 
 
 		// Generate random photon direction
@@ -426,7 +426,7 @@ else if (Qsplit == "ON"){
 
 	    aSecondaryTrack->SetTouchableHandle(aTrack.GetTouchableHandle()); 
 
-	    //aSecondaryTrack->SetParentID(aTrack.GetTrackID());
+	    aSecondaryTrack->SetParentID(aTrack.GetTrackID());
 
 	    aSecondaryTrack->SetWeight(quantum_yield*theWeight/numPhotons);
 
